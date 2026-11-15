@@ -69,9 +69,9 @@ keep their names (imh_*, rtl/PROVENANCE.md); new blocks are mg_*.
 | VAD | src/vad.sv (reused as is) | vad_o (attack and 20-frame hangover) and raw_o (this frame alone looked like speech) per 256-sample frame. |
 | Wake spotter slot | rtl/wake/ (wake agent) | Interface in section 3.1. Until it lands, mg_wake_stub fires on a test pin. |
 | Capture ring | top/mg_capture.sv (from imh_capture.sv) | 2^15 samples = 64 KB in 16 banks of 4 KB with power enables. Segments open at a wake (rule in section 8.1), queue 2 deep, and are delivered to the core one sample per toggle handshake. |
-| Config SRAM | top/mg_cfg_ram.sv | 32 KB, 32-bit words with byte enables, one port, fixed-priority arbiter with a grant (stall) for every master: loader > matcher > GPIO > bridge > spotter. |
-| Config loader | top/mg_cfg_load.sv | Takes the blob as a byte stream from I2C (CFG_DATA) or from SPI flash (strap boot = 1, read from flash address 0 at reset), writes it to config SRAM, checks magic, version, field ranges, length and CRC-32. Only a blob that passes sets cfg_valid. |
-| Matcher | top/mg_match.sv | The exact rule of docs/config-blob.md, steps 2 to 5, one int8 MAC per clk_fe clock straight from config SRAM (N x D clocks: a full 32 KB blob takes at most 10.7 ms). Inputs q (D <= 256 int8) and up to 8 raw slot values, written by the core over the bridge. |
+| Config SRAM | top/mg_cfg_ram.sv | 32 KB, 32-bit words with byte enables, one port, fixed-priority arbiter with a grant (stall) for every master: loader write > wake spotter (real time) > GPIO > matcher > core bridge. |
+| Config loader | top/mg_cfg_load.sv | Takes the blob as a byte stream from I2C (CFG_DATA), writes it to config SRAM, checks magic, version, field ranges, length and CRC-32. Only a blob that passes sets cfg_valid. Boot from SPI flash (spi_flash_reader.sv is in the tree) is cut from iteration 1 (coordinator scope ruling). |
+| Matcher | top/mg_match.sv | The exact rule of docs/config-blob.md, steps 2 to 5, one int8 MAC per clk_fe clock straight from config SRAM (N x D clocks: a full 32 KB blob takes at most 10.7 ms). Inputs q (D <= 256 int8) and one raw value per config slot (level codes included), written by the core over the bridge before MATCH_GO; table fields after the vectors are read a byte at a time (they need not be word aligned). |
 | Event and message formatter | top/mg_msg.sv | Events COMMAND, WAKE, NOMATCH, TIMEOUT (docs/config-blob.md, section 8.7). Builds 0xA5, type, action, n_values, {slot, i32 LE} per value, confidence, CRC-8 (section 8.4), at most 46 bytes, into a 2-frame FIFO; serves frames to I2C reads or sends them on the UART; drives irq_o. Event frames go to the host only when their flag bit is set. |
 | I2C target | top/mg_i2c.sv | 7-bit address, standard and fast mode (100 and 400 kHz), sampled on clk_fe through two-flop synchronisers. No clock stretching. Register map in section 6. |
 | UART | src/uart_tx.sv (reused) | 8N1, bit time 27 clk_fe clocks (113.8 kbaud, 1.2% from 115200). Used for messages when the host strap selects UART. |
@@ -137,26 +137,26 @@ Island registers (word offsets from 0x3000_8000):
 |---|---|---|---|
 | 0x00 | ISL_ID | r | 0x4D474931 ("MGI1") |
 | 0x04 | ISL_STATUS | r | [0] cfg_valid, [1] listening, [2] match busy, [3] message pending, [7:4] cfg error |
-| 0x08 | MATCH_GO | w / r | w: 1 = run the matcher on Q and VAL; r: [0] busy, [1] done, [2] rejected |
-| 0x0C | MATCH_BEST | r | [15:0] best index b, [23:16] action[b] |
+| 0x08 | MATCH_GO | w / r | w: 1 = run the matcher on Q and VAL (written first); r: [0] busy, [1] done, [2] rejected |
+| 0x0C | MATCH_BEST | r | [15:0] best index b, [23:16] action[b], [31:24] the accepted action's slot_mask |
 | 0x10 | MATCH_SB | r | s_b |
 | 0x14 | MATCH_S2 | r | best score of a different action (0x8000_0000 when there is none) |
-| 0x20 | SEG_PRE | r | pre-roll, samples (16000) |
-| 0x24 | SEG_MIN | r | no end-of-speech close before this many samples (32000) |
+| 0x20 | SEG_PRE | r | pre-roll, samples (4800) |
+| 0x24 | SEG_MIN | r | no end-of-speech close before this many samples (8000) |
 | 0x28 | SEG_CAP | r | segment cap, samples (96000) |
 | 0x2C | SEG_HANG | r | [7:0] hang frames (8), [15:8] onset frames (3) |
 | 0x30 | SEG_LISTEN | r | listen window, samples (64000) |
 
-The segment and confidence constants are fixed in iteration 1 (golden model parameters); the PDM gain is 0 and the
-DC blocker on.
-| 0x40 to 0x5C | VAL[0..7] | w | raw slot values from the value head, int32 |
+The segment constants are fixed in iteration 1 (golden model parameters); conf_sh comes from the blob (byte 0x1C);
+the PDM gain is 0 and the DC blocker on.
+| 0x40 to 0x5C | VAL[0..7] | w | raw value of every config slot from the value head, int32 (level codes -1..-5) |
 | 0x100 to 0x1FC | Q | w | the encoder output q, int8, byte d at 0x100 + d |
 
 ## 6. Pins and host interface
 
-Pins (21 signal pads): clk_fe, rst_n, pdm_clk_o, pdm_dat_i, scl, sda (open drain), uart_tx_o, irq_o,
-gpio_o[7:0], fl_sck_o, fl_cs_n_o, fl_mosi_o, fl_miso_i (single-lane SPI, read 0x03), strap_host (0 = I2C,
-1 = UART for messages), strap_boot (0 = the host loads the config over I2C, 1 = read from SPI flash at reset).
+Pins (14 signal pads in iteration 1): clk_fe, rst_n, pdm_clk_o, pdm_dat_i, scl, sda (open drain), uart_tx_o,
+irq_o, gpio_o[7:0]. The blob's host field picks where frames go (0 none, 1 I2C, 2 UART), so no host strap is needed.
+SPI-flash config boot (4 more pads and a boot strap) is deferred to iteration 2.
 
 I2C: the chip answers at 0x2A until a config is valid, then at the blob's i2c_addr (0x2A again if it is 0).
 A write sets the register pointer with its first byte; further written bytes go to that register. A read
@@ -166,7 +166,7 @@ returns bytes from the pointer. The pointer increments after each byte except on
 |---|---|---|---|
 | 0x00 | ID | r | 0x4D |
 | 0x01 | STATUS | r | [0] cfg_valid, [1] loading or checking, [2] message ready, [3] listening, [7:4] cfg error (0 none, 1 magic, 2 version, 3 field range, 4 length, 5 CRC) |
-| 0x02 | CTRL | w | [0] begin a config load (clears cfg_valid, stops listening), [1] commit (check, then listen if valid), [2] listen enable, [3] drop the pending message |
+| 0x02 | CTRL | w | [0] begin a config load (clears cfg_valid, stops listening), [1] commit (check, then listen if valid), [2] listen on, [3] drop the pending frames, [4] listen off |
 | 0x03 | CFG_DATA | w, stream | next blob byte |
 | 0x04 | MSG_LEN | r | bytes in the pending message (0 = none) |
 | 0x05 | MSG_DATA | r, stream | next byte of the oldest pending frame; reading its last byte (the CRC) releases it; irq_o falls when no frame is left |
@@ -188,9 +188,9 @@ used only when flags bit 0 is set; otherwise it stays low.
    isolation off, oscillator on, reset released).
 4. The core boots from ROM and reads the segment through the PCM port (catching up from the pre-roll). If the
    segment's end marker says TIMEOUT (no speech in the listen window, section 8.1), the island has already raised
-   TIMEOUT and the core only requests power-off. Otherwise the core runs the encoder and value head, writes Q and
-   VAL over the bridge, writes MATCH_GO, then requests power-off (Poinsetta's deep-sleep toggle). With no further
-   segment queued, the island isolates and switches off the core.
+   TIMEOUT and the core only requests power-off. Otherwise the core runs the encoder and the value head, writes Q and
+   the raw value of every config slot (VAL) over the bridge, writes MATCH_GO, then requests power-off (Poinsetta's
+   deep-sleep toggle). With no further segment queued, the island isolates and switches off the core.
 5. The matcher runs from config SRAM (N x D clocks). Accept: COMMAND frame (always sent) and the action's rules.
    Reject: NOMATCH (frame if flags bit 2, rules of entry 0xF1).
 
@@ -207,18 +207,23 @@ At each sample w that is a positive multiple of 256 while the segment is open, w
 Before speech (sp < onset), the segment closes at the first such w with w - k >= listen, as a TIMEOUT: its end
 marker carries the timeout flag and the core runs no model. After speech (sp >= onset), it closes at the first such
 w with w - start >= mn and h >= hang. In either state it also closes at the sample w with w - start = cap
-(cap != 0). The end is exclusive. Defaults: pre 16000 (1.0 s), onset 3 frames, listen 64000 (4 s), mn 32000,
-hang 8 frames (128 ms), cap 96000 (6 s). raw is used rather than vad because vad_o has a 20-frame (320 ms)
+(cap != 0). The end is exclusive. Defaults: pre 4800 (0.3 s), onset 3 frames, listen 64000 (4 s), mn 8000,
+hang 8 frames (128 ms), cap 96000 (6 s). (Coordinator rulings of Nov 15: pre 4800, was 16000; mn 8000, was 32000.) raw is used rather than vad because vad_o has a 20-frame (320 ms)
 hangover, too long for target 7.
 
 ### 8.2 Matching (docs/config-blob.md), two points made exact
 - The margin test with no vector of a different action (every vector belongs to action[b]) passes: the maximum
   over an empty set is minus infinity.
 - Scores are int32; with D <= 256 and |q|, |v| <= 128 they stay below 2^23, so no step can overflow.
+- An accepted vector whose action id has no action-table entry gives NOMATCH.
+- Values (ruling of Nov 15): the core writes one raw int32 per config slot. For each slot k of the accepted action
+  (k < n_slots; 0 otherwise), codes -1 low, -2 medium, -3 high, -4 max, -5 min become the slot entry's level byte
+  1, 2, 3 (a 0 byte means low = min, medium = floor((min + max) / 2), high = max) or the slot's max / min; then
+  v = min(max(v, min), max). This is rtl/model/mg_model.py island_value and sw/intent/values.py island_value.
 
 ### 8.3 Confidence (proposed)
-COMMAND and NOMATCH: confidence = clamp(s_b >> CONF_SH, 0, 255) (arithmetic shift), s_b being the best score
-(accepted or rejected), CONF_SH = 8. WAKE and TIMEOUT: 0.
+COMMAND and NOMATCH: confidence = clamp(s_b >> conf_sh, 0, 255) (arithmetic shift), s_b being the best score
+(accepted or rejected), conf_sh from the blob (byte 0x1C; 9 at D = 128). WAKE and TIMEOUT: 0.
 
 ### 8.4 Message CRC-8 (proposed)
 CRC-8 with polynomial 0x07, initial value 0x00, no reflection, no final XOR (the SMBus PEC), over every byte from
@@ -226,9 +231,11 @@ CRC-8 with polynomial 0x07, initial value 0x00, no reflection, no final XOR (the
 
 ### 8.5 GPIO rules (proposed; the SDK writes these fields)
 For an accepted action, rules gpio_first to gpio_first + gpio_count - 1 apply in order:
-- mode 0 pulse: the pins in pin_mask go to `level` for pulse_ms milliseconds (3072 clk_fe clocks each), then to
-  the opposite level. A new pulse on a pin restarts its timer.
-- mode 1 latch: the pins in pin_mask go to `level`.
+- mode 0 pulse: the pins in pin_mask go to bit 0 of `level`, then to the opposite level on the pulse_ms-th tick
+  of a millisecond prescaler (3072 clk_fe clocks) that runs while any pulse runs: exactly pulse_ms ms for a pulse
+  that starts the prescaler, within 1 ms otherwise (pulse_ms 0 or 1 ends on the first tick). A new pulse on a pin
+  restarts its timer; any other mode on a pin cancels its pulse.
+- mode 1 latch: the pins in pin_mask go to bit 0 of `level`.
 - mode 2 toggle: the pins in pin_mask invert.
 - mode 3 binary: the clamped value of slot `slot` goes out on the pins of pin_mask, least significant bit on the
   lowest pin; negative values give 0 and values above 2^k - 1 (k pins) give 2^k - 1. If the action does not carry

@@ -86,3 +86,17 @@ do not use. Replace them with Marigold's own once mkimage_ts.py is adapted.
   streaming image (173 asinh LUT operations), 0 failures.
 - imh_cpu, imh_capture and imh_wsrc_flash have no unit tests in Poinsetta (the whole-chip harness covered them):
   Verilator --lint-only with Poinsetta's warning set gives 0 errors, 0 warnings.
+
+## Later additions (2026-11-15, overnight build)
+
+- Copied byte-identical from 1719528 for reference and diffs: rtl/core/imh_core.sv, rtl/top/imhotep_top.sv (not
+  built). Marigold's core is rtl/core/mg_core.sv, generated from imh_core.sv by a scripted edit: no UART, PDM
+  controls or segment registers; island bridge at 0x3000_0000; fan-out array parameter FAN_L (16).
+- rtl/top/mg_capture.sv: from imh_capture.sv; the rec- and VAD-gated segmenters replaced by the wake-gated rule of
+  docs/architecture.md 8.1; end-marker TIMEOUT flag; WAKE / TIMEOUT event outputs; bank power window = pre-roll;
+  the island side of the core's toggles resyncs while the core is off. Reader, queue, bank power and
+  oscillator control are Poinsetta's.
+- New (Marigold): rtl/top/marigold_top.sv, mg_ctl.sv, mg_cfg_load.sv, mg_cfg_ram.sv, mg_match.sv, mg_msg.sv,
+  mg_gpio.sv, mg_i2c.sv, mg_wake_stub.sv; rtl/model/mg_model.py (reference model of the island rules, also used by
+  sw/golden/chip_golden.py); rtl/tb/mg_util.py, mg_cfg_tb.sv, test_cfg.py, test_ctl.py, test_cap.py and their
+  block.mk entries (cfg, ctl, cap); rtl/top/tb/mg_main.cpp (whole-chip harness).

@@ -45,6 +45,20 @@ VARS_ram   := latch flop
 ARGS_ram_latch := -GWORDS=64 -GWIDTH=8 -GFLOPS=0
 ARGS_ram_flop  := -GWORDS=48 -GWIDTH=12 -GFLOPS=1
 
+# Marigold island blocks (rtl/top/mg_*.sv), checked against rtl/model/mg_model.py
+TOP_cfg    := mg_cfg_tb
+SRCS_cfg   := ../top/mg_cfg_load.sv ../top/mg_cfg_ram.sv ../top/mg_match.sv latch_ram.sv clk_gate.sv ../tb/mg_cfg_tb.sv
+VARS_cfg   := default
+
+TOP_ctl    := mg_ctl
+SRCS_ctl   := ../top/mg_ctl.sv ../top/mg_cfg_load.sv ../top/mg_cfg_ram.sv ../top/mg_match.sv ../top/mg_msg.sv               ../top/mg_gpio.sv ../top/mg_i2c.sv uart_tx.sv latch_ram.sv clk_gate.sv
+VARS_ctl   := default
+
+TOP_cap    := mg_capture
+SRCS_cap   := ../top/mg_capture.sv clk_gate.sv
+VARS_cap   := small
+ARGS_cap_small := -GAW=12 -GBW=9
+
 VARIANT ?= default
 
 .PHONY: run
