@@ -85,7 +85,8 @@ The sum s[c] can be accumulated frame by frame.
 ## 3. Segment
 
 The encoder input is exactly the segment of architecture.md section 8.1 (the core agent's rule, copied into the
-golden model at the freeze): from start = max(k - pre, end of the previous segment) to the end of speech. The
+golden model at the freeze): from start = max(k - pre, end of the previous segment) to the end of speech (pre = 4800, mn = 8000 after the
+Nov 15 rulings). The
 golden model takes the stream, the VAD raw flags and the wake sample, cuts the segment by that rule, and runs the
 graph above on it. TIMEOUT segments run no model.
 
@@ -118,18 +119,23 @@ Vocabulary (id: token): 0 blank, 1-20 zero..nineteen, 21-28 twenty..ninety, 29 h
 
 1. k[t] = the lowest index with the largest logits[t] (t < T).
 2. tokens = k with repeats collapsed, then blanks removed.
-3. parse(tokens, slots) gives one i32 per slot of the accepted action, in slot order; reference `sw/intent/values.py`
-   (`parse`), integer only, ported line for line to firmware. Summary: runs of number words become integers
-   ("seventy two" 72, "three fifty" 350 marked as a clock reading, "two five" 25, hundred and thousand as usual);
-   n + second/minute/hour accumulate a duration in seconds ("two a half minute" 150, "half a minute" 30, "a minute
-   a half" 90, "one minute thirty" 90); n + degree and n + percent are numbers; "level n" is a level. Slots: a
-   duration slot takes the duration, else the first bare number (a clock reading m:ss gives 60 m + ss); a level slot
-   takes "level n", else a level word (low, medium, high, max, min; "half" alone means medium), else a bare
-   number; a number slot takes a degree or percent number, else a bare number. Each value is clamped to the slot's
-   [min, max]; a slot with nothing heard gets 0, clamped.
-4. Level words: max -> slot max, min -> slot min; low, medium, high -> the config's per-slot values when given,
-   else min, (min + max + 1) / 2 and max. For a level slot, bytes 1 to 3 of the slot entry carry the low, medium and
-   high values (0 = the default rule; coordinator ruling Nov 15), so microwave "high" can mean 10 and "low" 3.
+3. raw_values(tokens, slots) gives one i32 per CONFIG slot (in slot order, up to 8), each slot extracted on its
+   own, independent of the action (the core computes VAL before the island picks the action); reference
+   `sw/intent/values.py` (`items`, `raw_values`), integer only, ported line for line to firmware.
+   - Number runs become integers: "seventy two" 72; "three fifty" 350 marked as a clock reading; "two five" 25;
+     hundred and thousand as usual.
+   - n + second/minute/hour accumulate a duration in seconds ("two a half minute" 150, "half a minute" 30,
+     "a minute a half" 90, "one minute thirty" 90); n + degree and n + percent are numbers; "level n" is a level
+     (training targets emit "level" for level/speed/setting/notch/power before a number, optionally with one of
+     to/at/on/of/number in between).
+   - duration slot: the duration, else a clock reading (m:ss -> 60 m + ss), else the first bare number;
+   - level slot: "level n", else the first level word as a code (-1 low, -2 medium, -3 high, -4 max, -5 min;
+     "half" alone is medium), else the first bare number;
+   - number slot: the first degree or percent number, else the first bare number, else "level n";
+   - nothing heard: 0.
+4. The island (architecture.md 8.7, ruling of Nov 15) maps codes -1..-5 with the slot entry's low/medium/high
+   bytes (0 = default: low = min, medium = floor((min + max) / 2), high = max; max -> max, min -> min), then clamps
+   to [min, max] (`island_value` in values.py; rtl/model/mg_model.py must do the same).
 
 ## 7. Files and test vectors (at the freeze)
 
@@ -144,3 +150,5 @@ streaming (chunked) encoder equals the whole-segment one.
 
 - 2026-11-15 draft 0.1: first draft for the core agent (dimensions, op list, D, quantisation, head and value rules),
   with the coordinator's rulings: pre-roll 0.3 s, conf_sh in the blob, level-word bytes in the slot entry.
+- 2026-11-15 draft 0.2: values are per config slot and action-independent; level words leave the core as codes
+  -1..-5 and the island maps them (ruling); segment mn = 0.5 s.
