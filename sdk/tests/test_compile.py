@@ -9,6 +9,8 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "sdk"))
 import compile as C  # noqa: E402
+sys.path.insert(0, str(ROOT / "sw/wake"))
+import template as W  # noqa: E402
 
 CFG = {p: json.load(open(ROOT / f"sdk/configs/{p}.json", encoding="utf-8")) for p in ("fan", "microwave")}
 EXP = ROOT / "data/expand/expanded_qwen25.json"
@@ -24,7 +26,7 @@ def test_header_offsets_match_spec():
     blob, _ = build("microwave")
     assert blob[:4] == b"MGC0"
     D, N = struct.unpack_from("<HH", blob, 0x06)
-    assert (D, N) == (256, (len(blob) - 0x20 - 4 * 4 - 2 * 12 - 0 - len(b"\x00hey kitchen") - 4) // (4 + D))
+    assert (D, N) == (256, (len(blob) - 0x20 - 4 * 4 - 2 * 12 - 0 - len(W.build("hey kitchen")[0]) - 4) // (4 + D))
     assert blob[0x0E] == 1 and blob[0x0F] == 0x2A                # host I2C, address 0x2A
     assert struct.unpack_from("<H", blob, 0x1A)[0] == 0b1111     # IRQ pin + WAKE, NOMATCH, TIMEOUT events to the host
     assert struct.unpack_from("<I", blob, len(blob) - 4)[0] == zlib.crc32(blob[:-4]) & 0xFFFFFFFF
@@ -45,10 +47,11 @@ def test_round_trip_fan_and_microwave():
             assert (s["min"], s["max"]) == ((v["min_s"], v["max_s"]) if v["type"] == "duration" else (v["min"], v["max"]))
         for a, ca in zip(b["actions"], c["actions"]):
             assert a["slot_mask"] == sum(1 << names.index(s) for s in ca["values"])
-        assert b["wake"] == b"\x00" + c["wake"]["phrase"].encode()
+        tpl, sens, _ = W.build(c["wake"]["phrase"], c["wake"]["sensitivity"])
+        assert b["wake"] == tpl and b["wake_sens"] == sens
         assert b["reject_thr"] == rep["reject_thr"] and b["margin"] == rep["margin"]
         # pack(parse(blob)) reproduces the blob byte for byte
-        h = {k: b[k] for k in ("D", "reject_thr", "margin", "wake_sens", "flags", "host", "i2c_addr")}
+        h = {k: b[k] for k in ("D", "reject_thr", "margin", "wake_sens", "flags", "host", "i2c_addr", "conf_sh")}
         assert C.pack(h, b["vec_action"], b["vec_flags"], b["bias"], b["vectors"], b["actions"], b["slots"], b["gpio"], b["wake"]) == blob
 
 
@@ -185,3 +188,28 @@ def test_chip_config_checks():
         assert "config check" in str(e)
     else:
         raise AssertionError("D > 256 accepted")
+
+
+def test_wake_template():
+    """Wake template bytes (docs/golden-wake.md): format 1, variants of CMUdict phones, parse round trip."""
+    tpl, sens, rep = W.build("hey breeze", 0.5)
+    P = {p: i + 1 for i, p in enumerate(W.PHONES)}
+    assert tpl == bytes([1, 1, W.CLIP, W.REFRACTORY, 6] + [P[x] for x in "HH EY B R IY Z".split()])
+    assert sens == W.sens_to_u16(0.5) and W.SENS_LO <= sens <= W.SENS_HI
+    assert W.parse(tpl)["variants"] == [[P[x] for x in "HH EY B R IY Z".split()]]
+    t2, _, _ = W.build("hello lumen", 1.0)                      # two pronunciations of "hello"
+    assert t2[1] == 2 and len(W.parse(t2)["variants"]) == 2 and W.sens_to_u16(1.0) == W.SENS_HI
+    _, _, r3 = W.build("hey zorblat")                           # unknown word: fallback with a warning
+    assert any("zorblat" in n for n in r3["notes"])
+    t4, _, _ = W.build("anything", phones=["HH EY K IH CH AH N"])
+    assert t4[4:] == bytes([7] + [P[x] for x in "HH EY K IH CH AH N".split()])
+
+
+def test_conf_sh_and_level_words():
+    b = C.parse(build("microwave")[0])
+    assert b["conf_sh"] == C.conf_shift(b["D"]) == 10                     # D = 256 with the stub embedder
+    power = b["slots"][1]
+    assert (power["type"], power["low"], power["medium"], power["high"]) == (2, 3, 5, 10)
+    assert (b["slots"][0]["low"], b["slots"][0]["medium"], b["slots"][0]["high"]) == (0, 0, 0)
+    s_best = int((b["vectors"][0].astype(np.int32) ** 2).sum())
+    assert C.confidence(b, s_best) == min(255, s_best >> 10)

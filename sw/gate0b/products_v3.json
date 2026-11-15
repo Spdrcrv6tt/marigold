@@ -1,0 +1,891 @@
+{
+ "_note": "Training products for the command-tuned text embedder (gate 0b). No fans of any kind and no microwaves: those are the held-out evaluation products (target 11). v3 adds about 90 products with motion and toggle modes (same exclusions; also no fan-like blowers).",
+ "air purifier": {
+  "on": "turn the purifier on",
+  "off": "turn the purifier off",
+  "up": "raise the fan speed one step",
+  "down": "lower the fan speed one step",
+  "set_level": "set the fan level from 1 to 4",
+  "auto": "switch to auto mode",
+  "night": "switch to quiet night mode"
+ },
+ "space heater": {
+  "on": "turn the heater on",
+  "off": "turn the heater off",
+  "warmer": "make it warmer",
+  "cooler": "make it less hot",
+  "set_temp": "set the temperature in degrees",
+  "timer": "turn off after a number of hours"
+ },
+ "table lamp": {
+  "on": "turn the lamp on",
+  "off": "turn the lamp off",
+  "brighter": "make the light brighter",
+  "dimmer": "make the light dimmer",
+  "set_brightness": "set brightness to a percent",
+  "color": "switch between warm and cool white"
+ },
+ "electric kettle": {
+  "boil": "start boiling water",
+  "stop": "stop heating",
+  "keep_warm": "keep the water warm",
+  "set_temp": "heat water to a set temperature"
+ },
+ "coffee maker": {
+  "brew": "start brewing coffee",
+  "stop": "stop brewing",
+  "strong": "make the coffee stronger",
+  "cups": "set the number of cups",
+  "warm_off": "turn off the warming plate"
+ },
+ "toaster oven": {
+  "bake": "bake for a set time",
+  "broil": "switch to broil",
+  "add_minute": "add one minute to the timer",
+  "stop": "stop cooking",
+  "set_temp": "set the oven temperature"
+ },
+ "washing machine": {
+  "start": "start the wash",
+  "pause": "pause the wash",
+  "cancel": "cancel the cycle",
+  "extra_rinse": "add an extra rinse",
+  "cycle": "choose the cycle: delicate, normal or heavy"
+ },
+ "clothes dryer": {
+  "start": "start drying for a set time",
+  "stop": "stop the dryer",
+  "add_time": "add ten minutes",
+  "low_heat": "use low heat",
+  "high_heat": "use high heat"
+ },
+ "dishwasher": {
+  "start": "start washing",
+  "cancel": "cancel the wash",
+  "delay": "delay the start by some hours",
+  "quick": "run a quick wash",
+  "eco": "use eco mode"
+ },
+ "robot vacuum": {
+  "clean": "start cleaning",
+  "stop": "stop cleaning",
+  "dock": "go back to the dock",
+  "spot": "clean one spot or room",
+  "suction_up": "raise suction power",
+  "suction_down": "lower suction power"
+ },
+ "window blinds": {
+  "open": "open the blinds",
+  "close": "close the blinds",
+  "position": "set the blinds to a percent open",
+  "stop": "stop the blinds moving"
+ },
+ "garage door": {
+  "open": "open the garage door",
+  "close": "close the garage door",
+  "stop": "stop the door",
+  "light": "turn on the garage light"
+ },
+ "air conditioner": {
+  "on": "turn the AC on",
+  "off": "turn the AC off",
+  "cooler": "make it colder",
+  "warmer": "make it less cold",
+  "set_temp": "set the temperature",
+  "fan_up": "raise the blower speed",
+  "fan_down": "lower the blower speed"
+ },
+ "humidifier": {
+  "on": "turn the humidifier on",
+  "off": "turn the humidifier off",
+  "more": "more mist",
+  "less": "less mist",
+  "set_humidity": "set target humidity percent"
+ },
+ "wall oven": {
+  "preheat": "preheat to a temperature",
+  "bake": "bake for a time",
+  "stop": "turn the oven off",
+  "light": "turn on the oven light",
+  "add_time": "add five minutes"
+ },
+ "rice cooker": {
+  "cook": "start cooking rice",
+  "keep_warm": "switch to keep warm",
+  "cancel": "cancel cooking",
+  "delay": "start cooking after a delay"
+ },
+ "blender": {
+  "blend": "start blending",
+  "stop": "stop blending",
+  "pulse": "pulse briefly",
+  "faster": "blend faster",
+  "slower": "blend slower",
+  "set_speed": "set speed from 1 to 5"
+ },
+ "ceiling light": {
+  "on": "turn the light on",
+  "off": "turn the light off",
+  "brighter": "brighter",
+  "dimmer": "dimmer",
+  "set_brightness": "set brightness percent"
+ },
+ "soundbar": {
+  "power_on": "turn the soundbar on",
+  "power_off": "turn the soundbar off",
+  "louder": "volume up",
+  "quieter": "volume down",
+  "mute": "mute or unmute",
+  "set_volume": "set the volume to a number"
+ },
+ "electric fireplace": {
+  "on": "turn the fireplace on",
+  "off": "turn the fireplace off",
+  "flame_up": "make the flames brighter",
+  "heat_on": "turn the heater part on",
+  "heat_off": "turn the heater part off"
+ },
+ "pressure cooker": {
+  "cook": "pressure cook for a set time",
+  "release": "release the pressure",
+  "cancel": "cancel",
+  "keep_warm": "keep warm"
+ },
+ "slow cooker": {
+  "low": "cook on low for some hours",
+  "high": "cook on high for some hours",
+  "warm": "switch to warm",
+  "off": "turn it off"
+ },
+ "smart shower": {
+  "start": "start the water",
+  "stop": "stop the water",
+  "hotter": "make the water hotter",
+  "colder": "make the water colder",
+  "set_temp": "set water temperature"
+ },
+ "heated blanket": {
+  "on": "turn the blanket on",
+  "off": "turn the blanket off",
+  "warmer": "warmer",
+  "cooler": "cooler",
+  "set_level": "set heat level 1 to 10",
+  "timer": "turn off after some hours"
+ },
+ "massage chair": {
+  "start": "start a massage",
+  "stop": "stop the massage",
+  "stronger": "stronger",
+  "gentler": "gentler",
+  "mode": "change the massage program"
+ },
+ "treadmill": {
+  "start": "start the belt",
+  "stop": "stop the belt",
+  "faster": "faster",
+  "slower": "slower",
+  "set_speed": "set speed in miles per hour",
+  "incline_up": "raise the incline",
+  "incline_down": "lower the incline"
+ },
+ "electric grill": {
+  "on": "turn the grill on",
+  "off": "turn the grill off",
+  "set_temp": "set grill temperature",
+  "timer": "set a cooking timer"
+ },
+ "aquarium light": {
+  "on": "lights on",
+  "off": "lights off",
+  "brighter": "brighter",
+  "dimmer": "dimmer",
+  "moonlight": "switch to night blue light"
+ },
+ "lawn sprinkler": {
+  "water": "start watering for some minutes",
+  "stop": "stop watering",
+  "skip": "skip today's watering",
+  "add_time": "add five more minutes"
+ },
+ "door lock": {
+  "lock": "lock the door",
+  "unlock": "unlock the door"
+ },
+ "music speaker": {
+  "play": "play music",
+  "pause": "pause",
+  "next": "next track",
+  "previous": "previous track",
+  "louder": "volume up",
+  "quieter": "volume down"
+ },
+ "bread maker": {
+  "start": "start the bread program",
+  "stop": "stop",
+  "crust": "choose crust darkness light, medium or dark",
+  "delay": "delay start by hours"
+ },
+ "window air conditioner": {
+  "on": "turn the air conditioner on",
+  "off": "turn the air conditioner off",
+  "cooler": "make the room cooler by a degree",
+  "warmer": "make it a degree warmer",
+  "set_temp": "set the temperature in degrees",
+  "swing_on": "start the louvers swinging up and down",
+  "swing_off": "stop the louvers swinging and hold them still",
+  "sleep": "switch to sleep mode"
+ },
+ "mini split heat pump": {
+  "on": "turn the unit on",
+  "off": "turn the unit off",
+  "heat": "switch to heating mode",
+  "cool": "switch to cooling mode",
+  "dry": "switch to dry mode",
+  "swing": "toggle the vane sweeping back and forth",
+  "set_temp": "set the temperature in degrees",
+  "timer": "turn off after a number of hours"
+ },
+ "oscillating tower heater": {
+  "on": "turn the heater on",
+  "off": "turn the heater off",
+  "warmer": "make it warmer",
+  "cooler": "make it less hot",
+  "oscillate_on": "start turning from side to side",
+  "oscillate_off": "stop turning from side to side and point straight ahead",
+  "timer": "turn off after a number of hours"
+ },
+ "oil radiator heater": {
+  "on": "turn the radiator on",
+  "off": "turn the radiator off",
+  "set_level": "set the heat level: low, medium or high",
+  "eco": "switch to eco mode",
+  "timer": "turn off after a number of hours"
+ },
+ "dehumidifier": {
+  "on": "turn the dehumidifier on",
+  "off": "turn the dehumidifier off",
+  "drier": "make the air drier",
+  "less_dry": "let the air get more humid",
+  "set_humidity": "set the target humidity to a percent",
+  "continuous": "run nonstop until told to stop"
+ },
+ "thermostat": {
+  "warmer": "raise the temperature a degree",
+  "cooler": "lower the temperature a degree",
+  "set_temp": "set the temperature in degrees",
+  "heat": "switch the system to heat",
+  "cool": "switch the system to cool",
+  "off": "turn the heating and cooling off",
+  "hold": "hold the current temperature"
+ },
+ "heated towel rail": {
+  "on": "turn the towel warmer on",
+  "off": "turn the towel warmer off",
+  "timer": "turn off after a number of minutes",
+  "set_level": "set the heat level 1 to 3"
+ },
+ "hot tub": {
+  "jets_on": "turn the jets on",
+  "jets_off": "turn the jets off",
+  "warmer": "make the water warmer",
+  "cooler": "make the water cooler",
+  "set_temp": "set the water temperature in degrees",
+  "light": "toggle the underwater light"
+ },
+ "water heater": {
+  "set_temp": "set the water temperature in degrees",
+  "boost": "heat water quickly right now",
+  "vacation": "switch to vacation mode",
+  "off": "turn the water heater off"
+ },
+ "security camera": {
+  "pan_left": "turn the camera to the left",
+  "pan_right": "turn the camera to the right",
+  "tilt_up": "tilt the camera up",
+  "tilt_down": "tilt the camera down",
+  "patrol_on": "start sweeping back and forth",
+  "patrol_off": "stop sweeping and stay still",
+  "zoom_in": "zoom in",
+  "zoom_out": "zoom out"
+ },
+ "motorized tv mount": {
+  "swivel_left": "swivel the tv to the left",
+  "swivel_right": "swivel the tv to the right",
+  "tilt_up": "tilt the screen up",
+  "tilt_down": "tilt the screen down",
+  "extend": "pull the tv out from the wall",
+  "retract": "push the tv back against the wall",
+  "home": "return the tv to straight ahead"
+ },
+ "display turntable": {
+  "spin": "start rotating",
+  "stop": "stop rotating",
+  "faster": "rotate faster",
+  "slower": "rotate slower",
+  "reverse": "rotate the other way"
+ },
+ "oscillating sprinkler": {
+  "start": "start watering",
+  "stop": "stop watering",
+  "sweep_on": "start sweeping side to side",
+  "sweep_off": "stop sweeping and spray in one direction",
+  "wider": "make the spray arc wider",
+  "narrower": "make the spray arc narrower",
+  "timer": "water for a number of minutes"
+ },
+ "standing desk": {
+  "up": "raise the desk",
+  "down": "lower the desk",
+  "stop": "stop moving",
+  "preset": "go to saved position 1 to 4",
+  "set_height": "set the height in inches"
+ },
+ "adjustable bed": {
+  "head_up": "raise the head of the bed",
+  "head_down": "lower the head of the bed",
+  "feet_up": "raise the feet",
+  "feet_down": "lower the feet",
+  "flat": "go back to flat",
+  "massage": "start the massage",
+  "zero_gravity": "go to the zero gravity position"
+ },
+ "power recliner": {
+  "recline": "lean the chair back",
+  "upright": "bring the chair upright",
+  "stop": "stop moving",
+  "heat_on": "turn the seat heat on",
+  "heat_off": "turn the seat heat off",
+  "massage": "start the massage"
+ },
+ "motorized curtains": {
+  "open": "open the curtains",
+  "close": "close the curtains",
+  "stop": "stop the curtains",
+  "position": "open the curtains to a percent"
+ },
+ "retractable awning": {
+  "extend": "roll the awning out",
+  "retract": "roll the awning in",
+  "stop": "stop the awning"
+ },
+ "projector screen": {
+  "lower": "bring the screen down",
+  "raise": "roll the screen up",
+  "stop": "stop the screen"
+ },
+ "skylight": {
+  "open": "open the skylight",
+  "close": "close the skylight",
+  "vent": "open it just a crack",
+  "stop": "stop moving",
+  "shade": "pull the shade across"
+ },
+ "rotisserie grill": {
+  "on": "turn the grill on",
+  "off": "turn the grill off",
+  "spin_on": "start turning the spit",
+  "spin_off": "stop turning the spit",
+  "set_temp": "set the grill temperature",
+  "timer": "cook for a number of minutes"
+ },
+ "pottery wheel": {
+  "spin": "start the wheel",
+  "stop": "stop the wheel",
+  "faster": "spin faster",
+  "slower": "spin slower",
+  "reverse": "spin the other direction"
+ },
+ "record player": {
+  "play": "start playing the record",
+  "stop": "stop the record",
+  "speed_33": "play at 33 rpm",
+  "speed_45": "play at 45 rpm",
+  "repeat": "toggle repeat"
+ },
+ "robotic lawn mower": {
+  "mow": "start mowing",
+  "stop": "stop mowing",
+  "dock": "go back to the charging station",
+  "edge": "trim along the edges",
+  "higher": "raise the cutting height",
+  "lower": "lower the cutting height"
+ },
+ "pool cleaning robot": {
+  "clean": "start cleaning the pool",
+  "stop": "stop cleaning",
+  "floor": "clean the floor only",
+  "walls": "clean the floor and the walls",
+  "come_back": "come to the side so it can be lifted out"
+ },
+ "driveway gate": {
+  "open": "open the gate",
+  "close": "close the gate",
+  "stop": "stop the gate",
+  "hold_open": "keep the gate open",
+  "pedestrian": "open just wide enough to walk through"
+ },
+ "exercise bike": {
+  "start": "start the workout",
+  "stop": "stop the workout",
+  "harder": "increase the resistance",
+  "easier": "decrease the resistance",
+  "set_level": "set the resistance level 1 to 20"
+ },
+ "rowing machine": {
+  "start": "start rowing session",
+  "stop": "end the session",
+  "harder": "increase the resistance",
+  "easier": "decrease the resistance",
+  "workout": "start a timed workout of a number of minutes"
+ },
+ "vibration plate": {
+  "start": "start vibrating",
+  "stop": "stop vibrating",
+  "faster": "vibrate faster",
+  "slower": "vibrate slower",
+  "mode": "switch the vibration mode",
+  "timer": "run for a number of minutes"
+ },
+ "led strip lights": {
+  "on": "turn the lights on",
+  "off": "turn the lights off",
+  "brighter": "make them brighter",
+  "dimmer": "make them dimmer",
+  "color": "change to a named color",
+  "rainbow": "start the rainbow effect",
+  "music_sync": "toggle flashing along with music"
+ },
+ "string lights": {
+  "on": "turn the string lights on",
+  "off": "turn the string lights off",
+  "twinkle": "start twinkling",
+  "steady": "stop twinkling and stay on",
+  "timer": "turn off after a number of hours"
+ },
+ "porch light": {
+  "on": "turn the porch light on",
+  "off": "turn the porch light off",
+  "motion": "switch to motion sensor mode",
+  "dusk": "come on at sunset automatically",
+  "timer": "stay on for a number of minutes"
+ },
+ "night light": {
+  "on": "turn the night light on",
+  "off": "turn the night light off",
+  "brighter": "make it brighter",
+  "dimmer": "make it dimmer",
+  "auto": "only come on in the dark",
+  "color": "change the color"
+ },
+ "christmas tree lights": {
+  "on": "turn the tree lights on",
+  "off": "turn the tree lights off",
+  "twinkle": "make them twinkle",
+  "steady": "stop the twinkling",
+  "colors": "cycle through the colors",
+  "timer": "turn off after a number of hours"
+ },
+ "grow light": {
+  "on": "turn the grow light on",
+  "off": "turn the grow light off",
+  "brighter": "make it brighter",
+  "dimmer": "make it dimmer",
+  "timer": "stay on for a number of hours",
+  "bloom": "switch to the bloom spectrum"
+ },
+ "air fryer": {
+  "start": "start cooking",
+  "stop": "stop cooking",
+  "set_temp": "set the temperature in degrees",
+  "timer": "cook for a number of minutes",
+  "preheat": "preheat",
+  "keep_warm": "keep the food warm"
+ },
+ "stand mixer": {
+  "start": "start mixing",
+  "stop": "stop mixing",
+  "faster": "mix faster",
+  "slower": "mix slower",
+  "set_speed": "set the speed 1 to 10"
+ },
+ "food processor": {
+  "chop": "chop",
+  "puree": "puree until smooth",
+  "pulse": "pulse once",
+  "stop": "stop"
+ },
+ "induction cooktop": {
+  "on": "turn the burner on",
+  "off": "turn the burner off",
+  "hotter": "turn the burner up",
+  "cooler": "turn the burner down",
+  "set_level": "set the power level 1 to 9",
+  "boost": "use boost",
+  "timer": "turn off after a number of minutes"
+ },
+ "refrigerator": {
+  "colder": "make the fridge colder",
+  "warmer": "make the fridge warmer",
+  "set_temp": "set the fridge temperature in degrees",
+  "ice_on": "turn the ice maker on",
+  "ice_off": "turn the ice maker off",
+  "quick_freeze": "start quick freeze"
+ },
+ "ice maker": {
+  "start": "start making ice",
+  "stop": "stop making ice",
+  "large": "make large cubes",
+  "small": "make small cubes",
+  "clean": "run a cleaning cycle"
+ },
+ "sous vide cooker": {
+  "start": "start heating the water bath",
+  "stop": "stop",
+  "set_temp": "set the water temperature in degrees",
+  "timer": "cook for a number of hours or minutes"
+ },
+ "espresso machine": {
+  "espresso": "make a single espresso",
+  "double": "make a double shot",
+  "steam": "steam milk",
+  "hot_water": "pour hot water",
+  "stop": "stop"
+ },
+ "water dispenser": {
+  "hot": "pour hot water",
+  "cold": "pour cold water",
+  "stop": "stop pouring",
+  "amount": "pour a number of ounces",
+  "lock": "toggle the child lock"
+ },
+ "food dehydrator": {
+  "start": "start drying",
+  "stop": "stop drying",
+  "set_temp": "set the temperature in degrees",
+  "timer": "run for a number of hours",
+  "hotter": "turn the heat up",
+  "cooler": "turn the heat down"
+ },
+ "smart faucet": {
+  "on": "turn the water on",
+  "off": "turn the water off",
+  "hotter": "make the water hotter",
+  "colder": "make the water colder",
+  "dispense": "pour a number of cups"
+ },
+ "toaster": {
+  "toast": "start toasting",
+  "darker": "make the toast darker",
+  "lighter": "make the toast lighter",
+  "bagel": "switch to bagel mode",
+  "defrost": "defrost and toast",
+  "cancel": "stop toasting and pop it up"
+ },
+ "milk frother": {
+  "froth": "froth hot milk",
+  "cold_froth": "froth cold milk",
+  "heat": "just heat the milk",
+  "stop": "stop"
+ },
+ "waffle maker": {
+  "start": "start the waffle",
+  "darker": "make it crispier and darker",
+  "lighter": "make it lighter",
+  "stop": "stop"
+ },
+ "clothes steamer": {
+  "on": "turn the steamer on",
+  "off": "turn the steamer off",
+  "more_steam": "more steam",
+  "less_steam": "less steam"
+ },
+ "steam iron": {
+  "on": "turn the iron on",
+  "off": "turn the iron off",
+  "hotter": "make the iron hotter",
+  "cooler": "make the iron cooler",
+  "burst": "give a burst of steam",
+  "auto_off": "toggle automatic shut off"
+ },
+ "aroma diffuser": {
+  "on": "turn the diffuser on",
+  "off": "turn the diffuser off",
+  "stronger": "more mist",
+  "weaker": "less mist",
+  "intermittent": "switch to misting on and off",
+  "continuous": "switch to continuous mist",
+  "light": "toggle the light",
+  "timer": "turn off after a number of hours"
+ },
+ "electric toothbrush": {
+  "start": "start brushing",
+  "stop": "stop",
+  "mode": "switch the mode: clean, white or sensitive",
+  "timer": "brush for a number of minutes"
+ },
+ "smart toilet": {
+  "flush": "flush",
+  "wash": "start the bidet wash",
+  "stop": "stop the wash",
+  "warmer_seat": "make the seat warmer",
+  "cooler_seat": "make the seat cooler",
+  "nightlight": "toggle the night light"
+ },
+ "bathtub": {
+  "fill": "fill the tub",
+  "drain": "drain the tub",
+  "stop": "stop the water",
+  "hotter": "make the water hotter",
+  "colder": "make the water colder",
+  "set_temp": "set the water temperature in degrees"
+ },
+ "foot spa": {
+  "on": "turn the foot spa on",
+  "off": "turn the foot spa off",
+  "bubbles_on": "start the bubbles",
+  "bubbles_off": "stop the bubbles",
+  "heat": "keep the water warm",
+  "massage": "start the rollers"
+ },
+ "television": {
+  "on": "turn the tv on",
+  "off": "turn the tv off",
+  "louder": "turn the volume up",
+  "quieter": "turn the volume down",
+  "mute": "mute",
+  "channel_up": "next channel",
+  "channel_down": "previous channel",
+  "set_channel": "go to a channel number",
+  "input": "switch the input"
+ },
+ "video projector": {
+  "on": "turn the projector on",
+  "off": "turn the projector off",
+  "focus": "sharpen the focus",
+  "bigger": "make the picture bigger",
+  "smaller": "make the picture smaller",
+  "input": "switch the input"
+ },
+ "radio": {
+  "on": "turn the radio on",
+  "off": "turn the radio off",
+  "louder": "turn it up",
+  "quieter": "turn it down",
+  "next": "next station",
+  "previous": "previous station",
+  "tune": "tune to a frequency"
+ },
+ "karaoke machine": {
+  "start": "start the song",
+  "stop": "stop the song",
+  "louder": "louder",
+  "quieter": "quieter",
+  "key_up": "raise the key",
+  "key_down": "lower the key",
+  "echo": "toggle the echo"
+ },
+ "streaming box": {
+  "play": "play",
+  "pause": "pause",
+  "rewind": "go back a number of seconds",
+  "forward": "skip ahead a number of seconds",
+  "next": "next episode",
+  "subtitles": "toggle subtitles"
+ },
+ "digital photo frame": {
+  "next": "next photo",
+  "previous": "previous photo",
+  "slideshow": "start the slideshow",
+  "pause": "pause on this photo",
+  "brighter": "make the screen brighter",
+  "dimmer": "make the screen dimmer"
+ },
+ "alarm clock": {
+  "set_alarm": "set an alarm for a time",
+  "snooze": "snooze",
+  "alarm_off": "stop the alarm",
+  "brighter": "make the display brighter",
+  "dimmer": "make the display dimmer",
+  "radio": "turn the radio on"
+ },
+ "kitchen timer": {
+  "start": "set a timer for a number of minutes",
+  "stop": "stop the timer",
+  "add": "add a number of minutes",
+  "pause": "pause the timer",
+  "resume": "resume the timer",
+  "check": "say how much time is left"
+ },
+ "white noise machine": {
+  "on": "turn the sound on",
+  "off": "turn the sound off",
+  "louder": "louder",
+  "quieter": "quieter",
+  "next": "next sound",
+  "timer": "turn off after a number of minutes"
+ },
+ "metronome": {
+  "start": "start the click",
+  "stop": "stop the click",
+  "faster": "faster tempo",
+  "slower": "slower tempo",
+  "set_tempo": "set the tempo in beats per minute"
+ },
+ "irrigation controller": {
+  "water": "water a zone number",
+  "stop": "stop watering",
+  "skip": "skip the watering today",
+  "rain_delay": "delay watering by a number of days",
+  "run_all": "run every zone"
+ },
+ "garden fountain": {
+  "on": "turn the fountain on",
+  "off": "turn the fountain off",
+  "higher": "make the jet higher",
+  "lower": "make the jet lower",
+  "light": "toggle the fountain lights"
+ },
+ "patio heater": {
+  "on": "turn the patio heater on",
+  "off": "turn the patio heater off",
+  "higher": "turn the flame up",
+  "lower": "turn the flame down",
+  "timer": "turn off after a number of hours"
+ },
+ "pellet smoker": {
+  "on": "fire up the smoker",
+  "off": "shut down the smoker",
+  "set_temp": "set the temperature in degrees",
+  "smoke": "switch to smoke mode",
+  "hotter": "turn the heat up",
+  "cooler": "turn the heat down",
+  "keep_warm": "keep the food warm"
+ },
+ "alarm system": {
+  "arm_away": "arm everything because nobody is home",
+  "arm_home": "arm only the doors and windows while people are home",
+  "disarm": "disarm the alarm",
+  "chime": "toggle the door chime"
+ },
+ "car": {
+  "start": "start the engine",
+  "stop": "turn the engine off",
+  "lock": "lock the doors",
+  "unlock": "unlock the doors",
+  "heat": "warm up the cabin",
+  "defrost": "defrost the windshield",
+  "trunk": "open the trunk"
+ },
+ "ev charger": {
+  "start": "start charging",
+  "stop": "stop charging",
+  "limit": "set the charge limit to a percent",
+  "schedule": "charge overnight instead"
+ },
+ "printer": {
+  "print": "print",
+  "cancel": "cancel the print job",
+  "pause": "pause printing",
+  "resume": "resume printing",
+  "copies": "print a number of copies",
+  "duplex": "toggle double sided"
+ },
+ "3d printer": {
+  "start": "start the print",
+  "pause": "pause the print",
+  "resume": "resume the print",
+  "cancel": "cancel the print",
+  "preheat": "preheat the nozzle and bed",
+  "home": "move the print head home"
+ },
+ "pet feeder": {
+  "feed": "give a number of portions now",
+  "skip": "skip the next meal",
+  "call": "play the dinner call",
+  "snack": "give a small snack"
+ },
+ "ball launcher": {
+  "launch": "throw a ball",
+  "stop": "stop throwing",
+  "farther": "throw farther",
+  "closer": "throw shorter"
+ },
+ "heating pad": {
+  "on": "turn the heating pad on",
+  "off": "turn the heating pad off",
+  "warmer": "make it warmer",
+  "cooler": "make it cooler",
+  "set_level": "set the heat level 1 to 6",
+  "timer": "turn off after a number of minutes"
+ },
+ "air mattress pump": {
+  "inflate": "pump the mattress up",
+  "deflate": "let the air out",
+  "firmer": "make it firmer",
+  "softer": "make it softer",
+  "stop": "stop the pump"
+ },
+ "stairlift": {
+  "up": "go up the stairs",
+  "down": "go down the stairs",
+  "stop": "stop",
+  "swivel": "turn the seat around"
+ },
+ "wine cooler": {
+  "colder": "make it colder",
+  "warmer": "make it warmer",
+  "set_temp": "set the temperature in degrees",
+  "light": "toggle the light"
+ },
+ "smart plug": {
+  "on": "turn the plug on",
+  "off": "turn the plug off",
+  "toggle": "flip it to the other state",
+  "timer": "turn off after a number of minutes"
+ },
+ "dimmer switch": {
+  "on": "turn the lights on",
+  "off": "turn the lights off",
+  "brighter": "brighter",
+  "dimmer": "dimmer",
+  "set_level": "set the lights to a percent"
+ },
+ "color smart bulb": {
+  "on": "turn the bulb on",
+  "off": "turn the bulb off",
+  "color": "change to a named color",
+  "warm_white": "warmer white",
+  "cool_white": "cooler white",
+  "brighter": "brighter",
+  "dimmer": "dimmer"
+ },
+ "telescope mount": {
+  "left": "move left",
+  "right": "move right",
+  "up": "move up",
+  "down": "move down",
+  "track": "start tracking the sky",
+  "stop": "stop moving",
+  "goto": "point at an object number"
+ },
+ "massage gun": {
+  "on": "turn the massager on",
+  "off": "turn the massager off",
+  "faster": "faster",
+  "slower": "slower",
+  "set_speed": "set the speed 1 to 5"
+ },
+ "smart window": {
+  "open": "open the window",
+  "close": "close the window",
+  "tilt": "tilt it open for air",
+  "stop": "stop moving",
+  "lock": "lock the window"
+ },
+ "smart doorbell": {
+  "answer": "talk to the person at the door",
+  "ignore": "ignore the visitor",
+  "quick_reply": "tell them someone will be right there",
+  "mute": "silence the chime"
+ }
+}

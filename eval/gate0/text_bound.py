@@ -72,7 +72,14 @@ def norm(s):
     return re.sub(r"[^a-z0-9' ]", "", s.lower()).strip()
 
 
-def run(model_name, extra=None, score="max"):
+def train_lines(path):  # normalized lines of a training-text JSON (gate 0b format), for the overlap report
+    if not path:
+        return set()
+    d = json.load(open(path, encoding="utf8"))
+    return {" ".join(norm(t).split()) for r in d.values() for v in list(r["actions"].values()) + [r["none"]] for t in v}
+
+
+def run(model_name, extra=None, score="max", train=None):
     from sentence_transformers import SentenceTransformer
     m = SentenceTransformer(model_name, device="cuda", trust_remote_code=False)
     pre = PREFIX.get(model_name, "")
@@ -94,7 +101,8 @@ def run(model_name, extra=None, score="max"):
         if norm(r["text"]) in {norm(e) for a in typed["actions"] if a["name"] == r["action"] for e in a["examples"]}:
             sys.exit(f"leak: test phrase typed in config: {r}")
         overlap += norm(r["text"]) in {norm(e) for e in cfgs[r["product"]][r["action"]]}
-    out = {"model": model_name, "score": score, "extra": extra, "test_phrases_also_in_expansion": overlap, "products": {}}
+    tr = train_lines(train)
+    out = {"model": model_name, "score": score, "extra": extra, "test_phrases_also_in_expansion": overlap, "train_text": train, "products": {}}
     for p, acts in cfgs.items():
         names = list(acts)
         ex_vecs = {a: emb(acts[a]) for a in names}
@@ -153,6 +161,11 @@ def run(model_name, extra=None, score="max"):
                 res[f"{sp}_rej_{cat}"] = float((nbest[cm] < thr).mean())
             hm = head & (nsplit == sp)
             res[f"{sp}_rej_headline"] = float((nbest[hm] < thr).mean())
+            if tr:  # same threshold, rows whose text is not in the training text
+                po = np.array([" ".join(norm(r["text"]).split()) not in tr for r in pr])
+                no = np.array([" ".join(norm(r["text"]).split()) not in tr for r in nonc])
+                res[f"{sp}_acc_nonoverlap"] = float(correct[mk & po].mean()); res[f"{sp}_n_nonoverlap"] = int((mk & po).sum())
+                res[f"{sp}_rej_headline_nonoverlap"] = float((nbest[hm & no] < thr).mean()); res[f"{sp}_nn_nonoverlap"] = int((hm & no).sum())
         # per-action test accuracy and the errors
         mt = split == ERRSPLIT
         res["per_action_test"] = {a: float((((arg == y) & (best >= thr))[mt & (y == i)]).mean()) for i, a in enumerate(names)}
@@ -184,16 +197,20 @@ if __name__ == "__main__":
     ap.add_argument("--score", default="max", choices=["max", "top2", "centroid", "knn_neg", "linear"])
     ap.add_argument("--out")
     ap.add_argument("--errors", action="store_true")
+    ap.add_argument("--train", help="training-text JSON; adds test numbers on the rows not in it")
     args = ap.parse_args()
     allres = []
     for mn in args.models:
-        o = run(mn, args.extra, args.score)
+        o = run(mn, args.extra, args.score, args.train)
         allres.append(o)
         for p, r in o["products"].items():
             print(f"{mn:<40} {p:<9} {args.score:<8} thr={r['threshold']:.3f}  unseen acc test={r['test_acc']:.3f} "
                   f"(no-reject {r['test_acc_norej']:.3f})  reject test chat/near/tv={r['test_rej_chat']:.2f}/"
                   f"{r['test_rej_near']:.2f}/{r['test_rej_tv']:.2f} headline={r['test_rej_headline']:.3f} "
                   f"other_dev={r['test_rej_other_device']:.2f}", flush=True)
+            if "test_acc_nonoverlap" in r:
+                print(f"{'':<40} {p:<9} non-overlap test: acc={r['test_acc_nonoverlap']:.3f} (n={r['test_n_nonoverlap']}) "
+                      f"headline rej={r['test_rej_headline_nonoverlap']:.3f} (n={r['test_nn_nonoverlap']})", flush=True)
             if args.errors:
                 print("  per action:", {k: round(v, 2) for k, v in r["per_action_test"].items()})
                 print("  errors:\n   " + "\n   ".join(r["test_errors"]))

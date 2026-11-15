@@ -14,24 +14,36 @@ non-command set, quantize to int8, calibrate the reject threshold so that --reje
 non-commands are rejected under the matching rule, and pack the blob. A JSON report goes next to
 the blob (OUT.mgc.json). The compiler never reads eval/.
 
-PLACEHOLDERS until the model agent writes docs/golden-format.md and docs/golden-wake.md:
-  - projection: a fixed, seeded random orthonormal matrix (embedder dim -> D), the same for every
-    product (never fit per product), or a .npy matrix [embedder_dim, D] supplied by the model agent;
-  - q scale (the encoder's int8 output scale): default 127 / max |component| over the calibration
-    phrases; set --q-scale once golden-format.md fixes it;
-  - wake template: byte 0x00 (placeholder format tag) + ASCII wake phrase; wake_sens = sensitivity x 65535;
-  - GPIO rules without a slot carry slot 0.
+Wake template and wake_sens: sw/wake/template.py (format in docs/golden-wake.md): CMUdict phones of the
+typed phrase (up to 4 pronunciation variants; compound split or letter rules for unknown words, with a
+warning in the report), wake_sens from the config's sensitivity. A config may give "phones" (a list of
+ARPAbet strings) under "wake" to override the lexicon.
+
+Vectors (docs/golden-format.md section 5, model agent, Nov 15): with the frozen teacher
+(data/models/teacher-v3) the projection is the teacher's own marigold_proj.npz (mu, P), applied as
+v = P (t - mu), v -= mean(v), v /= rms(v), so phrases live in the encoder's unit-RMS, zero-mean D-space;
+prototypes are spherical k-means centroids put back on that rule; int8 = clip(round(32 v), +-127)
+(the encoder's q has 5 fractional bits). conf_sh (byte 0x1C) = log2(D) + 2 (9 at D = 128). Level slots
+carry the config's low / medium / high word values in slot bytes 1-3 (0 = default rule).
+--projection random|none|FILE.npy and the stub embedder remain for tests. GPIO rules without a slot carry slot 0.
 """
 import argparse, json, struct, sys, zlib
 from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "sw/wake"))
+import template as wake_tpl                   # sw/wake/template.py (wake agent)
+
+
+def wake_template(wake):
+    """Config "wake" object -> (template bytes, wake_sens u16, report)."""
+    return wake_tpl.build(wake.get("phrase", ""), float(wake.get("sensitivity", 0.5)), wake.get("phones"))
 MAGIC, VERSION, MAX_BLOB = b"MGC0", 0, 32768
-HDR = struct.Struct("<4sHHHBBBBBBiiHHI")      # 32 bytes, docs/config-blob.md offsets 0x00-0x1F
+HDR = struct.Struct("<4sHHHBBBBBBiiHHB3x")    # 32 bytes, docs/config-blob.md offsets 0x00-0x1F (0x1C conf_sh, 3 reserved)
 VEC = struct.Struct("<BBh")                   # action u8, flags u8, bias i16
 ACT = struct.Struct("<BBBB")                  # id, slot_mask, gpio_first, gpio_count
-SLOT = struct.Struct("<B3xii")                # type, pad 3, min, max
+SLOT = struct.Struct("<BBBBii")               # type, low, medium, high (level words), min, max
 GPIO = struct.Struct("<BBBBHH")               # pin_mask, mode, level, slot, pulse_ms, pad
 SLOT_TYPES = {"number": 0, "duration": 1, "level": 2}
 GPIO_MODES = {"pulse": 0, "latch": 1, "toggle": 2, "binary": 3}
@@ -49,14 +61,15 @@ def pack(h, vec_action, vec_flags, bias, V, actions, slots, gpio, wake):
     assert D == h["D"] and len(vec_action) == len(vec_flags) == len(bias) == N
     assert 1 <= len(actions) <= 64 and len(slots) <= 8 and len(gpio) <= 32 and len(wake) <= 255
     out = bytearray(HDR.pack(MAGIC, VERSION, D, N, len(actions), len(slots), len(gpio), len(wake), h["host"],
-                             h["i2c_addr"], int(h["reject_thr"]), int(h["margin"]), h["wake_sens"], h["flags"], 0))
+                             h["i2c_addr"], int(h["reject_thr"]), int(h["margin"]), h["wake_sens"], h["flags"],
+                             int(h.get("conf_sh", conf_shift(D)))))
     for a, f, b in zip(vec_action, vec_flags, bias):
         out += VEC.pack(int(a), int(f), int(b))
     out += V.tobytes(order="C")
     for a in actions:
         out += ACT.pack(a["id"], a["slot_mask"], a["gpio_first"], a["gpio_count"])
     for s in slots:
-        out += SLOT.pack(s["type"], int(s["min"]), int(s["max"]))
+        out += SLOT.pack(s["type"], int(s.get("low", 0)), int(s.get("medium", 0)), int(s.get("high", 0)), int(s["min"]), int(s["max"]))
     for g in gpio:
         out += GPIO.pack(g["pin_mask"], g["mode"], g["level"], g["slot"], g["pulse_ms"], 0)
     out += bytes(wake)
@@ -71,7 +84,7 @@ def parse(blob):
     crc = struct.unpack_from("<I", blob, len(blob) - 4)[0]
     if zlib.crc32(blob[:-4]) & 0xFFFFFFFF != crc:
         raise ValueError("CRC-32 mismatch")
-    magic, ver, D, N, na, ns, ng, wl, host, i2c, thr, margin, wsens, flags, res = HDR.unpack_from(blob, 0)
+    magic, ver, D, N, na, ns, ng, wl, host, i2c, thr, margin, wsens, flags, conf_sh = HDR.unpack_from(blob, 0)
     if magic != MAGIC or ver != VERSION:
         raise ValueError(f"bad magic/version {magic!r} {ver}")
     # the chip's config checks (docs/architecture.md 8.6)
@@ -86,7 +99,7 @@ def parse(blob):
     o += N * D
     actions = [dict(zip(("id", "slot_mask", "gpio_first", "gpio_count"), ACT.unpack_from(blob, o + i * ACT.size))) for i in range(na)]
     o += na * ACT.size
-    slots = [dict(zip(("type", "min", "max"), SLOT.unpack_from(blob, o + i * SLOT.size))) for i in range(ns)]
+    slots = [dict(zip(("type", "low", "medium", "high", "min", "max"), SLOT.unpack_from(blob, o + i * SLOT.size))) for i in range(ns)]
     o += ns * SLOT.size
     gpio = [dict(zip(("pin_mask", "mode", "level", "slot", "pulse_ms"), GPIO.unpack_from(blob, o + i * GPIO.size)[:5])) for i in range(ng)]
     o += ng * GPIO.size
@@ -95,7 +108,7 @@ def parse(blob):
     if o + 4 != len(blob):
         raise ValueError(f"size mismatch: parsed {o + 4} bytes, blob has {len(blob)}")
     return dict(D=D, N=N, host=host, i2c_addr=i2c, reject_thr=thr, margin=margin, wake_sens=wsens, flags=flags,
-                reserved=res, vec_action=np.array([v[0] for v in vt], dtype=np.int32), vec_flags=np.array([v[1] for v in vt]),
+                conf_sh=conf_sh, vec_action=np.array([v[0] for v in vt], dtype=np.int32), vec_flags=np.array([v[1] for v in vt]),
                 bias=np.array([v[2] for v in vt], dtype=np.int32), vectors=V, actions=actions, slots=slots, gpio=gpio,
                 wake=bytes(wake), crc32=crc, size=len(blob))
 
@@ -111,6 +124,23 @@ def match(b, q):
     if other.size and s[i] - other.max() < b["margin"]:
         return None
     return a
+
+
+def conf_shift(D):
+    """conf_sh so that a perfect match (about D * 2^10 with 5-bit q and v) maps to about 255 (golden-format 4)."""
+    return int(round(np.log2(D))) + 2
+
+
+def confidence(b, s_best):
+    """architecture.md 8.3 with conf_sh from the blob."""
+    return int(min(max(int(s_best) >> b["conf_sh"], 0), 255))
+
+
+def golden_vec(T, mu, P):
+    """golden-format section 5: teacher vectors (L2-normalised) -> unit-RMS, zero-mean D vectors (float)."""
+    v = (np.asarray(T, np.float64) - mu) @ P.T
+    v = v - v.mean(1, keepdims=True)
+    return v / np.sqrt((v * v).mean(1, keepdims=True))
 
 
 def crc8(data):
@@ -221,7 +251,9 @@ def tables(c):
     for n in names:
         v = c["values"][n]
         lo, hi = (v["min_s"], v["max_s"]) if v["type"] == "duration" else (v["min"], v["max"])
-        slots.append(dict(type=SLOT_TYPES[v["type"]], min=int(lo), max=int(hi)))
+        w = v.get("words", {}) if v["type"] == "level" else {}
+        slots.append(dict(type=SLOT_TYPES[v["type"]], min=int(lo), max=int(hi),
+                          low=int(w.get("low", 0)) & 0xFF, medium=int(w.get("medium", 0)) & 0xFF, high=int(w.get("high", 0)) & 0xFF))
     actions, gpio = [], []
     for a in c["actions"]:
         first = len(gpio)
@@ -245,9 +277,9 @@ def tables(c):
             actions.append(dict(id=EVENT_IDS[n], slot_mask=0, gpio_first=first, gpio_count=len(rules)))
     out = c.get("output", {})
     wake = c.get("wake", {})
-    w = bytes([0x00]) + wake.get("phrase", "").encode("ascii", "replace")[:254]
+    w, wsens, _ = wake_template(wake)
     h = dict(host=HOSTS[out.get("host", "none")], i2c_addr=int(str(out.get("i2c_address", "0")), 0) & 0x7F,
-             flags=flags | (1 if out.get("irq_pin") else 0), wake_sens=int(round(float(wake.get("sensitivity", 0.5)) * 65535)))
+             flags=flags | (1 if out.get("irq_pin") else 0), wake_sens=wsens)
     return h, actions, slots, gpio, w
 
 
@@ -269,6 +301,7 @@ class STEmbedder:
     def __init__(self, path):
         from sentence_transformers import SentenceTransformer
         self.m = SentenceTransformer(str(path), device="cpu")
+        self.path = Path(path)
         self.dim = self.m.get_sentence_embedding_dimension()
 
     def encode(self, texts):
@@ -318,7 +351,7 @@ def kmeans(X, k, iters=50):
 
 
 def compile_config(c, key, embedder, expansion=None, D=256, proj="random", protos=0, reject_protos=16,
-                   q_scale=None, reject_rate=0.90, margin=0.0):
+                   q_scale=None, reject_rate=0.90, margin=0.0, reject_thr=None):
     validate(c)
     h, actions, slots, gpio, wake = tables(c)
     exp_acts = (expansion or {}).get("actions", {}).get(key, {})
@@ -330,10 +363,16 @@ def compile_config(c, key, embedder, expansion=None, D=256, proj="random", proto
         labels += [a["id"]] * len(ex)
     labels = np.array(labels)
     E = embedder.encode(phrases + negs)
-    P = projection(proj, E.shape[1], D)
-    if P is None:
-        D = E.shape[1]
-    E = unit(E @ P) if P is not None else unit(E)
+    golden = proj == "teacher"
+    if golden:                                 # golden-format section 5 (unit RMS, zero mean, D from the teacher)
+        z = np.load(Path(embedder.path) / "marigold_proj.npz")
+        P = z["P"]; D = int(P.shape[0])
+        E = unit(golden_vec(E, z["mu"], P))
+    else:
+        P = projection(proj, E.shape[1], D)
+        if P is None:
+            D = E.shape[1]
+        E = unit(E @ P) if P is not None else unit(E)
     if not 1 <= D <= 256:
         raise ValueError(f"D = {D}: the chip accepts D <= 256 (architecture 8.6); use --projection with --dim")
     Ep, En = E[:len(phrases)], E[len(phrases):]
@@ -358,16 +397,23 @@ def compile_config(c, key, embedder, expansion=None, D=256, proj="random", proto
         protos, reject_protos = max(1, protos - 1), max(1, reject_protos - 1)
     if size > MAX_BLOB:
         raise ValueError(f"blob would be {size} bytes, over {MAX_BLOB}")
-    sv = 127.0 / float(np.max(np.abs(C)))
-    V = np.clip(np.round(C * sv), -127, 127).astype(np.int8)
-    sq = float(q_scale) if q_scale else 127.0 / float(np.max(np.abs(E)))
+    if golden:                                 # centroids back on the golden rule; q and v at 5 fractional bits
+        sv = sq = 32.0 * np.sqrt(D)
+        V = np.clip(np.round(golden_vec(C, 0.0, np.eye(D)) * 32.0), -127, 127).astype(np.int8)
+    else:
+        sv = 127.0 / float(np.max(np.abs(C)))
+        V = np.clip(np.round(C * sv), -127, 127).astype(np.int8)
+        sq = float(q_scale) if q_scale else 127.0 / float(np.max(np.abs(E)))
     qi = lambda X: np.clip(np.round(X * sq), -127, 127).astype(np.int32)
     va = np.array(va, dtype=np.int32)
     Sp, Sn = qi(Ep) @ V.astype(np.int32).T, qi(En) @ V.astype(np.int32).T if len(En) else None
     m_int = int(round(margin * sq * sv))
     thr_cfg = c.get("match", {}).get("reject_threshold")
     calib = {}
-    if thr_cfg is not None:
+    if reject_thr is not None:
+        thr = int(reject_thr)
+        calib["source"] = "--reject-thr (integer score units)"
+    elif thr_cfg is not None:
         thr = int(round(float(thr_cfg) * sq * sv))
         calib["source"] = "config reject_threshold (cosine units) x q_scale x vector scale"
     elif Sn is not None:
@@ -382,7 +428,7 @@ def compile_config(c, key, embedder, expansion=None, D=256, proj="random", proto
     else:
         thr = int(round(0.5 * sq * sv))
         calib["source"] = "PLACEHOLDER: no non-command set, cosine 0.5"
-    h.update(D=D, reject_thr=thr, margin=m_int)
+    h.update(D=D, reject_thr=thr, margin=m_int, conf_sh=conf_shift(D))
     blob = pack(h, va, np.zeros(len(va), int), np.zeros(len(va), int), V, actions, slots, gpio, wake)
     b = parse(blob)
     pred = np.array([match(b, q) or 0 for q in qi(Ep)])
@@ -392,11 +438,13 @@ def compile_config(c, key, embedder, expansion=None, D=256, proj="random", proto
         calib.update(neg_phrases=len(negs), neg_rejected=float(np.mean([match(b, q) is None for q in qi(En)])))
     report = dict(product=c.get("product"), key=key, size_bytes=len(blob), crc32=f"{b['crc32']:08x}", D=D, N=b["N"],
                   protos_per_action=protos, reject_protos=int(np.sum(va == 0)), vector_scale=sv, q_scale=sq,
-                  q_scale_source="--q-scale" if q_scale else "PLACEHOLDER 127/max|calibration component|",
-                  projection=proj if P is not None else "none", embedder_dim=int(E.shape[1]) if P is None else int(P.shape[0]),
+                  q_scale_source="golden-format 5 (32 per unit RMS)" if golden else "--q-scale" if q_scale else "127/max|calibration component|",
+                  projection=proj if P is not None else "none", embedder_dim=int(E.shape[1]) if P is None else int(P.shape[1] if golden else P.shape[0]),
+                  conf_sh=conf_shift(D),
                   reject_thr=thr, margin=m_int, calibration=calib,
                   value_words={n: v.get("words") for n, v in c.get("values", {}).items() if v.get("words")},
-                  placeholders=["projection", "q_scale", "wake template format", "wake_sens units"])
+                  wake=wake_template(c.get("wake", {}))[2],
+                  placeholders=[] if golden else ["projection", "q_scale"])
     return blob, report
 
 
@@ -408,7 +456,8 @@ def main():
     ap.add_argument("--embedder", default=None, help="sentence-transformers dir, or 'stub' (tests); default newest data/gate0b/models/*")
     ap.add_argument("--expansion", default=str(ROOT / "data/expand/expanded_qwen25.json"))
     ap.add_argument("--dim", type=int, default=256)
-    ap.add_argument("--projection", default="random")
+    ap.add_argument("--projection", default="auto", help="auto = the teacher's marigold_proj.npz when present (golden-format 5), else random")
+    ap.add_argument("--reject-thr", type=int, default=None, help="absolute reject threshold in score units (overrides calibration)")
     ap.add_argument("--protos", type=int, default=0, help="prototypes per action; 0 = fill the 32 KB budget (max 32)")
     ap.add_argument("--reject-protos", type=int, default=16)
     ap.add_argument("--q-scale", type=float, default=None)
@@ -428,7 +477,10 @@ def main():
         sys.exit("no embedder: pass --embedder DIR or --embedder stub")
     emb = StubEmbedder() if a.embedder == "stub" else STEmbedder(emb_path)
     exp = json.load(open(a.expansion, encoding="utf-8")) if a.expansion != "none" and Path(a.expansion).exists() else None
-    blob, rep = compile_config(c, cfg.stem, emb, exp, a.dim, a.projection, a.protos, a.reject_protos, a.q_scale, a.reject_rate, a.margin)
+    proj = a.projection
+    if proj == "auto":
+        proj = "teacher" if emb_path and (Path(emb_path) / "marigold_proj.npz").exists() else "random"
+    blob, rep = compile_config(c, cfg.stem, emb, exp, a.dim, proj, a.protos, a.reject_protos, a.q_scale, a.reject_rate, a.margin, a.reject_thr)
     rep.update(config=str(cfg), embedder=str(emb_path) if emb_path else "stub", expansion=a.expansion if exp else None)
     out = Path(a.out) if a.out else ROOT / "data/sdk" / f"{cfg.stem}.mgc"
     out.parent.mkdir(parents=True, exist_ok=True)

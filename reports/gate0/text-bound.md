@@ -68,3 +68,18 @@ Next levers, for the model agent:
 - Model choice on held-out training products instead of eval dev.
 - A margin rule (best minus second-best) next to the threshold.
 - Combine the kNN and linear matchers.
+
+## Leak correction (Nov 15, evening)
+
+The data agent found that data/gate0b/train_text.json (the v1/v2 training text) contained 433 lines identical to
+eval/text lines after normalisation (lowercase; letters, digits, apostrophes, spaces), about 330 of them from the
+test splits ("fire it up", "halt", "begin cooking" and the like). Every training text from v3 on drops such lines
+(sw/textfilter.py). The frozen v2 models were re-scored on the test rows whose text is not in train_text.json
+(same dev threshold; `eval/gate0/text_bound.py --train`; raw: reports/gate0/text_bound_0b_*_knn_neg_nonoverlap.json):
+
+| Model, `knn_neg` + expansion | Fan unseen (all 312 / non-overlap 242) | Fan rejection (all / non-overlap) | Microwave unseen (all 208 / non-overlap 173) | Microwave rejection (all / non-overlap) |
+|---|---|---|---|---|
+| bge-small tuned v2 | 82.7% / 81.0% | 93.8% / 93.8% | 92.3% / 91.3% | 90.1% / 90.0% |
+| bge-base tuned v2 | 82.7% / 81.0% | 95.7% / 95.6% | 90.4% / 88.4% | 93.2% / 93.1% |
+
+So the leak inflated unseen accuracy by about 1 to 2 points; rejection is unchanged.
