@@ -1,0 +1,4 @@
+tb/results/
+tb/sim_build/
+syn/build/
+__pycache__/
