@@ -1,0 +1,917 @@
+[
+ {
+  "model": "data/gate0b/models/bge-small-cmd",
+  "score": "linear",
+  "extra": "data/expand/expanded_qwen25.json",
+  "test_phrases_also_in_expansion": 41,
+  "products": {
+   "fan": {
+    "threshold": 0.6943445801734924,
+    "dev_acc": 0.6574074074074074,
+    "dev_acc_norej": 0.8333333333333334,
+    "dev_n": 108,
+    "dev_rej_chat": 0.9361702127659575,
+    "dev_rej_near": 1.0,
+    "dev_rej_tv": 0.9375,
+    "dev_rej_other_device": 0.8571428571428571,
+    "dev_rej_headline": 0.9512195121951219,
+    "test_acc": 0.7083333333333334,
+    "test_acc_norej": 0.8269230769230769,
+    "test_n": 312,
+    "test_rej_chat": 0.9148936170212766,
+    "test_rej_near": 0.972972972972973,
+    "test_rej_tv": 0.9032258064516129,
+    "test_rej_other_device": 0.6923076923076923,
+    "test_rej_headline": 0.9259259259259259,
+    "per_action_test": {
+     "on": 0.7692307692307693,
+     "off": 1.0,
+     "faster": 0.7307692307692307,
+     "slower": 0.7115384615384616,
+     "set_level": 0.6153846153846154,
+     "oscillate": 0.4230769230769231
+    },
+    "test_errors": [
+     "         on ->      REJECT 0.552  fire up the fan",
+     "         on ->      REJECT 0.613  switch on",
+     "         on ->      REJECT 0.641  go ahead and start",
+     "         on ->      REJECT 0.502  start spinning",
+     "         on ->      REJECT 0.676  power up",
+     "         on ->      REJECT 0.608  turn on the breeze",
+     "         on ->      REJECT 0.509  get the blades spinning",
+     "         on ->      REJECT 0.635  start running",
+     "         on ->      REJECT 0.666  switch yourself on",
+     "         on ->      REJECT 0.502  i could use the fan right now",
+     "         on ->         off 0.699  cool me off",
+     "         on ->      REJECT 0.591  resume the fan",
+     "     faster ->      REJECT 0.502  i'm roasting",
+     "     faster ->      REJECT 0.639  it's boiling in here",
+     "     faster ->      REJECT 0.293  i'm sweating",
+     "     faster ->      REJECT 0.328  i'm burning up",
+     "     faster ->      REJECT 0.377  it's so hot",
+     "     faster ->      REJECT 0.513  pump it up",
+     "     faster ->      slower 0.789  i can barely feel it",
+     "     faster ->      slower 0.855  it's stuffy in here",
+     "     faster ->      REJECT 0.556  rev it up",
+     "     faster ->      REJECT 0.574  it's way too warm",
+     "     faster ->      REJECT 0.690  not strong enough",
+     "     faster ->      REJECT 0.472  it's hot as heck in here",
+     "     faster ->      slower 0.914  too weak",
+     "     faster ->      REJECT 0.429  i'm melting",
+     "     slower ->      REJECT 0.399  too much air",
+     "     slower ->      REJECT 0.593  i'm freezing",
+     "     slower ->      REJECT 0.531  it's chilly",
+     "     slower ->      REJECT 0.000  dial it back",
+     "     slower ->      REJECT 0.673  back it off",
+     "     slower ->      REJECT 0.552  that's too strong",
+     "     slower ->      REJECT 0.484  it's too windy",
+     "     slower ->      REJECT 0.391  my papers are blowing away",
+     "     slower ->      REJECT 0.532  it's blowing too hard",
+     "     slower ->      REJECT 0.636  i'm cold",
+     "     slower ->      REJECT 0.388  it's freezing in here",
+     "     slower ->      REJECT 0.638  too much",
+     "     slower ->      REJECT 0.419  that's a lot of air",
+     "     slower ->      REJECT 0.339  easy",
+     "     slower ->      REJECT 0.000  i've got goosebumps",
+     "  set_level ->      REJECT 0.690  high",
+     "  set_level ->      slower 0.957  low",
+     "  set_level ->      REJECT 0.347  set it to medium",
+     "  set_level ->      slower 0.914  put it on low please",
+     "  set_level ->      faster 0.916  maximum speed",
+     "  set_level ->      slower 0.965  lowest setting",
+     "  set_level ->      REJECT 0.432  number two",
+     "  set_level ->      REJECT 0.312  fan to medium",
+     "  set_level ->      slower 0.946  run on low",
+     "  set_level ->      faster 0.838  the highest setting",
+     "  set_level ->      REJECT 0.461  change the speed to medium",
+     "  set_level ->      slower 0.940  switch to low",
+     "  set_level ->      faster 0.756  put it on max",
+     "  set_level ->      faster 0.695  full speed",
+     "  set_level ->      REJECT 0.676  minimum speed",
+     "  set_level ->      REJECT 0.444  put the fan at medium",
+     "  set_level ->      REJECT 0.658  put it on the second setting",
+     "  set_level ->      REJECT 0.515  first speed",
+     "  set_level ->      REJECT 0.371  medium please",
+     "  set_level ->      REJECT 0.559  go to the middle setting",
+     "  oscillate ->      REJECT 0.528  sweep the room",
+     "  oscillate ->      REJECT 0.552  start rotating",
+     "  oscillate ->      REJECT 0.599  stop moving around",
+     "  oscillate ->         off 0.750  stop turning",
+     "  oscillate ->      REJECT 0.547  stay pointed at me",
+     "  oscillate ->      REJECT 0.469  start swiveling",
+     "  oscillate ->      REJECT 0.435  oscillation off",
+     "  oscillate ->      REJECT 0.447  make it swing",
+     "  oscillate ->      REJECT 0.610  stop swinging",
+     "  oscillate ->      REJECT 0.522  spread the air around the room",
+     "  oscillate ->      REJECT 0.477  blow all around the room",
+     "  oscillate ->      REJECT 0.647  turn the swing off",
+     "  oscillate ->      REJECT 0.568  sweep mode",
+     "  oscillate ->      REJECT 0.544  rotation off",
+     "  oscillate ->      REJECT 0.601  start sweeping",
+     "  oscillate ->      REJECT 0.629  go back and forth",
+     "  oscillate ->      REJECT 0.590  switch oscillation off",
+     "  oscillate ->      REJECT 0.000  look around the room",
+     "  oscillate ->      REJECT 0.680  sweep the air around",
+     "  oscillate ->      REJECT 0.463  stop the rotation",
+     "  oscillate ->      REJECT 0.693  don't move",
+     "  oscillate ->      REJECT 0.690  stay in one place",
+     "  oscillate ->      REJECT 0.000  cover the whole room",
+     "  oscillate ->      REJECT 0.500  fan the whole room",
+     "  oscillate ->      REJECT 0.594  turn off the rotation",
+     "  oscillate ->      REJECT 0.618  pivot back and forth",
+     "  oscillate ->      REJECT 0.540  stop swaying",
+     "  oscillate ->      REJECT 0.552  let it swing around",
+     "  oscillate ->      REJECT 0.659  enough rotating",
+     "  oscillate ->      REJECT 0.489  quit oscillating"
+    ],
+    "test_false_accepts": [
+     " chat ->         off 0.727  put your shoes away",
+     " chat ->      slower 0.767  the wifi is slow again",
+     " chat ->   set_level 0.974  level three of the game is hard",
+     " chat ->   set_level 0.709  my flight is at three",
+     " chat ->   set_level 0.929  the speed limit here is forty five",
+     " chat ->      faster 0.751  one more thing",
+     " chat ->         off 0.759  nothing",
+     " chat ->   set_level 0.743  pick a number between one and ten",
+     " near ->          on 0.855  is the air conditioner working",
+     "   tv ->         off 0.740  get out of my house",
+     "   tv ->      slower 0.800  turn the heat down and let it simmer",
+     "   tv ->      slower 0.820  stock prices fell sharply"
+    ],
+    "curve_test": [
+     [
+      0.3,
+      0.8269230769230769,
+      0.808641975308642
+     ],
+     [
+      0.31,
+      0.8269230769230769,
+      0.8148148148148148
+     ],
+     [
+      0.32,
+      0.8269230769230769,
+      0.8148148148148148
+     ],
+     [
+      0.33,
+      0.8269230769230769,
+      0.8148148148148148
+     ],
+     [
+      0.34,
+      0.8237179487179487,
+      0.8148148148148148
+     ],
+     [
+      0.35,
+      0.8237179487179487,
+      0.8209876543209876
+     ],
+     [
+      0.36,
+      0.8237179487179487,
+      0.8271604938271605
+     ],
+     [
+      0.37,
+      0.8237179487179487,
+      0.8333333333333334
+     ],
+     [
+      0.38,
+      0.8205128205128205,
+      0.8333333333333334
+     ],
+     [
+      0.39,
+      0.8205128205128205,
+      0.8395061728395061
+     ],
+     [
+      0.4,
+      0.8173076923076923,
+      0.8395061728395061
+     ],
+     [
+      0.41,
+      0.8173076923076923,
+      0.845679012345679
+     ],
+     [
+      0.42,
+      0.8141025641025641,
+      0.8518518518518519
+     ],
+     [
+      0.43,
+      0.8141025641025641,
+      0.8518518518518519
+     ],
+     [
+      0.44,
+      0.8076923076923077,
+      0.8518518518518519
+     ],
+     [
+      0.45,
+      0.8012820512820513,
+      0.8518518518518519
+     ],
+     [
+      0.46,
+      0.8012820512820513,
+      0.8518518518518519
+     ],
+     [
+      0.47,
+      0.7948717948717948,
+      0.8518518518518519
+     ],
+     [
+      0.48,
+      0.7916666666666666,
+      0.8580246913580247
+     ],
+     [
+      0.49,
+      0.7884615384615384,
+      0.8580246913580247
+     ],
+     [
+      0.5,
+      0.7852564102564102,
+      0.8580246913580247
+     ],
+     [
+      0.51,
+      0.7756410256410257,
+      0.8641975308641975
+     ],
+     [
+      0.52,
+      0.7756410256410257,
+      0.8641975308641975
+     ],
+     [
+      0.53,
+      0.7756410256410257,
+      0.8641975308641975
+     ],
+     [
+      0.54,
+      0.7692307692307693,
+      0.8765432098765432
+     ],
+     [
+      0.55,
+      0.7628205128205128,
+      0.8827160493827161
+     ],
+     [
+      0.56,
+      0.7532051282051282,
+      0.8950617283950617
+     ],
+     [
+      0.57,
+      0.75,
+      0.8950617283950617
+     ],
+     [
+      0.58,
+      0.75,
+      0.9074074074074074
+     ],
+     [
+      0.59,
+      0.75,
+      0.9074074074074074
+     ],
+     [
+      0.6,
+      0.7435897435897436,
+      0.9074074074074074
+     ],
+     [
+      0.61,
+      0.7403846153846154,
+      0.9135802469135802
+     ],
+     [
+      0.62,
+      0.7339743589743589,
+      0.9259259259259259
+     ],
+     [
+      0.63,
+      0.7307692307692307,
+      0.9259259259259259
+     ],
+     [
+      0.64,
+      0.7275641025641025,
+      0.9259259259259259
+     ],
+     [
+      0.65,
+      0.7243589743589743,
+      0.9259259259259259
+     ],
+     [
+      0.66,
+      0.717948717948718,
+      0.9259259259259259
+     ],
+     [
+      0.67,
+      0.7147435897435898,
+      0.9259259259259259
+     ],
+     [
+      0.68,
+      0.7115384615384616,
+      0.9259259259259259
+     ],
+     [
+      0.69,
+      0.7083333333333334,
+      0.9259259259259259
+     ],
+     [
+      0.7,
+      0.7083333333333334,
+      0.9259259259259259
+     ],
+     [
+      0.71,
+      0.7019230769230769,
+      0.9320987654320988
+     ],
+     [
+      0.72,
+      0.6891025641025641,
+      0.9320987654320988
+     ],
+     [
+      0.73,
+      0.6826923076923077,
+      0.9382716049382716
+     ],
+     [
+      0.74,
+      0.6730769230769231,
+      0.9444444444444444
+     ],
+     [
+      0.75,
+      0.6634615384615384,
+      0.9506172839506173
+     ],
+     [
+      0.76,
+      0.6506410256410257,
+      0.9629629629629629
+     ],
+     [
+      0.77,
+      0.6314102564102564,
+      0.9691358024691358
+     ],
+     [
+      0.78,
+      0.6153846153846154,
+      0.9691358024691358
+     ],
+     [
+      0.79,
+      0.6121794871794872,
+      0.9691358024691358
+     ],
+     [
+      0.8,
+      0.592948717948718,
+      0.9753086419753086
+     ],
+     [
+      0.81,
+      0.5673076923076923,
+      0.9753086419753086
+     ],
+     [
+      0.82,
+      0.5544871794871795,
+      0.9753086419753086
+     ],
+     [
+      0.83,
+      0.5384615384615384,
+      0.9814814814814815
+     ],
+     [
+      0.84,
+      0.5256410256410257,
+      0.9814814814814815
+     ],
+     [
+      0.85,
+      0.48717948717948717,
+      0.9814814814814815
+     ],
+     [
+      0.86,
+      0.4775641025641026,
+      0.9876543209876543
+     ],
+     [
+      0.87,
+      0.47115384615384615,
+      0.9876543209876543
+     ],
+     [
+      0.88,
+      0.4358974358974359,
+      0.9876543209876543
+     ],
+     [
+      0.89,
+      0.4198717948717949,
+      0.9876543209876543
+     ],
+     [
+      0.9,
+      0.3942307692307692,
+      0.9876543209876543
+     ],
+     [
+      0.91,
+      0.3717948717948718,
+      0.9876543209876543
+     ],
+     [
+      0.92,
+      0.3333333333333333,
+      0.9876543209876543
+     ],
+     [
+      0.93,
+      0.2916666666666667,
+      0.9938271604938271
+     ],
+     [
+      0.94,
+      0.2692307692307692,
+      0.9938271604938271
+     ],
+     [
+      0.95,
+      0.23717948717948717,
+      0.9938271604938271
+     ]
+    ]
+   },
+   "microwave": {
+    "threshold": 0.8639902472496033,
+    "dev_acc": 0.75,
+    "dev_acc_norej": 0.9583333333333334,
+    "dev_n": 72,
+    "dev_rej_chat": 0.9361702127659575,
+    "dev_rej_near": 0.9473684210526315,
+    "dev_rej_tv": 1.0,
+    "dev_rej_other_device": 1.0,
+    "dev_rej_headline": 0.9512195121951219,
+    "test_acc": 0.6682692307692307,
+    "test_acc_norej": 0.9471153846153846,
+    "test_n": 208,
+    "test_rej_chat": 0.925531914893617,
+    "test_rej_near": 1.0,
+    "test_rej_tv": 0.9354838709677419,
+    "test_rej_other_device": 1.0,
+    "test_rej_headline": 0.9444444444444444,
+    "per_action_test": {
+     "start": 0.38461538461538464,
+     "add_30s": 0.7692307692307693,
+     "stop": 0.8269230769230769,
+     "power_level": 0.6923076923076923
+    },
+    "test_errors": [
+     "      start ->      REJECT 0.610  nuke it for a minute",
+     "      start ->      REJECT 0.491  two minutes please",
+     "      start ->      REJECT 0.623  go for one minute",
+     "      start ->      REJECT 0.462  ninety seconds",
+     "      start ->      REJECT 0.750  zap it for fifteen seconds",
+     "      start ->      REJECT 0.646  do two minutes",
+     "      start ->      REJECT 0.520  one minute on high",
+     "      start ->      REJECT 0.492  three minutes at power level five",
+     "      start ->      REJECT 0.000  start it",
+     "      start ->      REJECT 0.000  begin cooking",
+     "      start ->      REJECT 0.000  heat it",
+     "      start ->      REJECT 0.811  defrost this for five minutes",
+     "      start ->      REJECT 0.812  pop it in for a minute",
+     "      start ->      REJECT 0.836  reheat my leftovers for two minutes",
+     "      start ->      REJECT 0.479  do one minute please",
+     "      start ->      REJECT 0.527  forty five seconds",
+     "      start ->      REJECT 0.374  eight minutes",
+     "      start ->      REJECT 0.863  start for one minute fifteen",
+     "      start ->      REJECT 0.000  go",
+     "      start ->      REJECT 0.000  cook",
+     "      start ->      REJECT 0.785  warm it for a minute",
+     "      start ->      REJECT 0.433  two minutes on full",
+     "      start ->      REJECT 0.508  thirty seconds at medium power",
+     "      start ->      REJECT 0.754  a quick thirty seconds",
+     "      start ->      REJECT 0.596  just ten seconds",
+     "      start ->      REJECT 0.729  give this a minute",
+     "      start ->      REJECT 0.571  three minutes please",
+     "      start ->      REJECT 0.000  start heating",
+     "      start ->      REJECT 0.453  nuke this",
+     "      start ->      REJECT 0.000  zap it",
+     "      start ->      REJECT 0.706  a minute fifteen",
+     "      start ->      REJECT 0.643  one minute forty five seconds",
+     "    add_30s ->      REJECT 0.675  tack on thirty seconds",
+     "    add_30s ->      REJECT 0.000  it's still cold, add time",
+     "    add_30s ->      REJECT 0.588  thirty extra",
+     "    add_30s ->      REJECT 0.637  stretch it a bit",
+     "    add_30s ->      REJECT 0.739  needs thirty more",
+     "    add_30s ->      REJECT 0.372  heat it a bit more",
+     "    add_30s ->      REJECT 0.000  warm it a little more",
+     "    add_30s ->      REJECT 0.785  throw on another thirty",
+     "    add_30s ->      REJECT 0.860  bump the time",
+     "    add_30s ->      REJECT 0.793  more please",
+     "    add_30s ->      REJECT 0.495  keep cooking a little",
+     "    add_30s ->      REJECT 0.753  add thirty to the timer",
+     "       stop ->      REJECT 0.816  wait",
+     "       stop ->      REJECT 0.756  freeze",
+     "       stop ->      REJECT 0.000  it's sparking",
+     "       stop ->      REJECT 0.634  wait a second",
+     "       stop ->      REJECT 0.808  turn the microwave off",
+     "       stop ->      REJECT 0.812  it's hot enough",
+     "       stop ->      REJECT 0.785  pause the microwave",
+     "       stop ->      REJECT 0.820  clear the timer",
+     "       stop ->      REJECT 0.825  reset",
+     "power_level ->      REJECT 0.611  low power",
+     "power_level ->      REJECT 0.772  put it on power level two",
+     "power_level ->      REJECT 0.712  set the power at nine",
+     "power_level ->      REJECT 0.858  thirty percent power",
+     "power_level ->      REJECT 0.701  use the low setting",
+     "power_level ->      REJECT 0.744  set it on full power",
+     "power_level ->      REJECT 0.678  run at seventy percent",
+     "power_level ->      REJECT 0.845  put the power on four",
+     "power_level ->      REJECT 0.793  change wattage to high",
+     "power_level ->      REJECT 0.795  power ten",
+     "power_level ->      REJECT 0.843  power down to four",
+     "power_level ->      REJECT 0.849  put it on power six",
+     "power_level ->      REJECT 0.828  put it at sixty percent power",
+     "power_level ->      REJECT 0.856  use power one",
+     "power_level ->      REJECT 0.742  heat level seven",
+     "power_level ->      REJECT 0.462  change the heat to low"
+    ],
+    "test_false_accepts": [
+     " chat ->        stop 0.869  yes that sounds good",
+     " chat -> power_level 0.885  level three of the game is hard",
+     " chat ->     add_30s 0.908  give me a second",
+     " chat ->     add_30s 0.934  one more thing",
+     " chat ->        stop 0.887  okay",
+     " chat ->        stop 0.882  never mind",
+     " chat ->        stop 0.919  nothing",
+     "   tv ->       start 0.960  bake at three hundred fifty degrees for twenty minutes",
+     "   tv ->       start 0.910  let it cool for five minutes before serving"
+    ],
+    "curve_test": [
+     [
+      0.3,
+      0.9134615384615384,
+      0.808641975308642
+     ],
+     [
+      0.31,
+      0.9134615384615384,
+      0.808641975308642
+     ],
+     [
+      0.32,
+      0.9134615384615384,
+      0.808641975308642
+     ],
+     [
+      0.33,
+      0.9134615384615384,
+      0.808641975308642
+     ],
+     [
+      0.34,
+      0.9134615384615384,
+      0.808641975308642
+     ],
+     [
+      0.35,
+      0.9134615384615384,
+      0.808641975308642
+     ],
+     [
+      0.36,
+      0.9134615384615384,
+      0.808641975308642
+     ],
+     [
+      0.37,
+      0.9134615384615384,
+      0.808641975308642
+     ],
+     [
+      0.38,
+      0.9038461538461539,
+      0.808641975308642
+     ],
+     [
+      0.39,
+      0.9038461538461539,
+      0.808641975308642
+     ],
+     [
+      0.4,
+      0.9038461538461539,
+      0.808641975308642
+     ],
+     [
+      0.41,
+      0.9038461538461539,
+      0.808641975308642
+     ],
+     [
+      0.42,
+      0.9038461538461539,
+      0.808641975308642
+     ],
+     [
+      0.43,
+      0.9038461538461539,
+      0.808641975308642
+     ],
+     [
+      0.44,
+      0.8990384615384616,
+      0.808641975308642
+     ],
+     [
+      0.45,
+      0.8990384615384616,
+      0.808641975308642
+     ],
+     [
+      0.46,
+      0.8990384615384616,
+      0.808641975308642
+     ],
+     [
+      0.47,
+      0.8894230769230769,
+      0.808641975308642
+     ],
+     [
+      0.48,
+      0.8846153846153846,
+      0.808641975308642
+     ],
+     [
+      0.49,
+      0.8846153846153846,
+      0.8148148148148148
+     ],
+     [
+      0.5,
+      0.875,
+      0.8209876543209876
+     ],
+     [
+      0.51,
+      0.8701923076923077,
+      0.8333333333333334
+     ],
+     [
+      0.52,
+      0.8701923076923077,
+      0.845679012345679
+     ],
+     [
+      0.53,
+      0.8653846153846154,
+      0.8518518518518519
+     ],
+     [
+      0.54,
+      0.8653846153846154,
+      0.8518518518518519
+     ],
+     [
+      0.55,
+      0.8653846153846154,
+      0.8518518518518519
+     ],
+     [
+      0.56,
+      0.8653846153846154,
+      0.8580246913580247
+     ],
+     [
+      0.57,
+      0.8653846153846154,
+      0.8703703703703703
+     ],
+     [
+      0.58,
+      0.8605769230769231,
+      0.8703703703703703
+     ],
+     [
+      0.59,
+      0.8557692307692307,
+      0.8703703703703703
+     ],
+     [
+      0.6,
+      0.8557692307692307,
+      0.8703703703703703
+     ],
+     [
+      0.61,
+      0.8557692307692307,
+      0.8703703703703703
+     ],
+     [
+      0.62,
+      0.8461538461538461,
+      0.8765432098765432
+     ],
+     [
+      0.63,
+      0.8413461538461539,
+      0.8765432098765432
+     ],
+     [
+      0.64,
+      0.8365384615384616,
+      0.8827160493827161
+     ],
+     [
+      0.65,
+      0.8269230769230769,
+      0.9012345679012346
+     ],
+     [
+      0.66,
+      0.8269230769230769,
+      0.9012345679012346
+     ],
+     [
+      0.67,
+      0.8269230769230769,
+      0.9012345679012346
+     ],
+     [
+      0.68,
+      0.8221153846153846,
+      0.9012345679012346
+     ],
+     [
+      0.69,
+      0.8221153846153846,
+      0.9074074074074074
+     ],
+     [
+      0.7,
+      0.8221153846153846,
+      0.9074074074074074
+     ],
+     [
+      0.71,
+      0.8125,
+      0.9074074074074074
+     ],
+     [
+      0.72,
+      0.8076923076923077,
+      0.9074074074074074
+     ],
+     [
+      0.73,
+      0.8076923076923077,
+      0.9074074074074074
+     ],
+     [
+      0.74,
+      0.8028846153846154,
+      0.9074074074074074
+     ],
+     [
+      0.75,
+      0.7884615384615384,
+      0.9074074074074074
+     ],
+     [
+      0.76,
+      0.7788461538461539,
+      0.9074074074074074
+     ],
+     [
+      0.77,
+      0.7788461538461539,
+      0.9135802469135802
+     ],
+     [
+      0.78,
+      0.7740384615384616,
+      0.9135802469135802
+     ],
+     [
+      0.79,
+      0.7596153846153846,
+      0.9197530864197531
+     ],
+     [
+      0.8,
+      0.7451923076923077,
+      0.9259259259259259
+     ],
+     [
+      0.81,
+      0.7403846153846154,
+      0.9259259259259259
+     ],
+     [
+      0.82,
+      0.7211538461538461,
+      0.9382716049382716
+     ],
+     [
+      0.83,
+      0.7067307692307693,
+      0.9382716049382716
+     ],
+     [
+      0.84,
+      0.7019230769230769,
+      0.9382716049382716
+     ],
+     [
+      0.85,
+      0.6875,
+      0.9382716049382716
+     ],
+     [
+      0.86,
+      0.6778846153846154,
+      0.9444444444444444
+     ],
+     [
+      0.87,
+      0.6538461538461539,
+      0.9506172839506173
+     ],
+     [
+      0.88,
+      0.625,
+      0.9506172839506173
+     ],
+     [
+      0.89,
+      0.6105769230769231,
+      0.9691358024691358
+     ],
+     [
+      0.9,
+      0.6009615384615384,
+      0.9691358024691358
+     ],
+     [
+      0.91,
+      0.5480769230769231,
+      0.9814814814814815
+     ],
+     [
+      0.92,
+      0.5048076923076923,
+      0.9876543209876543
+     ],
+     [
+      0.93,
+      0.47115384615384615,
+      0.9876543209876543
+     ],
+     [
+      0.94,
+      0.4423076923076923,
+      0.9938271604938271
+     ],
+     [
+      0.95,
+      0.35096153846153844,
+      0.9938271604938271
+     ]
+    ]
+   }
+  },
+  "test_acc_mean": 0.688301282051282,
+  "test_rej_mean": 0.9351851851851851
+ }
+]

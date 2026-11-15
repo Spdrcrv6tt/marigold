@@ -43,3 +43,28 @@ The plan's idea holds up in shape: open phrasing works for most direct commands.
 - **Gate 0b, the next experiment:** fine-tune a small embedder (bge-small or e5-small) for commands, with contrastive pairs and opposite-action hard negatives. Train it on LLM-generated command and non-command data for 30 or more other products (purifier, heater, lamp, oven, washer and so on). Fans and microwaves stay out of its training data entirely, which also tests target 11 honestly.
 - The fine-tuned space is also an easier target for a 2M to 5M weight audio encoder.
 - Fallbacks if 0b also falls short: a narrower phrasing promise (direct commands; indirect complaints as an opt-in with OEM examples), or more config SRAM for more prototypes per action.
+
+## Gate 0b, first runs (same evening)
+
+The SDK's text embedder was fine-tuned for commands (sw/gate0b/finetune_text.py) on text a local LLM wrote for 32 other appliances (sw/gate0b/products.json; 7,834 command phrasings, 1,542 non-commands; no fans or microwaves, so both stay new products). The recipe is a supervised contrastive loss within one product per batch. Diagnosis used the dev split only.
+
+| Run | Fan, unseen / rejection | Microwave, unseen / rejection |
+|---|---|---|
+| bge-small, untuned, + expansion, `knn_neg` (from above) | 77% / 94% | 79% / 97% |
+| bge-small tuned v1 (tau 0.05) | 81 / 94 | 87 / 86 |
+| bge-small tuned v2 (tau 0.1, plus LibriSpeech snippets as their own items so ordinary speech stays spread out) | 83 / 94 | 92 / 90 |
+| bge-base tuned v2, `knn_neg` | **83 / 96** | **90 / 93** |
+
+v1 collapsed the space (dev: "okay", "hmm" and "nothing" scored 0.95 or more against a command); v2 fixed most of that.
+
+- **Microwave** is now at the bar for unseen phrasings and 2 points short on rejection.
+- **Fan** rejection passes; unseen accuracy is 7 points short, mostly from oscillate. "Stop rotating" goes to off and "spin around" to on: none of the 32 training products has a swing or rotate mode.
+- Without rejection, accuracy is 89% (fan) and 95% (microwave).
+- Still unmet as a pair, but tuning the SDK-side model moved it 5 to 10 points in an hour. The approach looks fixable; it is not dead.
+
+Next levers, for the model agent:
+- Many more training products and action types (100 or more, including motion and toggle modes such as AC swing).
+- More non-command data.
+- Model choice on held-out training products instead of eval dev.
+- A margin rule (best minus second-best) next to the threshold.
+- Combine the kNN and linear matchers.

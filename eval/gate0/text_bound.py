@@ -19,6 +19,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 os.environ.setdefault("HF_HOME", str(ROOT / "data" / "hf"))
 HEADLINE = ("chat", "near", "tv")
+ERRSPLIT = os.environ.get("ERRSPLIT", "test")  # per-action numbers and error lists; use dev when diagnosing
 
 # Prefixes a model card asks for in symmetric similarity use.
 PREFIX = {"intfloat/e5-small-v2": "query: ", "intfloat/e5-base-v2": "query: ",
@@ -153,7 +154,7 @@ def run(model_name, extra=None, score="max"):
             hm = head & (nsplit == sp)
             res[f"{sp}_rej_headline"] = float((nbest[hm] < thr).mean())
         # per-action test accuracy and the errors
-        mt = split == "test"
+        mt = split == ERRSPLIT
         res["per_action_test"] = {a: float((((arg == y) & (best >= thr))[mt & (y == i)]).mean()) for i, a in enumerate(names)}
         errs = []
         for i in np.where(mt & ~((arg == y) & (best >= thr)))[0]:
