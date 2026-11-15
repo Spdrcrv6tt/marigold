@@ -20,3 +20,4 @@
   - SDK and data agent (sdk/, data): TTS, noise and the config blob compiler.
   - KV260 phase 3 waits for the board.
 - 2026-11-15, held-out rule tightened: the audio encoder, like the command embedder, never trains on fan or microwave text (not even the config examples). The chip model is fixed before any OEM types examples, so target 1 is measured on typed phrases the model never heard, and target 11 tests products the model has never seen.
+- 2026-11-15 (John: "It almost needs a way to indicate to the hardware that it wasn't able to complete a command, period. So the maker could implement some sort of status ding or something."): the chip reports events, not just commands: COMMAND, WAKE (listening), NOMATCH (heard speech, no confident match) and TIMEOUT (woke, nothing said). Host frames carry a type byte; GPIO-only products map events to pins (e.g. a buzzer for a 'didn't catch that' ding). docs/config-blob.md updated; the SDK exposes these as product options.
