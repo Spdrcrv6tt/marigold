@@ -8,6 +8,7 @@
     "speed": { "type": "level", "min": 1, "max": 5,
                "words": { "low": 1, "medium": 3, "high": 5, "max": 5, "lowest": 1, "highest": 5 } }
   },
+  "events": { "nomatch": { "host": false, "gpio": { "pins": [4], "mode": "pulse", "pulse_ms": 150 } } },
   "actions": [
     { "id": 1, "name": "on", "description": "Turn the fan on",
       "examples": ["turn the fan on", "switch the fan on", "fan on", "start the fan", "turn it on", "power on", "can you turn on the fan", "start blowing"],

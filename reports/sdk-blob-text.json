@@ -1,0 +1,34 @@
+{
+ "fan": {
+  "embedder": "D:\\marigold\\data\\gate0b\\models\\bge-base-cmd-v2",
+  "blob_bytes": 32383,
+  "N": 124,
+  "D": 256,
+  "paraphrase_correct_dev": 0.7778,
+  "paraphrase_rejected_dev": 0.0648,
+  "paraphrase_n_dev": 108,
+  "noncommand_rejected_dev": 0.939,
+  "other_device_rejected_dev": 0.5,
+  "paraphrase_correct_test": 0.766,
+  "paraphrase_rejected_test": 0.1026,
+  "paraphrase_n_test": 312,
+  "noncommand_rejected_test": 0.9568,
+  "other_device_rejected_test": 0.5385
+ },
+ "microwave": {
+  "embedder": "D:\\marigold\\data\\gate0b\\models\\bge-base-cmd-v2",
+  "blob_bytes": 32328,
+  "N": 124,
+  "D": 256,
+  "paraphrase_correct_dev": 0.9028,
+  "paraphrase_rejected_dev": 0.0694,
+  "paraphrase_n_dev": 72,
+  "noncommand_rejected_dev": 0.9512,
+  "other_device_rejected_dev": 0.6429,
+  "paraphrase_correct_test": 0.8317,
+  "paraphrase_rejected_test": 0.0913,
+  "paraphrase_n_test": 208,
+  "noncommand_rejected_test": 0.9444,
+  "other_device_rejected_test": 0.5385
+ }
+}
