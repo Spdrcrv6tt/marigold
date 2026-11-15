@@ -1,0 +1,37 @@
+{
+  "format": "marigold-config/0",
+  "product": "Desk fan (reference config)",
+  "wake": { "phrase": "hey breeze", "sensitivity": 0.5 },
+  "match": { "reject_threshold": null },
+  "output": { "host": "none", "irq_pin": false },
+  "values": {
+    "speed": { "type": "level", "min": 1, "max": 5,
+               "words": { "low": 1, "medium": 3, "high": 5, "max": 5, "lowest": 1, "highest": 5 } }
+  },
+  "actions": [
+    { "id": 1, "name": "on", "description": "Turn the fan on",
+      "examples": ["turn the fan on", "switch the fan on", "fan on", "start the fan", "turn it on", "power on", "can you turn on the fan", "start blowing"],
+      "values": [],
+      "gpio": { "pins": [0], "mode": "latch", "level": 1 } },
+    { "id": 2, "name": "off", "description": "Turn the fan off",
+      "examples": ["turn the fan off", "switch the fan off", "fan off", "stop the fan", "turn it off", "power off", "shut off the fan", "stop blowing"],
+      "values": [],
+      "gpio": { "pins": [0], "mode": "latch", "level": 0 } },
+    { "id": 3, "name": "faster", "description": "Raise the fan speed one step",
+      "examples": ["faster", "speed up", "increase the speed", "turn the fan up", "more air", "make it faster", "higher speed", "it's too hot in here"],
+      "values": [],
+      "gpio": { "pins": [1], "mode": "pulse", "pulse_ms": 100 } },
+    { "id": 4, "name": "slower", "description": "Lower the fan speed one step",
+      "examples": ["slower", "slow down", "decrease the speed", "turn the fan down", "less air", "make it slower", "lower speed", "it's too cold in here"],
+      "values": [],
+      "gpio": { "pins": [2], "mode": "pulse", "pulse_ms": 100 } },
+    { "id": 5, "name": "set_level", "description": "Set the fan to a speed level from 1 to 5",
+      "examples": ["set the speed to three", "speed level two", "set it to level four", "fan speed one", "put it on high", "set the fan to low", "go to speed five", "medium speed"],
+      "values": ["speed"],
+      "gpio": { "pins": [5, 6, 7], "mode": "latch", "encode": "binary", "value": "speed" } },
+    { "id": 6, "name": "oscillate", "description": "Toggle oscillation (the fan head sweeping side to side)",
+      "examples": ["oscillate", "start oscillating", "stop oscillating", "turn on oscillation", "turn off oscillation", "swing back and forth", "rotate the fan", "toggle oscillation"],
+      "values": [],
+      "gpio": { "pins": [3], "mode": "toggle" } }
+  ]
+}

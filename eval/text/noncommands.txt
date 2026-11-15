@@ -1,0 +1,298 @@
+# Marigold non-command set v1 (frozen 2026-11-15, written before any matching result was seen).
+# Things said after a wake (true or false) that must fire nothing. "## <category>" starts a block.
+# Categories: chat (everyday talk), near (mentions the product or kitchen, not a command),
+# tv (TV or radio speech after a false wake), other_device (commands meant for other devices or an assistant).
+# Target 4 headline = chat + near + tv. other_device is reported separately.
+# Split: within each block, line index i (from 0) is dev when i % 3 == 0, test otherwise. Test lines are evaluation only.
+
+## chat
+what time is it
+what's for dinner tonight
+did you feed the dog
+i'll be home around six
+can you pick up some milk on the way
+the game starts at seven
+my phone is almost dead
+where did i leave my keys
+honey have you seen my glasses
+i think it's going to rain tomorrow
+let's watch a movie tonight
+the kids have practice after school
+how was your day
+i have a meeting at nine
+call your mother back
+we need to buy more paper towels
+that was a great show
+i can't believe he said that
+the traffic was terrible today
+did you lock the front door
+what do you want to eat
+i'm going to take a shower
+the package came today
+the dog needs a walk
+i finished the report
+she's coming over on saturday
+let me check my email
+that's really funny
+oh no i forgot my lunch
+how much was the grocery bill
+the car needs an oil change
+are you coming to bed
+i'll call you back later
+can you hear me
+yes that sounds good
+no i don't think so
+maybe later
+the weather is nice today
+i love this song
+who's at the door
+put your shoes away
+happy birthday
+thanks for dinner
+it was nice seeing you
+see you tomorrow
+good morning
+good night
+what's the score
+i need to finish my homework
+the wifi is slow again
+my back hurts
+let's go for a walk
+which one do you like better
+he's running late
+the meeting got cancelled
+i'm reading a good book
+we should paint the bedroom
+did you water the plants
+the baby is finally asleep
+i got a new job
+can you help me with this
+where are we going for vacation
+i'm so tired
+that's a good idea
+the store closes at nine
+how do you spell necessary
+pass me the salt
+grandma is visiting next week
+i need a haircut
+we're out of coffee
+the cat knocked over the vase
+let's order pizza
+did you see the news
+i parked in the garage
+the electric bill went up
+my favorite team lost again
+we have to leave in ten minutes
+it takes about two minutes to walk there
+the recipe says bake for twenty minutes
+i was gone for thirty seconds
+level three of the game is hard
+he scored five points
+my flight is at three
+the speed limit here is forty five
+turn left at the light
+i'll be there in a minute
+give me a second
+just a moment
+one more thing
+okay
+sure
+uh huh
+hmm
+i don't know
+what did you say
+never mind
+sorry wrong button
+nothing
+forget it
+not you, i was talking to him
+oops
+are you listening
+what can you do
+how are you
+who won the game last night
+we're out of eggs
+i need to do laundry
+the plumber is coming tomorrow
+the movie was too long
+she plays the piano
+i'm learning spanish
+it's my turn to cook tonight
+what's on tv
+let me know when you're ready
+we should get a new couch
+he fixed the sink
+my sister just had a baby
+the hike was beautiful
+i'm allergic to cats
+this coffee is great
+traffic is backed up on the highway
+our anniversary is next month
+the rent is due friday
+i think i lost my wallet
+let's clean the garage this weekend
+i'll text you the address
+the printer is jammed again
+i'm going to the gym
+the neighbors are loud tonight
+it's been a long week
+pick a number between one and ten
+i scored a seven on the quiz
+the room is on the second floor
+we waited forty minutes for a table
+the kids are playing outside
+let's get ice cream
+that's not what i meant
+can you believe it
+i'm starving
+i'll make a sandwich
+the meeting ran over by thirty minutes
+
+## near
+i bought this fan last summer
+this fan is pretty quiet
+the fan was on sale at the store
+how much did the fan cost
+the fan needs to be cleaned
+there's dust on the fan blades
+my old fan broke last year
+i like the color of this fan
+we should get another fan for the bedroom
+the microwave is really old
+the microwave beeped earlier
+who left a mess in the microwave
+the microwave needs to be cleaned
+my mom has the same microwave
+i read the manual for the microwave
+the popcorn is in the cabinet
+the soup is still in the fridge
+i ate the leftovers already
+dinner will be ready soon
+the oven is preheating
+did you like the pasta
+the fan makes a weird noise sometimes
+the warranty on the microwave expired
+this microwave has a lot of buttons
+the fan is from the hardware store
+we keep the fan in the closet in winter
+the fan's remote is lost
+the speed button on the fan is broken
+the microwave door is a bit loose
+i wonder how fans work
+ceiling fans are better
+they make fans in that factory
+the microwave was invented by accident
+my roommate never cleans the microwave
+the power went out last night
+the power bill was high this month
+the timer on my phone went off
+i timed the run at two minutes
+the oscillating sprinkler is broken
+the weather report says high winds tomorrow
+the wind is really strong today
+is the air conditioner working
+the dryer takes forty minutes
+the dishwasher is done
+we need a new toaster
+that recipe needs half a cup of sugar
+the kettle just boiled
+she's a big fan of that band
+he's a huge fan of baseball
+my team's fans are the loudest
+the stove is still hot
+don't touch the plate it's hot
+dinner was cold by the time i got home
+the frozen pizza is in the freezer
+i set the table already
+the kitchen light is out
+
+## tv
+and now the weather for the weekend
+stay tuned for more after the break
+breaking news tonight from the capital
+the home team takes the lead in the third quarter
+call now and get a second one free
+this program is brought to you by our sponsors
+scientists have discovered a new species of frog
+the senator spoke to reporters this morning
+coming up next a look at local restaurants
+he shoots and he scores
+in other news the stock market rose today
+tonight on the late show
+previously on the show
+the chef adds a pinch of salt and stirs
+our guest tonight is a famous author
+heavy rain is expected across the region
+the police are asking for the public's help
+don't touch that dial
+we'll be right back
+the crowd goes wild
+temperatures will reach the upper nineties tomorrow
+a cold front moves in on thursday
+she whispered i love you
+get out of my house
+we have to find the treasure before sunrise
+the detective examined the evidence
+i've been waiting for this moment my whole life
+traffic on the interstate is moving slowly
+the store opens at nine on saturday
+limited time offer while supplies last
+ask your doctor if this is right for you
+the band will perform their new single
+the quarterback throws a long pass
+it's a beautiful day in the neighborhood
+and the winner is
+the jury reached a verdict this afternoon
+mix the flour and the eggs together
+bake at three hundred fifty degrees for twenty minutes
+let it cool for five minutes before serving
+microwave the butter until it melts
+turn the heat down and let it simmer
+the fans are on their feet
+wind speeds could reach forty miles per hour
+the hurricane is picking up speed
+stock prices fell sharply
+this is the final episode of the season
+thanks for watching
+
+## other_device
+turn on the lights
+turn off the tv
+play some music
+what's the weather tomorrow
+set an alarm for seven
+call mom
+lock the front door
+open the garage door
+dim the lights
+volume up
+turn the thermostat to seventy two
+next song
+pause the movie
+skip this track
+remind me to buy milk
+tell me a joke
+start the dishwasher
+turn on the oven to three fifty
+add eggs to my shopping list
+text dave i'm on my way
+read my messages
+open the blinds
+turn up the heat
+start the washing machine
+set a timer for ten minutes
+change the channel
+turn on the porch light
+what's on my calendar
+play the news
+mute the tv
+turn on the air conditioner
+start the vacuum
+order more paper towels
+how tall is mount everest
+navigate to the grocery store
+turn off the bedroom lights
+brew a cup of coffee
+start the car
+turn the music down
+set the oven to bake

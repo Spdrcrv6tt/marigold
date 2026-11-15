@@ -1,0 +1,26 @@
+{
+  "format": "marigold-config/0",
+  "product": "Countertop microwave (reference config)",
+  "wake": { "phrase": "hey kitchen", "sensitivity": 0.5 },
+  "match": { "reject_threshold": null },
+  "output": { "host": "i2c", "i2c_address": "0x2A", "irq_pin": true },
+  "values": {
+    "time": { "type": "duration", "min_s": 1, "max_s": 5999 },
+    "power": { "type": "level", "min": 1, "max": 10,
+               "words": { "low": 3, "medium": 5, "half": 5, "high": 10, "full": 10, "max": 10 } }
+  },
+  "actions": [
+    { "id": 1, "name": "start", "description": "Start cooking for a time (and optionally at a power level)",
+      "examples": ["start for two minutes", "cook for one minute", "heat for thirty seconds", "microwave this for three minutes", "start", "run it for ninety seconds", "heat it up for a minute and a half", "cook for five minutes on high"],
+      "values": ["time", "power"] },
+    { "id": 2, "name": "add_30s", "description": "Add thirty seconds to the timer",
+      "examples": ["add thirty seconds", "thirty more seconds", "add 30 seconds", "plus thirty", "add time", "another thirty seconds", "a little longer", "extend by thirty seconds"],
+      "values": [] },
+    { "id": 3, "name": "stop", "description": "Stop or pause cooking",
+      "examples": ["stop", "stop the microwave", "cancel", "pause", "stop cooking", "turn it off", "that's enough", "end cooking"],
+      "values": [] },
+    { "id": 4, "name": "power_level", "description": "Set the power level from 1 to 10",
+      "examples": ["power level five", "set power to seven", "half power", "full power", "power level ten", "set the power to low", "change the power level to three", "medium power"],
+      "values": ["power"] }
+  ]
+}

@@ -1,0 +1,725 @@
+# Marigold paraphrase set v1 (frozen 2026-11-15, written before any matching result was seen).
+# Format: "## <product> <action>" starts a block; each line is "<text>" or "<text> | slot=value[;slot=value]".
+# Split: within each block, line index i (from 0) is dev when i % 4 == 0, test otherwise.
+# Test lines are evaluation only: never train on them, tune on them, or copy them into a config.
+# Labels follow the configs: heat complaints mean fan "faster", cold complaints mean "slower".
+
+## fan on
+could you get the fan going
+fire up the fan
+get the fan running
+i'd like the fan on please
+let's have some air
+kick on the fan
+switch on
+power it up
+boot up the fan
+go ahead and start
+turn yourself on
+put the fan on
+fan please
+can we get some airflow
+activate the fan
+wake up and start the fan
+on please
+turn on
+start it up
+i need the fan running
+get it going
+begin
+run the fan
+please switch on the fan
+give me some breeze
+fan, start
+could you start up the fan for me
+time to turn the fan on
+start the breeze
+get some air moving
+i want the fan on
+turn the thing on
+flip the fan on
+start spinning
+hit the power
+let's get the fan on
+would you mind turning on the fan
+please start
+engage the fan
+power up
+on
+turn on the breeze
+get the blades spinning
+start running
+the fan, on please
+switch yourself on
+turn this fan on
+could you power on the fan
+start the air
+fan on now
+put some air on me
+i could use the fan right now
+go on
+start up
+go ahead and turn it on
+bring the fan on
+turn on the fan please
+let's get some wind going
+make it blow
+can i have the fan on
+start the cooling
+cool me off
+get the fan started
+please power the fan on
+run
+switch on the fan please
+i'd like some air
+fire it up
+turn the fan back on
+resume the fan
+
+## fan off
+kill the fan
+shut it down
+turn off
+switch off
+that's enough fan
+power down
+stop
+off
+enough
+shut the fan off
+turn the fan off please
+i don't need the fan anymore
+no more fan
+halt
+cut the fan
+please stop the fan
+fan, stop
+kill it
+shut down
+turn yourself off
+stop spinning
+that's plenty, turn off
+i'm done with the fan
+switch it off
+power it off
+can you turn the fan off
+go off
+off please
+shut it off
+stop running
+turn this thing off
+we don't need the fan
+deactivate the fan
+fan off now
+stop the air
+no more air please
+enough air
+cut the power
+could you switch off the fan
+that's enough, shut it off
+please turn off
+i'd like the fan off
+put the fan off
+quit
+stop the breeze
+kill the breeze
+turn off the fan now
+shut off
+go to sleep
+rest
+stop the blades
+i'm freezing, shut it down
+the fan can go off now
+that'll do, turn off
+stop it
+power down the fan
+switch the thing off
+we're done here, shut it down
+cancel the fan
+end
+stop blowing air
+turn the fan off for now
+stop the fan please
+turn it off now
+please shut the fan down
+can you kill the fan
+i'm good, no more fan
+turn that fan off
+turn off the breeze
+shut down the fan
+
+## fan faster
+crank it
+crank it up
+more power
+turn it up
+turn up the fan
+i'm roasting
+it's boiling in here
+i'm sweating
+faster please
+go faster
+a bit faster
+bump it up
+kick it up a notch
+more
+stronger
+blow harder
+i need more air
+increase it
+speed it up
+up
+next speed
+one step faster
+more wind
+give me more breeze
+it's not enough air
+i'm burning up
+it's so hot
+can you make it stronger
+raise the speed
+up a level
+notch it up
+pump it up
+harder
+i can barely feel it
+it's stuffy in here
+more airflow please
+make it blow harder
+boost it
+turn the speed up
+go up one
+a little more
+more fan
+rev it up
+a little stronger please
+can you speed the fan up
+increase the fan speed
+step it up
+it's way too warm
+i'm overheating
+ramp it up
+more speed
+push it harder
+i need it stronger
+not strong enough
+higher
+up one notch
+kick it up
+it's hot as heck in here
+turn it up a bit
+give it more juice
+pick up the pace
+more blowing
+too weak
+could you turn the fan up a little
+speed up the fan please
+can i get more air
+i'm melting
+increase airflow
+go up a speed
+faster fan
+
+## fan slower
+turn it down
+too much air
+i'm freezing
+it's chilly
+slow it down
+less
+softer
+gentler
+tone it down
+dial it back
+back it off
+ease up
+not so strong
+that's too strong
+down
+down a notch
+one step slower
+a bit slower
+lower it
+reduce the speed
+i'm getting cold
+it's too windy
+my papers are blowing away
+calm it down
+less wind
+weaker
+take it down a notch
+turn the speed down
+go down one
+a little less
+slower please
+go slower
+decrease it
+not so fast
+it's blowing too hard
+reduce airflow
+knock it down
+lower the fan
+bring it down
+down one level
+back it down a little
+turn down the fan
+i'm cold
+it's freezing in here
+gentle breeze please
+too much
+that's a lot of air
+decrease the fan speed
+slow the fan down
+slow down a bit
+can you turn it down a little
+dial it down
+step it down
+drop the speed
+less fan
+please make the fan gentler
+lower
+a little softer please
+easy
+go down a speed
+too strong for me
+it's too breezy
+knock it back a bit
+could you slow the fan
+lower the speed a notch
+not so much air
+i've got goosebumps
+cut the speed
+a bit less air please
+slow
+
+## fan set_level
+put it on three | speed=3
+level two | speed=2
+speed four | speed=4
+set it to one | speed=1
+go to level five | speed=5
+make it level three | speed=3
+high | speed=5
+low | speed=1
+medium | speed=3
+set it to medium | speed=3
+change to speed two | speed=2
+put the fan on level four | speed=4
+switch to high | speed=5
+put it on low please | speed=1
+maximum speed | speed=5
+lowest setting | speed=1
+speed setting three | speed=3
+number two | speed=2
+go to two | speed=2
+turn it to four | speed=4
+put it on five | speed=5
+level one please | speed=1
+set the fan to speed three | speed=3
+can you set it to two | speed=2
+i want level four | speed=4
+setting five | speed=5
+fan to medium | speed=3
+put it at three | speed=3
+run it on high | speed=5
+run on low | speed=1
+three please | speed=3
+make it a two | speed=2
+bump it to four | speed=4
+drop it to one | speed=1
+set level five | speed=5
+the highest setting | speed=5
+the lowest speed please | speed=1
+change the speed to medium | speed=3
+put it on number three | speed=3
+speed two please | speed=2
+go to high | speed=5
+switch to low | speed=1
+four | speed=4
+level three | speed=3
+set to two | speed=2
+put it on max | speed=5
+full speed | speed=5
+minimum speed | speed=1
+turn it to level one | speed=1
+change it to level five | speed=5
+make it speed four | speed=4
+set speed to one | speed=1
+level four please | speed=4
+can you put it on two | speed=2
+i'd like speed three | speed=3
+put the fan at medium | speed=3
+move it to five | speed=5
+move it to level two | speed=2
+select speed four | speed=4
+choose level one | speed=1
+setting number three | speed=3
+put it on the second setting | speed=2
+the fourth speed | speed=4
+first speed | speed=1
+fifth setting | speed=5
+medium please | speed=3
+go to the middle setting | speed=3
+switch it to speed one | speed=1
+high please | speed=5
+put it on setting two | speed=2
+
+## fan oscillate
+swing
+turn side to side
+sweep the room
+start rotating
+stop rotating
+rotate
+move around
+stop moving around
+hold still
+stop turning
+stay pointed at me
+sweep back and forth
+spin around
+turn your head side to side
+swivel
+start swiveling
+stop swiveling
+oscillation on
+oscillation off
+pan back and forth
+can you oscillate
+make it swing
+stop swinging
+move side to side
+keep still
+lock the direction
+spread the air around the room
+blow all around the room
+turn the oscillate on
+turn the swing off
+sweep mode
+turn on swing mode
+turn off swing mode
+rotation on
+rotation off
+start sweeping
+stop sweeping
+go back and forth
+can you rotate
+rotate please
+enable oscillation
+disable oscillation
+switch oscillation on
+switch oscillation off
+start turning
+move your head around
+look around the room
+sweep the air around
+stop the swinging
+stop the rotation
+don't move
+stay in one place
+aim straight ahead
+cover the whole room
+fan the whole room
+oscillate please
+turn on the rotation
+turn off the rotation
+pivot back and forth
+wave back and forth
+sway
+start swaying
+stop swaying
+let it swing around
+rotate side to side
+enough rotating
+quit oscillating
+go side to side
+circulate the air around
+turn the oscillation feature on
+
+## microwave start
+heat this up for two minutes | time=120
+nuke it for a minute | time=60
+warm this for thirty seconds | time=30
+two minutes please | time=120
+cook it for four minutes | time=240
+go for one minute | time=60
+ninety seconds | time=90
+start cooking for three minutes | time=180
+reheat for two and a half minutes | time=150
+warm it up for forty five seconds | time=45
+run for ten minutes | time=600
+heat for one minute thirty | time=90
+a minute and twenty seconds | time=80
+zap it for fifteen seconds | time=15
+put it on for two minutes | time=120
+do two minutes | time=120
+cook for six minutes on full power | time=360;power=10
+heat it for a minute at half power | time=60;power=5
+one minute on high | time=60;power=10
+three minutes at power level five | time=180;power=5
+go ahead and start
+start it
+begin cooking
+heat it
+warm up my coffee for forty seconds | time=40
+defrost this for five minutes | time=300
+melt the butter for twenty seconds | time=20
+pop it in for a minute | time=60
+can you heat this for two minutes | time=120
+warm my food for three minutes | time=180
+reheat my leftovers for two minutes | time=120
+heat the soup for four minutes | time=240
+cook the popcorn for three and a half minutes | time=210
+run it for one minute | time=60
+do one minute please | time=60
+forty five seconds | time=45
+twelve minutes | time=720
+eight minutes | time=480
+set it for two minutes and go | time=120
+start for one minute fifteen | time=75
+hit start
+go
+cook
+microwave for twenty seconds | time=20
+heat it up for ninety seconds | time=90
+warm it for a minute | time=60
+two minutes on full | time=120;power=10
+thirty seconds at medium power | time=30;power=5
+cook on low for five minutes | time=300;power=3
+start heating for one minute | time=60
+a quick thirty seconds | time=30
+just ten seconds | time=10
+give it two minutes | time=120
+give this a minute | time=60
+three minutes please | time=180
+heat my tea for one minute | time=60
+warm the milk for fifty seconds | time=50
+cook the potato for seven minutes | time=420
+run the microwave for two minutes | time=120
+start heating
+turn it on for a minute | time=60
+nuke this
+zap it
+heat for twenty five seconds | time=25
+four and a half minutes | time=270
+a minute fifteen | time=75
+one minute forty five seconds | time=105
+start the microwave for thirty seconds | time=30
+warm it up for two minutes on medium | time=120;power=5
+begin heating for three minutes | time=180
+
+## microwave add_30s
+add another thirty
+add half a minute
+give it thirty more seconds
+thirty more
+a bit more time
+it needs a little more
+not done yet, add some time
+extra thirty seconds
+add on thirty seconds
+more time please
+keep going a little longer
+half a minute more
+plus thirty seconds
+add a bit
+tack on thirty seconds
+it's still cold, add time
+still frozen in the middle
+thirty extra
+add thirty
+one more thirty
+another half minute
+extend it
+extend the time
+add thirty please
+give it a little longer
+a little more time
+keep it going another thirty seconds
+bump it thirty seconds
+add some more time
+more time
+thirty seconds more please
+increase the time by thirty seconds
+it's not hot enough yet
+let it go longer
+a few more seconds
+a touch longer
+add a little
+more seconds
+stretch it a bit
+can you add thirty seconds
+add another thirty seconds please
+needs thirty more
+tack on a bit more
+give it another thirty
+run it a little longer
+cook it a bit longer
+heat it a bit more
+warm it a little more
+a smidge longer
+just a bit more
+not quite done, thirty more
+add a half minute
+plus thirty more seconds
+throw on another thirty
+bump the time
+more please
+longer
+keep cooking a little
+thirty seconds extra
+add thirty to the timer
+add time please
+add another thirty to it
+can i get thirty more seconds
+let it run a bit longer
+a few more seconds please
+still lukewarm, add more
+give it a few more seconds
+extend thirty seconds
+thirty more seconds of cooking
+add a little more time
+
+## microwave stop
+stop it
+stop now
+halt
+cancel that
+turn off
+stop heating
+hold on
+wait
+pause it
+abort
+quit
+shut it off
+stop the timer
+that's done
+enough
+it's done
+end it
+kill it
+stop stop stop
+cancel cooking
+pause cooking
+hold it
+freeze
+stop the cooking
+it's boiling over
+it's sparking
+shut it down
+power off
+cut it
+that's plenty
+halt cooking
+cancel the timer
+stop right now
+end the cycle
+terminate
+pause please
+please stop
+wait a second
+hang on, stop
+turn the microwave off
+shut off the microwave
+i need to stop it
+stop the heating please
+cancel please
+that's good, stop
+done
+we're done
+it's hot enough
+that's warm enough
+take a break
+hold up
+pause the microwave
+cut the power
+switch it off
+stop the microwave now
+quit cooking
+abort cooking
+cancel everything
+never mind, stop
+stop the program
+end the timer
+turn it off now
+stop it please
+off
+clear it
+clear the timer
+reset
+i'm opening the door, stop
+it smells like it's burning
+kill the microwave
+
+## microwave power_level
+power seven | power=7
+set it to level eight | power=8
+use half power | power=5
+low power | power=3
+high power | power=10
+change to power four | power=4
+put it on power level two | power=2
+power to six | power=6
+power level one | power=1
+set the power at nine | power=9
+go to fifty percent power | power=5
+thirty percent power | power=3
+power level three please | power=3
+max power | power=10
+lower the power to four | power=4
+set power level ten | power=10
+put it on medium | power=5
+use the low setting | power=3
+switch to high power | power=10
+change the power to eight | power=8
+power level six please | power=6
+i want power level five | power=5
+set it on full power | power=10
+run at seventy percent | power=7
+make it power two | power=2
+level nine power | power=9
+set power to one | power=1
+put the power on four | power=4
+power setting three | power=3
+power at seven please | power=7
+set the wattage to medium | power=5
+change wattage to high | power=10
+turn the power down to three | power=3
+turn the power up to nine | power=9
+drop the power to two | power=2
+bump the power to eight | power=8
+power six | power=6
+can you set the power to five | power=5
+put it on level four power | power=4
+power ten | power=10
+set the power level to one | power=1
+medium high power | power=7
+use power level eight | power=8
+eighty percent power | power=8
+twenty percent power | power=2
+power level nine | power=9
+set to half power | power=5
+i'd like full power | power=10
+go to power three | power=3
+change it to power seven | power=7
+power setting ten | power=10
+power down to four | power=4
+reduce the power to five | power=5
+set the power to medium | power=5
+put it on power six | power=6
+power level two please | power=2
+change the power level to nine | power=9
+put it at sixty percent power | power=6
+use power one | power=1
+select power level eight | power=8
+power to the max | power=10
+set the heat level to four | power=4
+heat level seven | power=7
+change the heat to low | power=3
+put the heat on high | power=10
+medium heat | power=5
+power four please | power=4
+set power two | power=2
+make the power ten | power=10
+power at half | power=5
