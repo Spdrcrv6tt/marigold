@@ -142,8 +142,16 @@ def cmd_jobs():
                     noise_scale=round(rng.uniform(0.5, 0.8), 3), noise_w=round(rng.uniform(0.6, 1.0), 3),
                     out=f"{root}/wav/{group}/{uid}.wav")
 
+    # Config example phrases (fan, microwave) are spoken by EVAL voices only, as split "typed" (target 1):
+    # decision 2026-11-15, the audio encoder never trains on fan or microwave text, not even config examples.
+    typed = []
+    for p in sorted((R / "sdk/configs").glob("*.json")):
+        c = json.load(open(p, encoding="utf-8"))
+        for a in c["actions"]:
+            for k, e in enumerate(a["examples"]):
+                typed.append(dict(set=f"config:{p.stem}", product=p.stem, action=a["name"], category=None, text=e, idx=k, values={}, split="typed"))
     ej = []
-    for t in eval_texts():
+    for t in eval_texts() + typed:
         rng = random.Random(hashlib.sha1(f"{t['set']}|{t['product']}|{t['action']}|{t['category']}|{t['idx']}".encode()).hexdigest())
         pick = [rng.choice(evk), rng.choice(evp)]
         pick.append(rng.choice([v for v in ev if v not in pick]))
@@ -153,26 +161,33 @@ def cmd_jobs():
     assert all(j["voice"] in {v["id"] for v in ev} for j in ej)
     jdump(D / "jobs_eval.jsonl", ej)
 
-    banned = {norm(t["text"]) for t in eval_texts()}
-    src, dropped = [], []
-    for p in sorted((R / "sdk/configs").glob("*.json")):
-        c = json.load(open(p, encoding="utf-8"))
-        for a in c["actions"]:
-            for k, e in enumerate(a["examples"]):
-                src.append(dict(set=f"config:{p.stem}", product=p.stem, action=a["name"], category=None, text=e, idx=k, split="train", nvoice=8))
-    tt = R / "data/gate0b/train_text.json"
-    if tt.exists():
+    banned = {norm(t["text"]) for t in eval_texts() + typed}
+    src, dropped, seen = [], [], set()
+    # Training text: data/gate0b/train_text.json (32 training appliances), plus lines of a later
+    # train_text_v3.json that v1 lacks (v1 clip ids stay stable). Never fan or microwave text.
+    for name, setname in (("train_text.json", "gate0b"), ("train_text_v3.json", "gate0b-v3")):
+        tt = R / "data/gate0b" / name
+        if not tt.exists():
+            continue
         d = json.load(open(tt, encoding="utf-8"))
         for prod, v in d.items():
-            for act, lines in v.get("actions", {}).items():
+            if prod.lower() in ("fan", "desk fan", "microwave", "countertop microwave"):
+                continue
+            items = [(act, None, lines) for act, lines in v.get("actions", {}).items()] + [(None, "none", v.get("none", []))]
+            for act, cat, lines in items:
                 for k, e in enumerate(lines):
-                    src.append(dict(set="gate0b", product=prod, action=act, category=None, text=e, idx=k, split="train", nvoice=3))
-            for k, e in enumerate(v.get("none", [])):
-                src.append(dict(set="gate0b", product=prod, action=None, category="none", text=e, idx=k, split="train", nvoice=3))
+                    key = (prod, act, cat, norm(e))
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    src.append(dict(set=setname, product=prod, action=act, category=cat, text=e, idx=k, split="train", nvoice=3))
     tj = []
     for t in src:
         if norm(t["text"]) in banned:
-            dropped.append(t)
+            dropped.append(dict(t, reason="matches an eval/text line"))
+            continue
+        if re.search(r"[^\x00-\x7f\u2019]", t["text"]):  # the LLM wrote some lines in Chinese
+            dropped.append(dict(t, reason="not English (non-ASCII script)"))
             continue
         rng = random.Random(hashlib.sha1(f"{t['set']}|{t['product']}|{t['action']}|{t['category']}|{t['idx']}|{t['text']}".encode()).hexdigest())
         pick = [rng.choice(trk)]
@@ -186,7 +201,8 @@ def cmd_jobs():
     assert not any(j["voice"] in {v["id"] for v in ev} for j in tj)
     jdump(D / "jobs_train.jsonl", tj)
     jdump(D / "train_dropped_eval_overlap.jsonl", dropped)
-    print(f"eval jobs {len(ej)} from {len(eval_texts())} lines; train jobs {len(tj)} from {len(src) - len(dropped)} lines; dropped {len(dropped)} train lines matching eval/text")
+    from collections import Counter
+    print(f"eval jobs {len(ej)} from {len(eval_texts())} lines; train jobs {len(tj)} from {len(src) - len(dropped)} lines; dropped {dict(Counter(d['reason'] for d in dropped))}")
 
 
 # ---------------------------------------------------------------- synthesis
@@ -252,7 +268,7 @@ def cmd_synth(jobs, engine, i, n, device="cpu"):
     bank = PiperBank(int(os.environ.get("PIPER_THREADS", "3"))) if engine == "piper" else KokoroBank(device)
     done_path = D / "done" / f"{Path(jobs).stem}.{engine}.{i}.jsonl"
     done_path.parent.mkdir(parents=True, exist_ok=True)
-    seen = {r["id"] for r in jload(done_path)} if done_path.exists() else set()
+    seen = {r["id"] for p in done_path.parent.glob(f"{Path(jobs).stem}.*.jsonl") for r in jload(p) if "dur_s" in r}  # any shard layout
     t0, k, fails = time.time(), 0, 0
     with open(done_path, "a", encoding="utf-8") as log:
         for j in rows:
@@ -296,6 +312,7 @@ def f0_median(x):
 def cmd_merge():
     import numpy as np
     import soundfile as sf
+    from num2words import num2words
     vfile = D / "voices.json"
     V = json.load(open(vfile, encoding="utf-8"))
     vid = {v["id"]: v for v in V["voices"]}
@@ -309,17 +326,28 @@ def cmd_merge():
             for r in jload(p):
                 if "dur_s" in r:
                     done[r["id"]] = r["dur_s"]
-        rows, missing = [], 0
+        rows, missing, bad = [], 0, []
         for j in jload(jp):
             if j["id"] not in done:
                 missing += 1
                 continue
+            # TTS failure (e.g. a 51 s clip for 40 characters); numbers count as spoken ("375" -> words)
+            spoken = re.sub(r"\d+", lambda m: num2words(int(m.group())), j["text"])
+            if done[j["id"]] > 1.5 + 0.15 * len(spoken):
+                bad.append(dict(id=j["id"], text=j["text"], voice=j["voice"], duration_s=done[j["id"]], reason="duration > 1.5 s + 0.15 s per spoken character"))
+                continue
             rows.append(dict(path=f"data/tts/{j['out']}", text=j["text"], product=j["product"], action=j["action"], values=j["values"],
                              split=j["split"], voice=j["voice"], engine=j["engine"], set=j["set"], category=j["category"],
                              locale=j["locale"], gender=vid[j["voice"]]["gender"], length_scale=j["length_scale"], duration_s=done[j["id"]]))
+        old = D / name / "manifest.jsonl"   # keep Whisper QA fields from an earlier run (same clip, same path)
+        qa = {r["path"]: r for r in jload(old) if "asr_wer" in r} if old.exists() else {}
+        for r in rows:
+            if r["path"] in qa:
+                r["asr_hyp"], r["asr_wer"] = qa[r["path"]]["asr_hyp"], qa[r["path"]]["asr_wer"]
         jdump(D / name / "manifest.jsonl", rows)
+        jdump(D / name / "rejected.jsonl", bad)
         hrs = sum(r["duration_s"] for r in rows) / 3600
-        print(f"{name}: {len(rows)} utterances, {hrs:.2f} h, {missing} jobs missing")
+        print(f"{name}: {len(rows)} utterances, {hrs:.2f} h, {missing} jobs missing, {len(bad)} rejected as duration outliers")
         if name == "eval":  # median F0 per eval voice over up to 20 of its utterances
             by = {}
             for r in rows:

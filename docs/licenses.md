@@ -75,6 +75,7 @@ Every voice was checked against its own model card (data/tts/piper/cards/*.md fo
 
 - **Eval, 21 speakers** (held out; the only voices that speak eval/text lines): Kokoro af_heart, af_nicole, af_kore, af_sky, am_michael, am_puck, am_eric, am_onyx, am_fenrir, bf_emma, bf_lily, bm_george, bm_lewis, bm_daniel; Piper ljspeech, kristin, john, joe, mike, alba, jenny_dioco. 2 engines (14 Kokoro, 7 Piper); 10 female, 11 male; 14 en-US, 7 en-GB. Median F0 per voice is in voices.json.
 - **Train, 920 voices / 919 people**: Kokoro af_bella, af_aoede, af_sarah, af_alloy, af_nova, af_jessica, af_river, am_echo, am_liam, am_santa, am_adam, bf_isabella, bf_alice, bm_fable; Piper libritts-high (904 readers), cori-high and hifi_tts_92 (Cori Samuel).
+- Eval voices also speak the fan and microwave config examples (eval split "typed", target 1); train audio never contains fan or microwave text (decision of Nov 15).
 - The sets are disjoint by person (checked in code). Accent coverage is only US and British English; Indian, Australian, Southern US, Spanish-accented and other speakers need real recordings.
 
 
@@ -87,7 +88,7 @@ Every voice was checked against its own model card (data/tts/piper/cards/*.md fo
 | MUSAN noise/free-sound (843 files) | background | Public domain (MUSAN LICENSE: all marked public domain on Freesound) | Train/eval pools (1 in 5 to eval by file id) | 2026-11-15 |
 | MUSAN noise/sound-bible: 86 kept (66 CC BY 3.0, 20 public domain) | background | CC BY 3.0 / public domain; attribution kept per file in data/noise/musan_clean.json | Train/eval pools | 2026-11-15 |
 | MUSAN music: 327 kept (CC BY: rfm 147 Kevin MacLeod, fma 78, fma-western-art 29, jamendo 18, hd-classical 1; public domain: fma-western-art 29, hd-classical 18, fma 7) | music | CC BY 3.0/4.0 or public domain; attribution per file in musan_clean.json | Train/eval pools | 2026-11-15 |
-| MUSAN rejected: 335 music files + 1 sound-bible file | | ShareAlike 282, NoDerivs 32, no license found 12, not listed 8+1 (data/noise/musan_rejected.json) | Not used | 2026-11-15 |
+| MUSAN rejected: 333 music files + 1 sound-bible file | | ShareAlike 282, NoDerivs 32, no license found 12, not listed in LICENSE 7 music + 1 sound-bible (data/noise/musan_rejected.json) | Not used | 2026-11-15 |
 | Speech Commands _background_noise_ (6 files) | household, stationary | CC BY 4.0 | Train pool | 2026-11-15 |
 
 No commercially clean real fan or microwave recording was found without an account: MUSAN's noise annotations carry no appliance labels, and Freesound needs an account. FSD50K (Zenodo) has per-clip licenses and "Mechanical fan" / "Microwave oven" labels but ships as ~24 GB of split zips; not fetched.

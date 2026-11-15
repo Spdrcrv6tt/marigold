@@ -37,10 +37,11 @@ def main(manifest, out, device="cpu"):
     asr = pipeline("automatic-speech-recognition", model="openai/whisper-base.en", device=0 if device == "cuda" else -1,
                    torch_dtype=torch.float16 if device == "cuda" else torch.float32)
     rows = [json.loads(l) for l in open(R / manifest, encoding="utf-8")]
+    todo = [r for r in rows if r.get("duration_s", 0) <= 29.5]  # Whisper takes at most 30 s
     res, per = [], {}
     B = 16
-    for s in range(0, len(rows), B):
-        chunk = rows[s:s + B]
+    for s in range(0, len(todo), B):
+        chunk = todo[s:s + B]
         audio = [{"raw": sf.read(str(R / r["path"]), dtype="float32")[0], "sampling_rate": 16000} for r in chunk]
         for r, h in zip(chunk, asr(audio, batch_size=B)):
             e, n = wer(words(r["text"]), words(h["text"]))
@@ -54,8 +55,10 @@ def main(manifest, out, device="cpu"):
                    per_voice={k: dict(wer=round(v[0] / v[1], 4), utts=v[2], over_50pct=int(v[3])) for k, v in sorted(per.items())})
     json.dump(dict(summary=summary, rows=res), open(R / out, "w", encoding="utf-8"), indent=1)
     with open(R / manifest, "w", encoding="utf-8") as f:   # QA fields for consumers that want to drop doubtful clips
-        for r, q in zip(rows, res):
-            f.write(json.dumps(dict(r, asr_hyp=q["hyp"], asr_wer=round(q["errors"] / max(q["words"], 1), 3)), ensure_ascii=False) + "\n")
+        q = {x["path"]: x for x in res}
+        for r in rows:
+            x = q.get(r["path"])
+            f.write(json.dumps(dict(r, asr_hyp=x and x["hyp"], asr_wer=x and round(x["errors"] / max(x["words"], 1), 3)), ensure_ascii=False) + "\n")
     print(json.dumps(summary, indent=0)[:3000])
 
 
