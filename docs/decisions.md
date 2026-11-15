@@ -26,3 +26,8 @@
   - 5 AM: whole-chip bit-exact regression plus area and power estimates;
   - 6 AM: reports done and everything committed.
   Refinement comes later. No gold-plating before the freezes.
+- 2026-11-15, rulings on the golden-format draft 0.1 (model agent):
+  - (1) Segment pre-roll = 0.3 s (4800 samples) before the wake sample, not 1 s, so the segment carries at most the wake phrase's tail. The model trains with a random 0.1 to 0.5 s pre-roll that includes wake-phrase tails. The capture ring stays at 64 KB for a later two-stage wake confirm.
+  - (2) The confidence shift goes into the blob (byte 0x1C, conf_sh; 9 at D = 128), so a later D change needs no RTL change.
+  - (3) Level slots carry low, medium and high word values in the slot entry's former pad bytes (0 = default rule).
+  - D (128 or 256) is the model agent's call by the teacher freeze.
