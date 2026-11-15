@@ -31,3 +31,6 @@
   - (2) The confidence shift goes into the blob (byte 0x1C, conf_sh; 9 at D = 128), so a later D change needs no RTL change.
   - (3) Level slots carry low, medium and high word values in the slot entry's former pad bytes (0 = default rule).
   - D (128 or 256) is the model agent's call by the teacher freeze.
+- 2026-11-15, segment and value rulings:
+  - End-of-speech minimum mn = 8000 samples (0.5 s from segment start), still requiring a speech onset after the wake; mn = 32000 would have failed target 7 for every short command.
+  - The value head emits level-word codes -1 to -5 (low, medium, high, max, min). The island maps them through the slot table (a 0 byte means low = min, medium = floor((min + max) / 2), high = max) and clamps to [min, max]. No slot reads cross the bridge.
