@@ -21,3 +21,8 @@
   - KV260 phase 3 waits for the board.
 - 2026-11-15, held-out rule tightened: the audio encoder, like the command embedder, never trains on fan or microwave text (not even the config examples). The chip model is fixed before any OEM types examples, so target 1 is measured on typed phrases the model never heard, and target 11 tests products the model has never seen.
 - 2026-11-15 (John: "It almost needs a way to indicate to the hardware that it wasn't able to complete a command, period. So the maker could implement some sort of status ding or something."): the chip reports events, not just commands: COMMAND, WAKE (listening), NOMATCH (heard speech, no confident match) and TIMEOUT (woke, nothing said). Host frames carry a type byte; GPIO-only products map events to pins (e.g. a buzzer for a 'didn't catch that' ding). docs/config-blob.md updated; the SDK exposes these as product options.
+- 2026-11-15, 6 PM (John: "We don't need a final product by the end ... But I want it pretty damn well wrapped up by end of usage period. Then we can go ahead and refine it from there using higher class models."): the goal is a wrapped-up iteration 1, not a market product. It means working end to end, documented, honest numbers, all committed. Freeze schedule:
+  - 2 AM: model and wake golden models frozen;
+  - 5 AM: whole-chip bit-exact regression plus area and power estimates;
+  - 6 AM: reports done and everything committed.
+  Refinement comes later. No gold-plating before the freezes.
