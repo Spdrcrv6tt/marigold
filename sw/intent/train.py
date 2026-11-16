@@ -43,7 +43,10 @@ def load_index(targets):
 
 
 class Aug:
-    def __init__(self, seed):
+    P_NOISE, SNR_HI = 0.75, 20.0       # v1; v1.1 passes --noise-p 0.85 --snr-hi 15 (stronger noise)
+
+    def __init__(self, seed, p_noise=0.75, snr_hi=20.0):
+        self.P_NOISE, self.SNR_HI = p_noise, snr_hi        # instance values: workers are spawned (Windows)
         self.rng = np.random.default_rng(seed)
         noise = [json.loads(l) for l in open(ROOT / "data/noise/index.jsonl")]
         self.noise = {}
@@ -85,13 +88,13 @@ class Aug:
             from scipy.signal import fftconvolve
             wet = fftconvolve(x, h)[: len(x)].astype(np.float32)
             x = r.uniform(0.3, 0.8) * x + wet
-        if r.random() < 0.75:                                   # noise
+        if r.random() < self.P_NOISE:                           # noise
             p = r.random()
             if p < 0.4:
-                kind = "fan" if r.random() < 0.5 else "microwave"; snr = r.uniform(0, 20)
+                kind = "fan" if r.random() < 0.5 else "microwave"; snr = r.uniform(0, self.SNR_HI)
             else:
                 kind = r.choice([k for k in ("babble", "tv", "music", "background", "household", "stationary") if k in self.noise])
-                snr = r.uniform(5, 25)
+                snr = r.uniform(5 - (20 - self.SNR_HI), 25 - (20 - self.SNR_HI))
             files = self.noise[kind]
             nz = self.read(files[int(r.integers(len(files)))], len(x))
             if len(nz) < len(x):
@@ -104,14 +107,15 @@ class Aug:
 
 
 class Batches(torch.utils.data.IterableDataset):
-    def __init__(self, groups, bs, max_s, seed, prods_per_batch=0):
+    def __init__(self, groups, bs, max_s, seed, prods_per_batch=0, mix=None, p_noise=0.75, snr_hi=20.0):
         self.groups, self.bs, self.max_s, self.seed, self.ppb = groups, bs, max_s, seed, prods_per_batch
+        self.mix, self.p_noise, self.snr_hi = dict(mix or MIX), p_noise, snr_hi
 
     def __iter__(self):
         wi = torch.utils.data.get_worker_info()
         seed = self.seed * 1000 + (wi.id if wi else 0) + int(time.time()) % 1000
-        rng = random.Random(seed); aug = Aug(seed)
-        keys, w = list(MIX), [MIX[k] for k in MIX]
+        rng = random.Random(seed); aug = Aug(seed, self.p_noise, self.snr_hi)
+        keys, w = list(self.mix), [self.mix[k] for k in self.mix]
         byp = {}
         for r in self.groups["tts_cmd"]:
             byp.setdefault(r.get("product"), []).append(r)
@@ -162,6 +166,9 @@ def main():
     ap.add_argument("--gpu-gb", type=float, default=10)
     ap.add_argument("--init", default="")
     ap.add_argument("--ppb", type=int, default=0, help="products per batch for the TTS commands (0 = any)")
+    ap.add_argument("--mix", default="", help="sampling weights tts_cmd,tts_none,libri,sc (default 0.45,0.10,0.30,0.15)")
+    ap.add_argument("--noise-p", type=float, default=0.75)
+    ap.add_argument("--snr-hi", type=float, default=20.0)
     ap.add_argument("--moonshine", action="store_true", help="start the frontend and layers from Moonshine Streaming Tiny")
     ap.add_argument("--lr-pre", type=float, default=0.3, help="LR multiplier for Moonshine-initialised weights")
     ap.add_argument("--qat", action="store_true", help="4/8-bit weight QAT from --init, distilling also from the float model")
@@ -170,6 +177,9 @@ def main():
     ap.add_argument("--fw", type=float, default=0.5, help="QAT: weight of 1 - cos(q, float model q)")
     a = ap.parse_args()
     torch.manual_seed(0)
+    if a.mix:
+        for k_, v_ in zip(list(MIX), a.mix.split(",")):
+            MIX[k_] = float(v_)
     dev = "cuda"
     torch.cuda.set_per_process_memory_fraction(min(1.0, a.gpu_gb / (torch.cuda.get_device_properties(0).total_memory / 2 ** 30)))
     groups, Y = load_index(a.targets)
@@ -195,7 +205,7 @@ def main():
             enable_qat(m); m.to(dev)
     print("weights", n_weights(m), "qat" if a.qat else "float", flush=True)
     Yt = torch.from_numpy(Y).to(dev)
-    dl = torch.utils.data.DataLoader(Batches(groups, a.bs, a.max_s, 1, a.ppb), batch_size=None, num_workers=a.workers,
+    dl = torch.utils.data.DataLoader(Batches(groups, a.bs, a.max_s, 1, a.ppb, MIX, a.noise_p, a.snr_hi), batch_size=None, num_workers=a.workers,
                                      prefetch_factor=4, persistent_workers=True)
     sc = [p_ for n_, p_ in m.named_parameters() if n_.endswith("log_s")]
     pw = [p_ for n_, p_ in m.named_parameters() if n_ in pre]

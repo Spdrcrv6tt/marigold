@@ -159,8 +159,8 @@ chunk-aligned prefix gives the whole-segment integers for every frame that is fi
 `sw/golden/intent_test.py --tag <tag>` checks both. The island rules (segmenter, match, confidence, CRC-8, events)
 are rtl/model/mg_model.py's, used unchanged by `chip_golden.py`.
 
-Interim export for the core agent (Nov 15, 8:25 PM): tag `qsmoke` (a short QAT run from a mid-training float
-checkpoint; real format, placeholder weights). The final tag comes with the 2 AM freeze.
+Exports: `qsmoke` (interim, Nov 15 8:25 PM, placeholder weights); **`v1` (frozen, Nov 15 11:40 PM)**; `v11` (overnight
+accuracy run, same format; used only if reports/p0/v11-decision.txt says it beats v1 on dev).
 
 ## Change log
 

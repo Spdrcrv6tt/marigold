@@ -5,7 +5,26 @@ speech only** (held-out voices), since no real recordings exist yet. Targets and
 
 ## Summary
 
-RESULTS_SUMMARY
+v1 is frozen and works end to end in integers: PCM in, int8 meaning vector out, matched against a config blob,
+values parsed, host frame out (export `data/golden/mg-v1.npz`, test vectors `vectors-mg-v1-0..3.npz`, format
+docs/golden-format.md v1.0). It is bit-exact against itself (int64 path equals the fast path, and the chunked
+streaming schedule equals whole-segment evaluation), 4,586,560 weights, 18.8 Mbit of ROM as built, about 4.8x real
+time on the core, and about 172 ms estimated response time. Accuracy is far below targets 1 to 4 on synthetic speech:
+unseen phrasings 32.5% (fan) and 30.1% (microwave) at the 95% non-command rejection point chosen on dev (53% and 73%
+with rejection off), typed phrasings 44% and 47%, values 65% and 39% exact. The encoder learned from about 39 hours
+of synthetic commands and 70 hours of other speech in one evening; it sits far from its text teacher (cosine about
+0.6), and rejection is where it fails. A v1.1 accuracy run (same format) is training overnight.
+
+| # | Target | v1 (integer golden, synthetic TTS, held-out voices) | Met? |
+|---|---|---|---|
+| 1 | Typed phrasings >= 97% | fan 43.8%, microwave 46.9% | no |
+| 2 | Unseen phrasings >= 90% | fan 32.5%, microwave 30.1% (53.3% / 72.8% with rejection off) | no |
+| 3 | Values >= 95% exact | fan 64.7%, microwave 38.9% (given the right action) | no |
+| 4 | Rejection >= 95% | fan 89.5%, microwave 97.1% on test (threshold set for 95% on dev) | microwave only |
+| 8 | <= 5M weights, <= 20 Mbit | 4.59M weights, 18.8 Mbit as built | yes |
+| 10 | Noise <= 5 points loss | fan config -4.5 (fan noise) / -5.3 (microwave noise); microwave config -6.9 / -7.2 | no (borderline on fan) |
+| 11 | One model, two configs | yes: same weights, fan and microwave blobs | yes |
+| 7 | <= 300 ms median | about 172 ms estimated (128 ms end-of-speech hang + 33 ms encoder tail + 11 ms match), not measured | estimate only |
 
 ## 1. What was built
 
@@ -97,11 +116,45 @@ q (5 fractional bits, about +-4 standard deviations), by design.
 
 ## 6. Results on synthetic audio
 
-RESULTS_TABLE
+Integer golden model v1 (`sw/intent/evaluate.py --golden data/golden/mg-v1.npz --enroll`, raw:
+reports/p0/eval-golden-v1.json). Audio: data/tts/eval (held-out TTS voices, 3,191 clips) and its 10 dB fan and
+microwave copies. SYNTHETIC ONLY. Per product, the threshold and margin are the dev-tuned pair that rejects 95% of
+the clean dev non-commands while keeping the most dev commands; the matching variant (text prototypes, audio
+enrollment, speech-bank reject prototypes, bias normalisation) is also chosen on dev; test numbers use them unchanged.
+Rejections count as errors.
+
+| Product (variant chosen on dev) | Condition | Unseen (no reject) | Typed | Rejection (other-device) | Values given action / end to end |
+|---|---|---|---|---|---|
+| Fan (text prototypes, N 208) | clean | 32.5% (53.3%) | 43.8% | 89.5% (67%) | 64.7% / 35.3% |
+| | fan 10 dB | 28.0% (52.3%) | 31.9% | 92.0% | 61.5% / 28.2% |
+| | microwave 10 dB | 27.2% (51.3%) | 32.6% | 92.8% | 59.0% / 25.0% |
+| Microwave (audio enrollment + speech bank + bias norm, N 176) | clean | 30.1% (72.8%) | 46.9% | 97.1% (91%) | 38.9% / 19.4% |
+| | fan 10 dB | 23.2% (66.8%) | 41.7% | 96.7% | 31.9% / 11.8% |
+| | microwave 10 dB | 22.9% (68.1%) | 43.8% | 97.1% | 34.0% / 11.5% |
+
+Per action (clean, unseen): fan on 20%, off 19%, faster 39%, slower 38%, set_level 46%, oscillate 33%; microwave
+start 28%, add_30s 28%, stop 23%, power_level 42%. Test sizes: fan 935 unseen, 144 typed; microwave 624 and 96;
+486 headline non-commands.
+
+The float model before QAT (reports/p0/eval-f4-final.json) scored within a few points of the integer model (fan
+30.4% unseen with audio enrollment, microwave 34.6%), so 4-bit QAT and the integer arithmetic cost little; the
+encoder is the limit. How the numbers moved during the evening (clean, unseen with rejection, best variant): step 8k
+of the first Moonshine-start run 9-11%; 42k 20-22%; after the v3 TTS and grouped batches 28-30%; v1 30-33%.
+
+Matching variants on dev decide per product, and they differ: audio enrollment (the config's phrases spoken by TTS
+train voices through the chip model) raised rejection-off accuracy by 10 to 15 points, mostly on microwave; a
+LibriSpeech reject bank and per-prototype bias normalisation (cohort mean) helped rejection. These are SDK-side
+steps; the chip and its weights do not change.
 
 ## 7. Size and response time
 
-BUDGET_SECTION
+`sw/intent/budget.py --tag v1` (reports/p0/budget-v1.json): 4,586,560 weights; packed ROM 18.82 Mbit = 18.51 Mbit
+of weights (4.55M at 4 bits, 40k at 8 bits) + 0.25 Mbit per-row multipliers, shifts and biases + norm gains and LUTs
+(target 8: met). Compute 5.67M MACs per 20 ms frame (frontend 3.17M, two layers 2.46M), 284M MACs per second of
+audio, 4.8x real time on the 16-lane, 98 MHz core at Poinsetta's 87% efficiency. Response-time estimate (target 7,
+not measured): 128 ms end-of-speech hang (architecture.md 8.1) + 33 ms for the last chunk and the 4 look-ahead frames
++ 0.3 ms head, parse and bridge + 10.7 ms matching = about 172 ms, plus the VAD's own lag; RTL timing will replace
+it.
 
 ## 8. Gaps and next steps
 

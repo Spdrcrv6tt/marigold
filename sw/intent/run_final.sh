@@ -2,6 +2,7 @@
 # v1 freeze pipeline (model agent): QAT from the float model, integer export, exactness tests, budget, and the
 # golden (integer) evaluation on synthetic eval audio. Usage: run_final.sh FLOAT_CKPT QAT_DEADLINE_EPOCH TAG
 FLOAT=$1; DL=$2; TAG=$3
+NOW=$(date +%s); if [ $((DL - NOW)) -gt 10800 ] || [ $((DL - NOW)) -lt 600 ]; then DL=$((NOW + 2400)); fi   # guard: "tomorrow" evaluated after midnight
 cd /d/marigold
 PY=/d/marigold/.venv/Scripts/python.exe
 export PYTHONIOENCODING=utf-8
@@ -16,5 +17,5 @@ $PY sw/golden/intent_test.py --tag $TAG --n 6 >> $L 2>&1
 $PY sw/intent/budget.py --tag $TAG >> $L 2>&1
 $PY sw/golden/intent_vectors.py --tag $TAG >> $L 2>&1
 echo "=== golden eval $(date +%H:%M)" >> $L
-$PY sw/intent/evaluate.py --model data/intent/q$TAG.pt --golden data/golden/mg-$TAG.npz --tag golden-$TAG --enroll 2>&1 | grep -v "Warning\|Loading\|get_sentence" >> $L
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 $PY sw/intent/evaluate.py --model data/intent/q$TAG.pt --golden data/golden/mg-$TAG.npz --tag golden-$TAG --enroll 2>&1 | grep -v "Warning\|Loading\|get_sentence" >> $L
 echo "=== done $(date +%H:%M)" >> $L

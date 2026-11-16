@@ -47,3 +47,18 @@
 - 2026-11-15, 9 PM, wake v2 (John: a bigger spotter tonight): golden format 2 frozen and adopted. 240-channel phone CNN (318,960 weights at 4 bits, 1,413 kbit ROM), 16 MAC lanes, VAD gating with a 200 ms look-ahead (wake at k = 320(t + 10) + 879), same RTL parameterised. At the SDK default it beats v1 on synthetic TTS ("hey kitchen" 75/69/82/69% vs 70/46/65/49% across clean, 10 dB SNR, room, room + noise; "hey breeze" 70/57/68/50% vs 64/45/69/51%) with fewer false wakes (0.4 and 0.0 per 24 h vs 2.2 and 0.0). Targets 5 and 6 are still not met together. Area estimate 0.15-0.18 mm² (limit 0.15). Power estimate about 7-9 µW at 20% speech duty (target 25 µW or less).
 - 2026-11-15, 9:30 PM, SDK wake default raised to wake_sens 13 (sensitivity 0.5; mapping round(7 + 12 s)): about 1 false wake per 24 h on dev for format 2. Test, same protocol: "hey breeze" 75/60/70/52%, "hey kitchen" 79/71/83/74%, false wakes 0.4 and 0.0 per 24 h. Blobs rebuilt.
 
+- 2026-11-15, 11:40 PM, intent model v1 frozen (model agent): golden export **mg-v1** (data/golden/mg-v1.npz, vectors
+  vectors-mg-v1-0..3.npz; format docs/golden-format.md v1.0, frozen 8:25 PM). Encoder = Moonshine Streaming Tiny's
+  frontend + first 2 encoder layers (MIT), fine-tuned by distillation to teacher-v3 (D = 128) with a CTC value head;
+  4,586,560 weights, 4-bit except fe.lin and ctc (8-bit), 18.8 Mbit as built. Training data: 39 h TTS commands and
+  non-commands for 72 training appliances (train voices), LibriSpeech train, Speech Commands; never fan, microwave
+  or eval text. The from-scratch W 240 design was dropped at 7 PM (it barely learned). Synthetic-audio results
+  (integer model, held-out voices, 95% dev rejection): unseen 32.5% fan / 30.1% microwave, typed 44 / 47%,
+  values 65 / 39%, rejection 89.5 / 97.1% on test; targets 1-4 and 10 missed (reports/p0-model.md), 8 and 11 met.
+  SDK side: config prototypes may come from the teacher text vectors or from audio enrollment (the config's phrases
+  spoken by TTS train voices through the chip model), with a speech-bank reject set and bias normalisation; the
+  variant and the threshold/margin are chosen per product on the dev split.
+- 2026-11-15, 10:20 PM (coordinator): a v1.1 accuracy run (same format) trains overnight unattended: f4 continued with an
+  LR restart, more command audio (mix 0.55/0.15/0.20/0.10) and stronger noise (85%, fan/microwave 0-15 dB), then
+  QAT, export mg-v11, tests, vectors and the integer eval; reports/p0/v11-decision.txt compares v1 and v1.1 on dev by
+  about 5:15 AM. v1.1 replaces v1 only if it is better on dev.
