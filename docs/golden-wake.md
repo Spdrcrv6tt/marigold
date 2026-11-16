@@ -82,7 +82,7 @@ At the start of a session every A is −32768 and the refractory count is 0.
 
 - G2P: CMUdict (BSD-2-Clause style, docs/licenses.md), up to 4 variants from words with several pronunciations. Unknown words: a split into two dictionary words, else crude letter rules, and the SDK report warns and suggests giving phones (config "wake": {"phones": ["HH EY ..."]}).
 - clip = 96 (6 nat) and refractory = 50 frames (1 s): fixed SDK constants (CLIP, REFRACTORY in template.py). Clip 160 gave the same dev curve; 48 was worse.
-- Sensitivity s in [0, 1] from the config maps linearly to wake_sens = round(6 + 12 s): 0.5 gives 12, the dev operating point (at most 1 false wake per 24 h on 58 h of dev audio); 1.0 gives 18. Curves in reports/p1-wake.md.
+- Sensitivity s in [0, 1] from the config maps linearly to wake_sens = round(7 + 12 s): 0.5 gives 13, where format 2 reaches about 1 false wake per 24 h on 58 h of dev audio; 1.0 gives 19. (Format 1 used round(6 + 12 s).) Curves in reports/p1-wake.md.
 
 ## 7. Test vectors
 

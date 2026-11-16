@@ -14,6 +14,7 @@ John asked for a bigger spotter after v1. v2 keeps v1's front end, layer rules, 
 | room + 10 dB noise | 51.2% | 50.0% | 48.8% | **69.0%** |
 | false wakes per 24 h | 2.2 | **0.4** | 0.0 | 0.0 |
 
+- **New SDK default (Nov 15, 9:30 PM): sensitivity 0.5 = wake_sens 13**, the value where false wakes on dev reach about 1 per 24 h (1.04, mean of the two config phrases), chosen on dev only. Test there: "hey breeze" 75.0 / 59.5 / 70.2 / 52.4% at 0.4 false wakes per 24 h, "hey kitchen" 78.6 / 71.4 / 83.3 / 73.8% at 0.0, which is 2 to 5 points above wake_sens 12 with no extra test false wakes. The mapping is now wake_sens = round(7 + 12 s) (sw/wake/template.py), and data/sdk/fan.mgc and microwave.mgc are rebuilt with wake_sens 13.
 - Over all six phrases at the test operating point with at most 1 false wake per 24 h: v1 (wake_sens 11) 71% clean, 39% at 10 dB SNR, 61% room, 30% room + noise; v2 (wake_sens 15, 0.97 per 24 h) 91 / 67 / 84 / 55%.
 - v2 at sensitivity 1.0 (wake_sens 18): "hey breeze" 88 / 74 / 82 / 64% at 3.1 false wakes per 24 h, "hey kitchen" 91 / 81 / 93 / 86% at 5.4.
 - **Targets 5 and 6 are still not met together**: at about 1 false wake per 24 h, detection is 50-82% depending on condition (95% needed). v2 roughly halves the gap in noise.
