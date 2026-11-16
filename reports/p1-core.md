@@ -9,8 +9,8 @@ are **estimates**, built on Poinsetta's method and densities, and are labelled a
 
 | # | Target | Result | How measured |
 |---|---|---|---|
-| 12 | Bit-exact hardware, mic pin to output pins, with negative controls | **Met on qsmoke** (golden format v1.0, placeholder weights): every frame, q vector, raw slot value, settled GPIO state and front-end sample is identical; the three negative controls fail. v1 rerun: section 9 | rtl/top/tb/mg_e2e.py: Verilator whole chip against sw/golden/chip_golden.py |
-| 7 | Response time <= 300 ms median | **156 and 163 ms** from end of speech to irq in RTL (2 commands): 128 ms end-of-speech hangover (rule 8.1, hang 8 frames) + up to 16 ms of frame alignment + 21 to 35 ms of core and matcher work after the segment closes | the same runs; end of speech = end of the last VAD raw-speech frame |
+| 12 | Bit-exact hardware, mic pin to output pins, with negative controls | **Met on v1** (and on qsmoke): every frame, q vector, raw slot value, settled GPIO state and front-end sample identical over 5 commands; the three negative controls fail (section 9). Open: one per-element unit-test case on v1 tables (section 9) | rtl/top/tb/mg_e2e.py: Verilator whole chip against sw/golden/chip_golden.py |
+| 7 | Response time <= 300 ms median | **median 154.8 ms** (148.8 to 162.9, 5 commands, v1) from end of speech to irq in RTL: 128 ms end-of-speech hangover (rule 8.1, hang 8 frames) + up to 16 ms of frame alignment + 21 to 35 ms of core and matcher work after the segment closes | the same runs; end of speech = end of the last VAD raw-speech frame |
 | 8 | <= 5M weights at 4-bit, <= 20 Mbit ROM as built | 4,586,560 weights; ROM image **19.33 Mbit** (2,415,680 B: firmware 14,376 B, tables and weights from 0x8040) | rtl/core/tools/mkimage_mg.py image, the bytes the RTL's ROM holds |
 | 9 | Listening power <= 100 uW at 28 nm | **20 to 103 uW (estimate)**: met unless the PDM front end lands at the top of Poinsetta's range | section 6 |
 
