@@ -49,7 +49,7 @@ Built overnight Nov 15 to 16 by the coordinator plus four agents (core, model, w
 - Energy-lean MAC lanes.
 - Second-stage wake confirm.
 - Real recordings for training and evaluation.
-- One open test finding: a LUT op mismatch in a random-parameter unit test, outside the firmware's paths (being checked).
+- (Closed: a LUT-op unit-test mismatch was a stale build artifact; after a clean rebuild all 24,000 MAC ops and 467 fan ops pass on v1 tables. Commit 94ad56e.)
 
 ## Iteration-2 levers (most promising first)
 
