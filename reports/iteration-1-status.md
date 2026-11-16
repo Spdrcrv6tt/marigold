@@ -59,6 +59,8 @@ Finding for iteration 2: fitting the teacher more closely no longer moves accura
 - Energy-lean MAC lanes.
 - Second-stage wake confirm.
 - Real recordings for training and evaluation.
+- The full GF180 activity-power flow for the new island blocks: island power is scaled from Poinsetta's measurements plus hand estimates.
+- A whole-chip TIMEOUT run: TIMEOUT is only unit-tested so far.
 - (Closed: a LUT-op unit-test mismatch was a stale build artifact; after a clean rebuild all 24,000 MAC ops and 467 fan ops pass on v1 tables. Commit 94ad56e.)
 
 ## Iteration-2 levers (most promising first)
