@@ -2,6 +2,8 @@
 golden model (sw/golden/intent_np.py IntIntent, sw/intent/values.py) bit for bit.
 
     .venv/Scripts/python.exe rtl/core/tools/check_mg.py [--tag randtest] [--n 6] [--exact] [--fuzz 20000] [--no-build]
+        [--golden-dir data/core/mg-rand3 --bdir '$CORE_BUILD/r3']    (a mkrand_mg.py export, in its own build dir)
+intent_np's module dimensions are set from the export, so draft-0.1 (randtest) and 0.3 exports both check.
 
 1. Builds the image data and the PC firmware in WSL (make -C rtl/top TAG=<tag> host-mg).
 2. A test config blob with the model's D (random vectors, one slot of each type, level words on one slot).
@@ -15,7 +17,7 @@ golden model (sw/golden/intent_np.py IntIntent, sw/intent/values.py) bit for bit
    --fuzz token sequences (phrases through values.targets, plus random sequences).
 Prints identical / first difference per utterance and a summary; exit status 1 on any difference.
 """
-import argparse, random, subprocess, sys, time
+import argparse, json, random, subprocess, sys, time
 from pathlib import Path
 import numpy as np
 
@@ -32,6 +34,15 @@ K = dict(CMVN=1, ASINH=2, LIN=3, C1=4, FEAT=5, ENC=10, ELN=20, CTCK=21, POOL=22,
          SEG=40, END=41, T=42, NTOK=43, MATCH=44, DONE=45, CFG=46)
 ISL = 0x7F0
 RAM_HOST = 262144 - 4096 - 4096
+
+
+def set_dims(G, meta):
+    """intent_np's module dimensions for this export (draft 0.1 randtest: W 240, 6 layers; 0.3: W 320, 2 layers)."""
+    cfg = meta.get("cfg", {})
+    S.W, S.FF = G["fe.lin.q"].shape[0], G["enc0.fc1.q"].shape[0]
+    S.NL = sum(1 for k in G if k.startswith("enc") and k.endswith(".q.q"))
+    S.HD = int(cfg.get("HD", 40)); S.NH = S.W // S.HD
+    S.WIN = [(int(cfg.get("PAST", 16)), int(f)) for f in cfg.get("FUT", [4] + [0] * (S.NL - 1))]
 
 
 def wsl(script, cwd_tmp):
@@ -196,14 +207,19 @@ def main():
     ap.add_argument("--fuzz", type=int, default=20000)
     ap.add_argument("--no-build", action="store_true")
     ap.add_argument("--no-edges", dest="edges", action="store_false", help="skip the boundary-length segments")
+    ap.add_argument("--golden-dir", default="", help="directory of mg-<tag>.npz/.json (default data/golden; "
+                    "mkrand_mg.py exports: data/core/mg-<tag>)")
+    ap.add_argument("--bdir", default="$CORE_BUILD", help="WSL build directory of fw_host_mg (make B=...)")
     a = ap.parse_args()
+    gdir = Path(a.golden_dir) if a.golden_dir else ROOT / "data" / "golden"
     tmp = ROOT / "data" / "tmp" / f"mg-check-{a.tag}"
     tmp.mkdir(parents=True, exist_ok=True)
     if not a.no_build:
-        r = wsl(f"make -C {WROOT}/rtl/top TAG={a.tag} host-mg 2>&1 | grep -v '^note:'", tmp)
+        r = wsl(f"make -C {WROOT}/rtl/top TAG={a.tag} MGGOLD={wpath(gdir)} B={a.bdir} host-mg 2>&1 | grep -v '^note:'", tmp)
         print(r.stdout[-1500:], r.stderr[-500:])
-    G = dict(np.load(ROOT / "data" / "golden" / f"mg-{a.tag}.npz"))
+    G = dict(np.load(gdir / f"mg-{a.tag}.npz"))
     D = int(G["proj.q"].shape[0])
+    set_dims(G, json.load(open(gdir / f"mg-{a.tag}.json")))
     S.IntIntent.FAST = not a.exact
     blob, specs = test_blob(D)
     (tmp / "blob.bin").write_bytes(blob)
@@ -214,7 +230,7 @@ def main():
     if a.edges: runs += [(name, x, 0) for name, x in edge_segments()]
     for k, (name, x, endf) in enumerate(runs):
         x.astype("<i2").tofile(tmp / f"pcm-{k}.raw")
-        lines.append(f"$CORE_BUILD/fw_host_mg {img} {wpath(tmp / f'pcm-{k}.raw')} {wpath(tmp / f'ev-{k}.txt')} 1 {RAM_HOST} "
+        lines.append(f"{a.bdir}/fw_host_mg {img} {wpath(tmp / f'pcm-{k}.raw')} {wpath(tmp / f'ev-{k}.txt')} 1 {RAM_HOST} "
                      f"{wpath(tmp / 'blob.bin')} {endf} > /dev/null 2> {wpath(tmp / f'err-{k}.txt')}; echo rc$?")
     t0 = time.time()
     r = wsl("\n".join(lines), tmp)

@@ -12,13 +12,15 @@
 // Weight products: the fan-out array (FAN_GO; FAN_L rows per group). Attention: the batch MAC array with RAM operands.
 // Per element: the per-element unit. Storage (16-bit elements unless they say bytes): rows are frame-major; the 25-bit
 // residual is two planes (low 16 bits, high 16 bits) XPL apart in a ring of XRING frames; per layer K is feature-major
-// [W][KRING] (keys in the array's lanes) and V head-major [NH][VRING][HP]. Peak RAM: the DONE trace (randtest, W 240:
-// 236.5 KB with .bss, plus the 4 KB stack, of 256 KB).
+// [W][KRING] (keys in the array's lanes) and V head-major [NH][VRING][HP]. Dimensions, layer count and windows come
+// from layout.h (mkimage_mg.py, from the export). Peak RAM (the DONE trace, plus .bss and the 4 KB stack, of 256 KB):
+// golden-format 0.3 (W 320, C1 640, FF 1280, 2 layers) 175.4 KB; draft 0.1 randtest (W 240, 6 layers) 235 KB.
 #include "hal.h"
 #include "layout.h"
 #include "mg_values.h"
 #define B LANES
 #define W MG_W
+#define C1 MG_C1                          // conv1 channels (conv2 reads 5 rows of C1)
 #define NH MG_NH
 #define HD MG_HD
 #define NLY MG_NL
@@ -139,12 +141,13 @@ static i32 prevk;
 
 static void seg_init(void) {
     CHB = al(CHUNK); Y80 = al(16 * FRAME);
-    HB = al(20 * W); CB = al(12 * W);
+    HB = al(20 * W); CB = al(12 * C1);
     XPL = XRING * W; XR = al(2 * XPL);
     for (int i = 0; i < NLY; i++) { KR[i] = al(W * KRING); VR[i] = al(NH * VRING * HP); }
     TA = al(FAN_CMAX * W); TB = al(FAN_CMAX * W); TC = al(FAN_CMAX * (FF > LGS ? FF : LGS)); QB = al(FAN_CMAX * W);
     SCP = 2 * KRING; SC = al(3 * NH * SCP); EB = al(2 * NH * KRING); RCB = al(2 * NH); MIX = al(NH * HP);
-    for (u32 e = 0; e < 4 * W; e++) { P16(HB)[e] = 0; P16(CB)[e] = 0; }     // the convolutions' causal padding
+    for (u32 e = 0; e < 4 * W; e++) P16(HB)[e] = 0;                      // the convolutions' causal padding
+    for (u32 e = 0; e < 4 * C1; e++) P16(CB)[e] = 0;
     for (int i = 0; i < NLY; i++)                                          // V rows' pad lanes (read, never used)
         for (u32 r = 0; r < NH * VRING; r++) for (u32 d = HD; d < HP; d++) P16(VR[i])[r * HP + d] = 0;
     n_lin = n_c1 = n_c2 = n_out = 0;
@@ -273,9 +276,9 @@ static void chunk(u32 nf, int final) {
     u32 lin_prev = n_lin; n_lin += nf;
     // conv1: output j reads linear rows 2j - 4 .. 2j = HB rows 2j - lin_prev .. (rows 0..3 = the previous 4)
     u32 n1 = final ? (n_lin + 1) / 2 : n_lin / 2, new1 = n1 - n_c1, c1_prev = n_c1;
-    fan_rows(S_FE_C1, HB + (2 * n_c1 - lin_prev) * W, 2 * W, new1, CB + 4 * W, W, 0, FAN_O_S16);
-    for (u32 r = 0; r < new1; r++) tr16(TT(K_C1, n_c1 + r), CB + (4 + r) * W, W);
-    if (new1) v_lut(CB + 4 * W, W, new1, W, F_FE_C1, F_FE_C1, T_SILU, 1, 0);
+    fan_rows(S_FE_C1, HB + (2 * n_c1 - lin_prev) * W, 2 * W, new1, CB + 4 * C1, C1, 0, FAN_O_S16);
+    for (u32 r = 0; r < new1; r++) tr16(TT(K_C1, n_c1 + r), CB + (4 + r) * C1, C1);
+    if (new1) v_lut(CB + 4 * C1, C1, new1, C1, F_FE_C1, F_FE_C1, T_SILU, 1, 0);
     n_c1 = n1;
     if (nf >= 4) v_copy(HB + nf * W, 1, 0, HB, 1, 0, 4 * W, 1);
     // conv2: output j reads conv1 rows 2j - 4 .. 2j = CB rows 2j - c1_prev ..; into the residual ring
@@ -285,11 +288,11 @@ static void chunk(u32 nf, int final) {
         u32 n = n2 - n_c2, sx = SX(n_c2);
         if (n > FAN_CMAX) n = FAN_CMAX;
         if (n > XRING - sx) n = XRING - sx;
-        fan(S_FE_C2, CB + (2 * n_c2 - c1_prev) * W, 2 * W, n, XR + sx * W, W, XPL, FAN_O_RES);
+        fan(S_FE_C2, CB + (2 * n_c2 - c1_prev) * C1, 2 * C1, n, XR + sx * W, W, XPL, FAN_O_RES);
         for (u32 c = 0; c < n; c++) tr25(TT(K_FEAT, n_c2 + c), XR + (sx + c) * W, XPL, W);
         n_c2 += n;
     }
-    if (new1 >= 4) v_copy(CB + new1 * W, 1, 0, CB, 1, 0, 4 * W, 1);
+    if (new1 >= 4) v_copy(CB + new1 * C1, 1, 0, CB, 1, 0, 4 * C1, 1);
     nT[0] = n_c2;
     for (int i = 0; i < NLY; i++) enc_layer(i, final);
     out_frames();
