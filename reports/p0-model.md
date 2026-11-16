@@ -59,15 +59,41 @@ its validation and test lists (84.8k). Augmentation per clip: 0.1-0.5 s pre-roll
 for the end of the wake phrase), trailing silence, reverb (30%), noise from data/noise train split (75%: fan or
 microwave at 0-20 dB, otherwise babble, TV, music, background at 5-25 dB), random gain, int16 rounding.
 
-TRAINING_RESULTS
+Training ran as a chain of warm restarts (logs data/logs/train_f2..f4*.log), all on the RTX 4090 shared with the wake
+and data agents: f2 from the Moonshine start (42k steps, mixed batches); f3 with product-grouped batches (the TTS
+commands of a batch come from two products, so the in-batch negatives are the same product's other actions); f4 after
+the 46.8k v3 TTS clips (40 new appliances, near-miss non-commands) landed at 7:40 PM, with the CTC weight raised to 1.0
+when the value head was found to drop most number words. Training cosine to the teacher (augmented batches, all
+sources) rose 0.10 (from scratch, dropped) / 0.33 (f2, 10k) / 0.48 (f2, 42k) / 0.50 (f4). Three CUDA "illegal memory
+access" faults on the shared GPU were survived by sw/intent/run_resume.sh (restart from the last 1k-step checkpoint).
 
 ## 4. Value head
 
-VALUES_SECTION
+Per-frame CTC over 45 tokens (blank, zero..nineteen, twenty..ninety, hundred, thousand, a, half, quarter, second,
+minute, hour, degree, percent, level, low, medium, high, max, min) on the encoder output, greedy decoding, then an
+integer parse into one raw value per config slot, each slot on its own and independent of the action, because the
+core computes VAL before the island picks the action (docs/golden-format.md section 6). Level words leave the core as
+codes -1..-5 and the island maps them with the slot entry's low/medium/high bytes, then clamps (coordinator rulings).
+Training targets are the value words of each transcript (digits, times, % and degree signs expanded first; "level"
+marked before a number after level/speed/setting/notch/power); approximate LibriSpeech crops carry no CTC loss. The
+parse handles compound numbers ("three fifty" = 350), clock readings ("one thirty" = 90 s for a duration slot),
+fractions ("two and a half minutes" = 150 s, "a minute and a half" = 90 s) and minute-second pairs; unit tests in
+sw/intent/values.py.
 
 ## 5. Quantisation and the integer golden model
 
-QAT_SECTION
+Weights only, as Poinsetta: per-output-row symmetric fake quantisation with learned log-scales (initialised at the
+MSE-optimal scale), straight-through rounding, 4-bit for every matrix except fe.lin and ctc (8-bit, 40k weights), so
+the ROM stays under 20 Mbit. QAT starts from the final float model and distils from it (1 - cosine to the float q,
+weight 0.5) on top of the training loss, at LR 1e-4 (scales 5e-4). Activations follow Poinsetta's integer
+arithmetic: int16 at static per-site formats calibrated on 400 training clips of segment length (half with training
+noise), 24-bit residual, LUT SiLU/GELU/asinh, exp2 softmax, integer LayerNorm (docs/golden-format.md). Export rule:
+norm gains clamped to int16 (core agent).
+
+Exactness (sw/golden/intent_test.py): FAST (float64 BLAS) equals int64-only on every trace, and the encoder on every
+chunk-aligned prefix reproduces the whole-segment integers for every final frame (streaming equivalence).
+Float graph vs integer q: cosine 0.98 on average on calibration clips; the worst cases come from the int8 clip of
+q (5 fractional bits, about +-4 standard deviations), by design.
 
 ## 6. Results on synthetic audio
 
@@ -79,4 +105,23 @@ BUDGET_SECTION
 
 ## 8. Gaps and next steps
 
-GAPS_SECTION
+Missed in v1 (all measured on synthetic audio): see section 6. The encoder is far from its teacher (training cosine
+about 0.5), so commands and ordinary speech overlap; with the reject threshold set for 95% non-command rejection, most
+commands fall under it. Text matching itself (the teacher) also stays below 90 / 95, so even a perfect encoder would
+miss targets 2 and 4 with this teacher.
+
+Iteration-2 levers, roughly in order of expected gain:
+1. More audio for the encoder: real recordings (many speakers, rooms, far field) and much more TTS of the command
+   text (we used 39 h of TTS for 72 appliances; the text set is ready for more voices), plus more general speech
+   (all of LibriSpeech and other CC BY sets cut into segment-length clips with forced alignments instead of crops).
+2. A deeper student within 5M weights: distill the full 6-layer Moonshine encoder (or a pruned 4-layer one with a
+   narrower frontend) instead of 2 layers; the 2-layer model must turn acoustics into meaning with mean pooling only.
+3. Longer training (we had about 3.5 GPU-hours, shared): the curves were still rising when stopped.
+4. Attention pooling (one learned query over all frames, the same softmax-mix op) so filler, the wake-phrase tail and
+   silence stop diluting the mean.
+5. A better teacher: more appliances and non-command data, a margin-aware loss, and a larger base model (the
+   teacher lives only in the SDK, so its size is free); text is still short of 90 / 95.
+6. SDK side: audio enrollment helped (section 6); add more TTS voices per phrase, per-product reject banks, score
+   normalisation with wider bias range, and a calibrated threshold per product chosen on the OEM's own phrases.
+7. Value head: a dedicated CTC tap from an earlier layer or a small hidden layer, and number-heavy TTS (prices,
+   times, temperatures) for the CTC.

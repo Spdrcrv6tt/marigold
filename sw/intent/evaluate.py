@@ -75,17 +75,40 @@ def run_golden(gpath, paths, procs=12):
     return np.stack(q), t
 
 
-def decide(b, Q, thr):
-    """Matching rule (config-blob.md, arch 8.2) with threshold thr: returns (action or 0, best score)."""
-    S = Q @ b["vectors"].astype(np.int32).T + b["bias"][None]
-    bi = S.argmax(1); best = S[np.arange(len(S)), bi]; act = b["vec_action"][bi]
-    out = np.where((act == 0) | (best < thr), 0, act)
-    if b["margin"] > 0:
-        for i in range(len(S)):
-            other = S[i][b["vec_action"] != act[i]]
-            if out[i] and other.size and best[i] - other.max() < b["margin"]:
-                out[i] = 0
+def scores(b, Q):
+    """Best score, its action, and the best score of a different action (minus infinity if none), per row."""
+    S = Q.astype(np.int64) @ b["vectors"].astype(np.int64).T + b["bias"][None].astype(np.int64)
+    va = np.asarray(b["vec_action"])
+    bi = S.argmax(1); best = S[np.arange(len(S)), bi]; act = va[bi]
+    other = np.full(len(S), np.iinfo(np.int64).min // 4)
+    for x in np.unique(va):
+        rows_ = act == x
+        if rows_.any() and (va != x).any():
+            other[rows_] = S[rows_][:, va != x].max(1)
+    return best, act, other
+
+
+def decide(b, Q, thr, margin=None):
+    """Matching rule (config-blob.md, arch 8.2): returns (action or 0, best score)."""
+    m = b["margin"] if margin is None else margin
+    best, act, other = scores(b, Q)
+    out = np.where((act == 0) | (best < thr) | (best - other < m), 0, act)
     return out, best
+
+
+def pick_thr_margin(b, Qn, Qp, yp, rate=0.95):
+    """On DEV only: for each margin in a grid, the lowest threshold rejecting >= rate of the dev non-commands; keep
+    the (threshold, margin) pair with the best dev command accuracy."""
+    bn, an, on = scores(b, Qn); bp, ap_, op = scores(b, Qp)
+    allowed = len(Qn) - int(np.ceil(rate * len(Qn)))
+    best_cfg = None
+    for m in [0, 1000, 2000, 3000, 4000, 6000, 8000, 10000, 13000, 16000, 20000, 25000]:
+        passing = np.sort(bn[(an != 0) & (bn - on >= m)])[::-1]
+        thr = int(passing[allowed]) + 1 if len(passing) > allowed else -10 ** 9
+        acc = float(((ap_ == yp) & (bp >= thr) & (bp - op >= m)).mean())
+        if best_cfg is None or acc > best_cfg[2]:
+            best_cfg = (thr, m, acc)
+    return best_cfg
 
 
 def slot_values(b, cfg, action_id, toks):
@@ -198,18 +221,14 @@ def one_variant(a, prod, cfg, b, name2id, rows, out, vname):
     # threshold on clean dev headline non-commands
     rs = rows["clean"]; Q, _ = out["clean"]
     dv = [i for i, r in enumerate(rs) if r["set"] == "noncommands" and r["split"] == "dev" and r["category"] in HEAD]
-    _, best = decide(b, Q[dv], -10 ** 9)
-    acts, _ = decide(b, Q[dv], -10 ** 9)
-    open_best = np.sort(best[acts != 0])
-    k = int(np.ceil(0.95 * len(dv)))                 # reject >= 95%: at most len - k may pass
-    allowed = len(dv) - k
-    thr = int(open_best[::-1][allowed]) + 1 if len(open_best) > allowed else -10 ** 9
-    b["reject_thr"] = thr
+    dp = [i for i, r in enumerate(rs) if r["set"] == "paraphrases" and r["product"] == prod and r["split"] == "dev"]
+    thr, mg, _ = pick_thr_margin(b, Q[dv], Q[dp], np.array([name2id[rs[i]["action"]] for i in dp]))
+    b["reject_thr"] = thr; b["margin"] = mg
     blob = C.pack({k_: b[k_] for k_ in ("D", "reject_thr", "margin", "wake_sens", "flags", "host", "i2c_addr", "conf_sh")},
                   b["vec_action"], b["vec_flags"], b["bias"], b["vectors"], b["actions"], b["slots"], b["gpio"], b["wake"])
     outdir = ROOT / f"data/sdk/eval-{a.tag}"; outdir.mkdir(parents=True, exist_ok=True)
     (outdir / f"{prod}-{vname}.mgc").write_bytes(blob)
-    pr = {"N": int(b["N"]), "D": int(b["D"]), "reject_thr": thr, "conds": {}}
+    pr = {"N": int(b["N"]), "D": int(b["D"]), "reject_thr": thr, "margin": mg, "conds": {}}
     for c, rs in rows.items():
         Q, T = out[c]
         pred, best = decide(b, Q, thr)
@@ -221,7 +240,7 @@ def one_variant(a, prod, cfg, b, name2id, rows, out, vname):
         y = lambda ix: np.array([name2id[rs[i]["action"]] for i in ix])
         d = {}
         d["t2_unseen_acc"] = float((pred[para] == y(para)).mean())
-        d["t2_unseen_acc_norej"] = float((decide(b, Q[para], -10 ** 9)[0] == y(para)).mean())
+        d["t2_unseen_acc_norej"] = float((decide(b, Q[para], -10 ** 9, 0)[0] == y(para)).mean())
         d["t1_typed_acc"] = float((pred[typed] == y(typed)).mean()) if len(typed) else None
         d["t4_reject_headline"] = float((pred[nonc] == 0).mean())
         d["reject_other_device"] = float((pred[other] == 0).mean())
