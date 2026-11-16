@@ -1,0 +1,8 @@
+# Logic gate count of the wake spotter (memories black-boxed): yosys -s rtl/wake/syn/gates.ys
+read_verilog -sv -DSYNTH /mnt/d/marigold/rtl/wake/wk_mem.sv
+read_verilog -sv /mnt/d/marigold/rtl/wake/wk_fe.sv /mnt/d/marigold/rtl/wake/wk_nn.sv /mnt/d/marigold/rtl/wake/wk_dp.sv /mnt/d/marigold/rtl/wake/mg_wake.sv
+blackbox wk_ram wk_rom
+hierarchy -top mg_wake
+synth -top mg_wake -flatten
+abc -g NAND,NOR,AND,OR,XOR,XNOR,MUX,ANDNOT,ORNOT
+stat
