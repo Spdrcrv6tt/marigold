@@ -181,11 +181,14 @@ def main():
     opt = torch.optim.AdamW([{"params": rest, "lr": a.lr}] + ([{"params": sc, "lr": a.lr_scale, "weight_decay": 0.0}] if sc else []),
                             lr=a.lr, weight_decay=0.01, betas=(0.9, 0.98))
     warm = 200 if a.qat else 1000
-    sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1, (s + 1) / warm) * (0.05 + 0.95 * 0.5 * (1 + math.cos(math.pi * min(1.0, s / a.steps)))))
+    t_start = time.time()
+    prog = lambda s: min(1.0, max(s / a.steps, (time.time() - t_start) / (a.minutes * 60)))   # step- or time-based
+    sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1, (s + 1) / warm) * (0.05 + 0.95 * 0.5 * (1 + math.cos(math.pi * prog(s)))))
     out = ROOT / f"data/intent/{a.tag}.pt"
     t0 = time.time(); stats = []
     step = 0
-    for pcm, lens, tids, tg, tl, cmask in dl:
+    it = iter(dl)
+    for pcm, lens, tids, tg, tl, cmask in it:
         pcm, lens, tids = pcm.to(dev, non_blocking=True), lens.to(dev), tids.to(dev)
         with torch.autocast("cuda", dtype=torch.bfloat16):
             q, logits, flen = m(pcm, lens)
@@ -218,6 +221,7 @@ def main():
             break
     torch.save({"state": m.state_dict(), "cfg": cfg, "step": step, "qat": a.qat}, out)
     print("saved", out, "steps", step, flush=True)
+    it._shutdown_workers()          # no orphaned workers (they would hold the log pipe open)
     os._exit(0)
 
 

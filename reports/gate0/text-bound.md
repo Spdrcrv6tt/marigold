@@ -83,3 +83,17 @@ test splits ("fire it up", "halt", "begin cooking" and the like). Every training
 | bge-base tuned v2 | 82.7% / 81.0% | 95.7% / 95.6% | 90.4% / 88.4% | 93.2% / 93.1% |
 
 So the leak inflated unseen accuracy by about 1 to 2 points; rejection is unchanged.
+
+## Teacher v3 (frozen, Nov 15, 6:35 PM)
+
+bge-small-en-v1.5 fine-tuned on 72 training appliances (40 new, with swing, rotate, tilt, patrol and other motion
+and toggle modes), leak-filtered text, selected on held-out training products (docs/decisions.md). Eval test, run
+once (raw: reports/gate0/text_bound_teacher_v3_*.json; none of the test lines is in its training text):
+
+| Matcher (+ expansion) | Fan unseen / rejection | Microwave unseen / rejection |
+|---|---|---|
+| `knn_neg` | 85.6% / 93.2% | 87.5% / 90.1% |
+| `linear` | 84.0% / 91.4% | 79.8% / 94.4% |
+
+Against leak-free v2 bge-small (`knn_neg`): fan +4.6 points unseen (the motion products helped oscillate), microwave
+-3.8 points. Still short of 90 / 95 on both; this is the teacher the audio encoder learns from.
