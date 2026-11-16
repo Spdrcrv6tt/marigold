@@ -1,4 +1,4 @@
-# Marigold iteration 1: status at wrap-up (Nov 16, 2026)
+# Marigold iteration 1: status at wrap-up (Nov 16, 2026, final)
 
 Built overnight Nov 15 to 16 by the coordinator plus four agents (core, model, wake, data and SDK), on John's plan (PLAN.md) and his instruction to have it "pretty damn well wrapped up by end of usage period". Every accuracy number below comes from synthetic TTS speech by 21 held-out voices, because no real recordings exist yet. Power and area are estimates by Poinsetta's method. Details are in the reports linked at the end.
 
@@ -41,6 +41,16 @@ Built overnight Nov 15 to 16 by the coordinator plus four agents (core, model, w
   - 920 training voices and 21 held-out ones; 39 h of synthetic training commands; Speech Commands; LibriSpeech (linked); SLURP (evaluation only).
   - Synthetic fan and microwave noise, used until John's recordings arrive.
 - **Area (estimates, 28 nm):** core 2.73 to 2.76 mm² (ROM 1.66 mm², 60%), die 3.2 to 3.7 mm², inside the plan's 2.5 to 4.
+
+## Overnight v1.1 run (decided 4:59 AM)
+
+v1.1 continued from v1's float model for about 5 more hours: an LR restart, more command audio and stronger noise. Its training cosine to the teacher rose from 0.60 to 0.65. Dev unseen accuracy at the 95%-rejection point did not follow: fan 30.6% against v1's 33.6%, microwave 42.1% against 39.8%, mean 36.3% against 36.7%. **v1 stands** (reports/p0/v11-decision.txt).
+
+Finding for iteration 2: fitting the teacher more closely no longer moves accuracy. The limits are now the teacher space itself (text-only already tops out at 86 to 88%), calibrating rejection on new products, and the gap between synthetic training products and the evaluation products. Iteration 2 should attack those directly rather than train longer:
+- a better teacher;
+- a reject model trained on non-command audio;
+- real speech;
+- per-product audio enrollment.
 
 ## Not done in iteration 1
 

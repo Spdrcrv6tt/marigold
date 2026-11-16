@@ -1,0 +1,65 @@
+{
+ "model": "data/intent/f2-32k.pt",
+ "golden": null,
+ "synthetic_only": true,
+ "products": {
+  "fan": {
+   "N": 208,
+   "D": 128,
+   "reject_thr": 55050,
+   "conds": {
+    "clean": {
+     "t2_unseen_acc": 0.15080213903743314,
+     "t2_unseen_acc_norej": 0.4299465240641711,
+     "t1_typed_acc": 0.2986111111111111,
+     "t4_reject_headline": 0.9526748971193416,
+     "reject_other_device": 0.8076923076923077,
+     "n": {
+      "para": 935,
+      "typed": 144,
+      "nonc": 486,
+      "values": 156
+     },
+     "t3_values_given_action": 0.5064102564102564,
+     "t3_values_end_to_end": 0.16666666666666666,
+     "per_action_test": {
+      "on": 0.10256410256410256,
+      "off": 0.06451612903225806,
+      "faster": 0.22435897435897437,
+      "slower": 0.21153846153846154,
+      "set_level": 0.23717948717948717,
+      "oscillate": 0.0641025641025641
+     }
+    }
+   }
+  },
+  "microwave": {
+   "N": 144,
+   "D": 128,
+   "reject_thr": 57649,
+   "conds": {
+    "clean": {
+     "t2_unseen_acc": 0.16987179487179488,
+     "t2_unseen_acc_norej": 0.5384615384615384,
+     "t1_typed_acc": 0.1875,
+     "t4_reject_headline": 0.9650205761316872,
+     "reject_other_device": 0.8333333333333334,
+     "n": {
+      "para": 624,
+      "typed": 96,
+      "nonc": 486,
+      "values": 288
+     },
+     "t3_values_given_action": 0.2326388888888889,
+     "t3_values_end_to_end": 0.0625,
+     "per_action_test": {
+      "start": 0.23076923076923078,
+      "add_30s": 0.15384615384615385,
+      "stop": 0.16025641025641027,
+      "power_level": 0.1346153846153846
+     }
+    }
+   }
+  }
+ }
+}

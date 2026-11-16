@@ -1,0 +1,197 @@
+{
+ "model": "data/intent/f3-12k.pt",
+ "golden": null,
+ "synthetic_only": true,
+ "products": {
+  "fan": {
+   "chosen": "text",
+   "variants": {
+    "text": {
+     "N": 208,
+     "D": 128,
+     "reject_thr": 52643,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.18823529411764706,
+       "t2_unseen_acc_norej": 0.4406417112299465,
+       "t1_typed_acc": 0.2847222222222222,
+       "t4_reject_headline": 0.9300411522633745,
+       "reject_other_device": 0.8076923076923077,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.5448717948717948,
+       "t3_values_end_to_end": 0.1987179487179487,
+       "per_action_test": {
+        "on": 0.12179487179487179,
+        "off": 0.10967741935483871,
+        "faster": 0.2564102564102564,
+        "slower": 0.3076923076923077,
+        "set_level": 0.27564102564102566,
+        "oscillate": 0.057692307692307696
+       }
+      }
+     },
+     "dev_unseen_acc": 0.21604938271604937
+    },
+    "audio": {
+     "N": 208,
+     "D": 128,
+     "reject_thr": 81367,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.09518716577540107,
+       "t2_unseen_acc_norej": 0.4844919786096257,
+       "t1_typed_acc": 0.2569444444444444,
+       "t4_reject_headline": 0.9753086419753086,
+       "reject_other_device": 0.9487179487179487,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.5448717948717948,
+       "t3_values_end_to_end": 0.07692307692307693,
+       "per_action_test": {
+        "on": 0.057692307692307696,
+        "off": 0.05806451612903226,
+        "faster": 0.14102564102564102,
+        "slower": 0.15384615384615385,
+        "set_level": 0.10256410256410256,
+        "oscillate": 0.057692307692307696
+       }
+      }
+     },
+     "dev_unseen_acc": 0.09259259259259259
+    },
+    "mix": {
+     "N": 208,
+     "D": 128,
+     "reject_thr": 72308,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.17219251336898395,
+       "t2_unseen_acc_norej": 0.5080213903743316,
+       "t1_typed_acc": 0.3194444444444444,
+       "t4_reject_headline": 0.948559670781893,
+       "reject_other_device": 0.8589743589743589,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.5448717948717948,
+       "t3_values_end_to_end": 0.15384615384615385,
+       "per_action_test": {
+        "on": 0.08974358974358974,
+        "off": 0.14838709677419354,
+        "faster": 0.1858974358974359,
+        "slower": 0.3141025641025641,
+        "set_level": 0.20512820512820512,
+        "oscillate": 0.08974358974358974
+       }
+      }
+     },
+     "dev_unseen_acc": 0.1728395061728395
+    }
+   }
+  },
+  "microwave": {
+   "chosen": "mix",
+   "variants": {
+    "text": {
+     "N": 144,
+     "D": 128,
+     "reject_thr": 55085,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.1858974358974359,
+       "t2_unseen_acc_norej": 0.5480769230769231,
+       "t1_typed_acc": 0.25,
+       "t4_reject_headline": 0.9506172839506173,
+       "reject_other_device": 0.7948717948717948,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.2465277777777778,
+       "t3_values_end_to_end": 0.08333333333333333,
+       "per_action_test": {
+        "start": 0.26282051282051283,
+        "add_30s": 0.16025641025641027,
+        "stop": 0.14743589743589744,
+        "power_level": 0.17307692307692307
+       }
+      }
+     },
+     "dev_unseen_acc": 0.2361111111111111
+    },
+    "audio": {
+     "N": 144,
+     "D": 128,
+     "reject_thr": 82301,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.15705128205128205,
+       "t2_unseen_acc_norej": 0.7083333333333334,
+       "t1_typed_acc": 0.3020833333333333,
+       "t4_reject_headline": 0.9670781893004116,
+       "reject_other_device": 0.9743589743589743,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.2465277777777778,
+       "t3_values_end_to_end": 0.08680555555555555,
+       "per_action_test": {
+        "start": 0.20512820512820512,
+        "add_30s": 0.07692307692307693,
+        "stop": 0.057692307692307696,
+        "power_level": 0.28846153846153844
+       }
+      }
+     },
+     "dev_unseen_acc": 0.2037037037037037
+    },
+    "mix": {
+     "N": 144,
+     "D": 128,
+     "reject_thr": 78117,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.1987179487179487,
+       "t2_unseen_acc_norej": 0.6971153846153846,
+       "t1_typed_acc": 0.3541666666666667,
+       "t4_reject_headline": 0.9567901234567902,
+       "reject_other_device": 0.9487179487179487,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.2465277777777778,
+       "t3_values_end_to_end": 0.10416666666666667,
+       "per_action_test": {
+        "start": 0.23717948717948717,
+        "add_30s": 0.11538461538461539,
+        "stop": 0.1282051282051282,
+        "power_level": 0.3141025641025641
+       }
+      }
+     },
+     "dev_unseen_acc": 0.27314814814814814
+    }
+   }
+  }
+ }
+}

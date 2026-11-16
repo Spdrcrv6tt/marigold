@@ -1,0 +1,4 @@
+dev unseen accuracy at the 95%-rejection operating point (chosen matching variant per product)
+v1  {'fan': ('text', 0.33641975308641975), 'microwave': ('audio+bank+cal', 0.39814814814814814)} 0.3673
+v1.1 {'fan': ('text', 0.3055555555555556), 'microwave': ('audio', 0.4212962962962963)} 0.3634
+DECISION: v1 stands

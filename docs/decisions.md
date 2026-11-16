@@ -62,3 +62,4 @@
   LR restart, more command audio (mix 0.55/0.15/0.20/0.10) and stronger noise (85%, fan/microwave 0-15 dB), then
   QAT, export mg-v11, tests, vectors and the integer eval; reports/p0/v11-decision.txt compares v1 and v1.1 on dev by
   about 5:15 AM. v1.1 replaces v1 only if it is better on dev.
+- 2026-11-16, 5 AM: the overnight v1.1 intent run does not beat v1 on dev (mean unseen 36.3% against 36.7% at 95% rejection), so **model-v1 is final for iteration 1**. The whole chip is bit-exact on it, with no rerun needed. Finding: a closer fit to the teacher (cosine 0.60 to 0.65) no longer helps. Iteration 2 targets the teacher space, rejection calibration, real speech and audio enrollment.

@@ -1,0 +1,21 @@
+{
+ "tag": "randtest",
+ "D": 128,
+ "weights": 3401520,
+ "weight_bits": 16030080,
+ "row_params_bits": 346713,
+ "norm_bits": 53803,
+ "lut_bits": 28992,
+ "rom_bits_total": 16459956,
+ "rom_mbit": 16.46,
+ "macs_per_frame": 3767280,
+ "macs_per_audio_second": 188364000,
+ "real_time_factor_core": 7.24,
+ "response_ms_estimate": {
+  "hang": 128,
+  "encoder_tail": 22.1,
+  "head_parse_bridge": 0.3,
+  "match_max": 10.7,
+  "total": 161.1
+ }
+}
