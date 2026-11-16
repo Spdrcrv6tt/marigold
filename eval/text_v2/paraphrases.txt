@@ -1,0 +1,616 @@
+# marigold held-out eval, text_v2: paraphrases
+# TEST-ONLY: every line in this file is test data; never train, tune, set thresholds or write config examples from it
+# written blind on 2026-11-16 from sdk/configs/fan.json and sdk/configs/microwave.json only
+# format: a "## <product> <action>" line starts a block; each line after it is one utterance said after the wake word
+# lines with values end in " | slot=value", several slots joined by ";" (time in seconds, speed 1-5, power 1-10)
+# lowercase, no trailing punctuation, one utterance per line; a microwave start line may carry no values
+## fan on
+on
+on please
+fan please
+switch it on
+air on
+get it going
+fire it up
+start it up
+power it up
+fan time
+engage the fan
+boot up the fan
+yo get that fan going
+kick on the fan
+flip on the fan
+throw on the fan real quick
+time for some fan
+get that thing blowing
+bring the fan to life
+alright fan, do your thing
+switch on the fan already
+could you get the fan going for me
+would you mind switching on the fan
+is it ok if we run the fan for a while
+would you start up the fan please
+could you power up the fan
+mind getting the fan running
+do you think we could have the fan going
+would you please flip on the fan
+could we get the fan started
+any chance you could fire up the fan for a bit
+um could you maybe get the fan going, it's kind of stuffy
+okay so i think we need the fan running now
+uh yeah let's go ahead and turn on that fan
+hey so if you don't mind could you start up the fan for me
+alright um time to get the fan blowing
+so yeah i'd like the fan running if that's alright
+you know what, go ahead and fire up the fan
+um i was wondering if you could switch on the fan
+okay before i sit down can you get the fan running
+it's getting warm so let's go ahead and run the fan
+the fan's not even on and i'm melting
+why isn't the fan running, it's like an oven in here
+it's so stuffy and the air isn't moving at all
+i could really use the fan right now
+the fan's just sitting there and i'm dying in this heat
+nobody started the fan and it's sweltering
+it's muggy in here, i need that fan going
+i'm sweating and the fan isn't even running
+the fan's off and it's a sauna in here
+switch on the fan
+start up the fan
+get the fan going
+run the fan
+power up the fan
+let's have the fan running
+activate the fan
+go ahead and run the fan for a while
+i want the fan running
+put the fan to work
+## fan off
+off
+off please
+kill it
+shut it off
+no more fan
+cut the fan
+shut it down
+switch it off
+kill the fan
+power it down
+enough fan
+quit the fan
+kill that thing
+shut that fan down
+alright i'm good, you can kill the fan
+ok we're done with the fan
+shut her down
+that's plenty of fan for today
+nix the fan
+lose the fan for now
+off with the fan
+could you switch off the fan please
+would you mind turning off the fan
+can you shut the fan down for me
+would you please power down the fan
+mind killing the fan for a bit
+could we turn off the fan now
+is it alright if we stop running the fan now
+could you please make the fan stop
+would you turn off that fan please
+um yeah i think you can switch off the fan now
+okay so i'm actually done, could you shut down that fan
+uh you know what, let's just switch off the fan for now
+alright i'm heading to bed so go ahead and kill the fan
+so um i don't think we need the fan anymore, you can shut it off
+hey if it's not too much trouble could you power the fan down
+well it cooled off outside so we can probably shut the fan down now
+okay i'm leaving the room so the fan can go off
+um could you maybe just turn off the fan for me
+right, i'd like the fan shut down now
+nobody's even in here, why is the fan still running
+i'm going out, no need for the fan anymore
+the fan's been going all day, give it a rest
+we don't need the fan running all night
+i can't hear the tv over that fan, just shut it
+it's cool enough now, the fan can rest
+i don't need the fan anymore
+that fan's just wasting electricity at this point
+the window's open now so we're good without the fan
+done with the fan for tonight
+switch off the fan
+shut down the fan
+power the fan down
+stop running the fan
+deactivate the fan
+turn the fan all the way off
+make the fan stop
+kill the power to the fan
+no fan right now
+turn the thing off
+## fan faster
+quicker
+more speed
+step it up
+up a notch
+go faster
+crank it
+pump it up
+bump it up
+more wind
+stronger
+blow harder
+kick it up
+turn it up
+notch it up
+crank that fan up a bit
+give it some more juice
+let's get more breeze going
+come on, give me more than that
+kick it up a notch
+juice it a little
+gimme a stronger breeze
+rev it up a bit
+let's speed this thing up
+make it blow harder
+could you make the fan a little faster
+would you mind turning up the fan a bit
+can you bump the fan up one speed
+could we get a bit more airflow
+would you raise the fan speed a notch
+could you up the speed by one
+mind cranking the fan up a little
+can it go a little quicker
+could you make the breeze a bit stronger please
+would you please increase the fan by one step
+um could you maybe nudge the fan up just a little
+okay so it's still kind of warm, can we go up one more speed
+uh yeah i think the fan could go a bit faster
+so like, if you could bump it up one notch that'd be great
+hey um i'm gonna need that fan a little stronger
+alright let's try one speed higher and see how that feels
+you know what, go ahead and raise it one more level
+i can barely feel anything from this fan
+this breeze is way too weak
+it's hardly blowing at all
+that's not nearly enough air
+i'm still sweating even with the fan going
+the fan's barely doing anything
+this is barely a whisper of air
+it's still stuffy, the fan needs to work harder
+i'm not feeling much air over here
+i'm roasting even with the fan running
+increase the fan speed
+raise the speed one step
+one step faster
+a little faster please
+go up one speed
+bump the speed one higher
+give the fan more power
+up to the next speed
+stronger please
+## fan slower
+less wind
+down a notch
+ease up
+tone it down
+gentler
+not so hard
+dial it back
+back it off
+calm it down
+a bit less
+softer
+not so fast
+whoa, too much, bring it down
+chill out on the fan a little
+knock it down a notch
+easy there, turn it down some
+dial it down a bit
+take it down a peg
+less blast please
+back it down one
+could you slow the fan a little
+would you mind turning the fan down a bit
+can you lower the fan by one step
+could we take it down one speed
+would you ease up on the fan a little
+could you drop it down a level
+can it be a little gentler please
+would you reduce the speed by one
+mind lowering it a notch
+could you make the breeze softer
+um can we go down one speed, it's a bit much
+okay so that's actually too strong, could you bring it down one
+uh yeah let's drop the fan down a little
+so i think one speed lower would be better
+hey um the fan's a little intense, could you back it off a step
+alright let's knock the speed down by one and see
+you know what, i'd like it a touch slower
+my papers keep blowing off the desk
+it's like a wind tunnel in here
+that's way too much air
+my hair is flying all over the place
+the fan's blasting me
+this is way too strong
+i feel like i'm in a hurricane
+it's blowing a little too hard
+the napkins keep flying off the table
+i don't need it that strong
+it's way too windy in here
+that's more breeze than i need
+reduce the fan speed
+decrease the fan speed by one
+one step slower
+go down one speed
+lower the speed a notch
+a little slower please
+turn down the fan
+drop it a notch
+bring the speed down
+step it down
+less breeze please
+## fan set_level
+speed three | speed=3
+level 2 | speed=2
+number four | speed=4
+on high | speed=5
+low please | speed=1
+medium | speed=3
+setting 5 | speed=5
+top speed | speed=5
+two | speed=2
+the lowest setting | speed=1
+4 please | speed=4
+bump it to four | speed=4
+throw it on medium | speed=3
+crank it to five | speed=5
+just stick it on two | speed=2
+go full blast | speed=5
+knock it down to one | speed=1
+let's do three | speed=3
+put her on high | speed=5
+gimme level four | speed=4
+drop it to low | speed=1
+could you set the fan to speed two | speed=2
+would you put it on medium please | speed=3
+can you switch it to level three | speed=3
+could you set it to the slowest speed | speed=1
+would you mind putting the fan at four | speed=4
+can we have it on level 1 please | speed=1
+could you change the speed to 5 | speed=5
+would you set the fan speed to two please | speed=2
+could you turn it to setting four | speed=4
+would it be possible to run it on high | speed=5
+um can you put it on like speed three | speed=3
+okay so let's go with level two for now | speed=2
+uh i think medium would be about right | speed=3
+so yeah could you maybe just set it at four | speed=4
+alright let's try it on the highest setting | speed=5
+hey um can we do speed one, it's getting late | speed=1
+you know what, just put it on 3 | speed=3
+okay i'd like it on the second speed please | speed=2
+so um set it to the fourth setting, that's the one i like | speed=4
+speed one is plenty for me | speed=1
+only high helps in this heat, so put it there | speed=5
+five is too much and three's not enough, let's do four | speed=4
+medium was perfect yesterday, let's go back to that | speed=3
+low is all i need tonight | speed=1
+set the fan to two | speed=2
+put it on level three | speed=3
+speed number five | speed=5
+make it speed four | speed=4
+change it to one | speed=1
+medium setting please | speed=3
+switch to high | speed=5
+run it at level 4 | speed=4
+set speed 2 | speed=2
+go to the max setting | speed=5
+level three please | speed=3
+put it at 1 | speed=1
+turn it to five | speed=5
+second speed | speed=2
+the middle setting | speed=3
+## fan oscillate
+swivel
+sweep
+rotate
+side to side
+swing
+pan around
+start rotating
+stop rotating
+stop swiveling
+oscillation please
+back and forth
+stop panning
+make it swing around
+get it swiveling
+let it sweep the room
+quit the swiveling
+lock it in place
+have it do the side to side thing
+let it wander back and forth
+stop the head from moving
+keep it pointed at me
+no more swinging
+could you make the fan sweep side to side
+would you mind having it oscillate
+can you get the fan to swivel please
+could you stop it from turning side to side
+would you switch on the swivel
+can it move back and forth please
+could you make it pan across the room
+would you please stop the swiveling
+could you set it to sweep the whole room
+can you keep the fan from swinging around
+um can you make it go side to side so everyone gets some air
+okay so i'd like the fan to sweep back and forth if possible
+uh could you maybe stop the back and forth thing
+so yeah let's have it swivel around for a while
+hey um can the fan like rotate around the room
+alright i want it to stop moving and just blow straight ahead
+you know what, go ahead and let it oscillate
+only one side of the room is getting any air
+the swinging is making me dizzy
+the back and forth is driving me nuts
+i keep losing the breeze every time it turns away
+it only blows on me, the others aren't getting any
+the sweeping is annoying, keep it on me
+i want air on everyone, not just me
+it just points one way the whole time
+turn the oscillation on
+switch off the oscillation
+make it oscillate
+start the sweeping motion
+keep the head from rotating
+let it rotate
+have the fan turn back and forth
+sweep mode on
+enable the swivel
+stop the side to side
+set it to swivel
+make it stop turning its head
+freeze the head where it is
+## microwave start
+two minutes | time=120
+ninety seconds please | time=90
+go
+get cooking
+one minute please | time=60
+45 seconds | time=45
+hit start
+begin cooking
+four minutes on high | time=240;power=10
+nuke it
+3 minutes | time=180
+nuke this for a minute | time=60
+zap it for 20 seconds | time=20
+throw this in for two and a half minutes | time=150
+give it a minute thirty | time=90
+blast it for three minutes | time=180
+heat my coffee for 45 seconds | time=45
+warm up the leftovers, like four minutes | time=240
+do a minute fifteen | time=75
+run it ten minutes on medium | time=600;power=5
+pop it in for 90 seconds | time=90
+fire it up for six minutes | time=360
+could you warm this for a minute and a half | time=90
+would you cook this for eight minutes please | time=480
+can you warm up my tea for 30 seconds | time=30
+could you run the microwave for two minutes on low | time=120;power=3
+would you mind heating this for three and a half minutes | time=210
+can you do one minute at power seven | time=60;power=7
+could you reheat the pasta for two minutes | time=120
+would you please start it for 15 seconds | time=15
+can you get it going please
+could you heat this for a hundred seconds | time=100
+um could you maybe warm this up for like two minutes | time=120
+okay so i need this soup heated for about four minutes | time=240
+uh let's do the popcorn, three minutes on full | time=180;power=10
+alright so put this on for twelve minutes at power level eight | time=720;power=8
+hey um can you just heat this plate up for a minute forty five | time=105
+so i'm making oatmeal, can you run it two minutes at half | time=120;power=5
+okay go ahead and cook this for twenty minutes on medium | time=1200;power=5
+right so the box says five and a half minutes, go ahead | time=330
+this burrito needs about two minutes | time=120
+the bag says three minutes for popcorn, let's do that | time=180
+leftovers usually take about four minutes, so go for it | time=240
+this soup's frozen solid, give it ten minutes | time=600
+the coffee's cold again, ugh, forty seconds should do it | time=40
+it's in and the door's shut, go ahead
+food's in, you can start whenever
+cook for 4 minutes at power 6 | time=240;power=6
+heat for one minute twenty | time=80
+reheat for 2 minutes 30 seconds | time=150
+start cooking for seven minutes | time=420
+microwave for 10 seconds | time=10
+fifteen minutes on low | time=900;power=3
+warm it for 25 seconds | time=25
+start heating
+press start
+begin heating for eighty seconds | time=80
+cook it on 70 percent for three minutes | time=180;power=7
+heat it up for a minute at power level 4 | time=60;power=4
+go ahead and start
+## microwave add_30s
+extra thirty
+half a minute more
+a bit more time
+thirty extra seconds
+add half a minute
+30 more
+more time please
+just a tad longer
+bump it thirty
+another half minute
+tack on thirty
+give it another thirty
+throw thirty more on there
+eh it needs a bit more
+slap another thirty on it
+keep it going a bit longer
+let it ride for an extra half minute
+hit the add thirty button
+just a smidge more time
+could you add on half a minute
+would you give it thirty extra seconds
+can you put a little more time on it
+could you extend it by half a minute
+would you mind adding 30 seconds to that
+can we get another thirty on there
+could you tack on a few more seconds
+would you add a bit more time please
+could it go thirty seconds longer
+can you run it half a minute more
+um it's still kind of cold, could you add like thirty seconds
+okay so that's not quite there, give it a little extra
+uh yeah i think it needs about thirty more
+hey um can you just add a touch more time to that
+so the middle's still frozen, add another half minute
+alright let's put thirty seconds back on there
+you know what, add thirty to whatever's left
+okay one more thing, add half a minute to the timer
+it's still cold in the middle, needs a bit more
+the butter's not melted all the way yet, a little more
+this isn't hot enough, it needs a bit more time
+still lukewarm, give it some more
+the cheese hasn't melted yet, more time
+the popcorn's still popping a lot, let it go a little more
+the burrito's still icy inside, it needs more time
+that came out barely warm, give it a little extra
+add another 30
+extend the time by thirty seconds
+increase the time by half a minute
+put on an extra thirty seconds
+put some more time on
+a little more time please
+thirty seconds more please
+bump the timer up thirty seconds
+can i get 30 more
+tack thirty seconds onto it
+stretch it another half minute
+more time on the clock
+half minute extra
+top it up thirty seconds
+plus half a minute
+## microwave stop
+halt
+hold it
+abort
+quit
+enough
+stop it
+pause it
+cancel that
+stop now
+cut it
+stop the clock
+that's plenty
+whoa, stop right there
+kill the microwave
+that'll do, shut it down
+ok ok it's done, quit heating
+hit the brakes
+knock it off, it's hot enough
+we're good, cut it off
+nah stop that, i changed my mind
+scratch that, cancel the cooking
+could you stop it please
+would you mind pausing it for a second
+can you cancel the timer
+could you shut the microwave off
+would you please stop heating that
+can we stop it for a sec, i need to stir
+could you halt the cooking please
+mind stopping it right there
+would you turn the microwave off now
+can you pause it so i can check on it
+um can you stop it, i think that's long enough
+okay so i need to take it out early, go ahead and stop
+uh hold on, can you pause that real quick
+hey um just cancel whatever's running
+so actually i forgot to cover the bowl, could you stop it
+alright you can go ahead and end it now
+wait wait, stop the timer, i put the wrong thing in
+it's boiling over
+something's sparking in there
+the popcorn's starting to burn
+oh no, there's a fork in there
+the soup's bubbling all over the place
+i smell something burning in the microwave
+that egg's about to explode
+it's hot enough already
+the cheese is going everywhere, hold it
+it's way overdone already
+the popping stopped, it's done
+stop heating
+cancel cooking
+pause the microwave
+abort the cooking
+end the timer
+halt it
+cancel the program
+put it on hold
+stop it right now
+kill the timer
+switch the microwave off
+## microwave power_level
+power 6 | power=6
+power at half | power=5
+power eight | power=8
+low power | power=3
+max power | power=10
+power level 2 | power=2
+high power | power=10
+power to 4 | power=4
+power to medium | power=5
+70 percent power | power=7
+power nine | power=9
+knock the power down to three | power=3
+crank the power up to 10 | power=10
+drop it to power level one | power=1
+let's do power seven | power=7
+bring the power down to half | power=5
+power all the way up | power=10
+bump the power to eight | power=8
+take it down to power two | power=2
+lower the power to 4 | power=4
+could you set the power level to six | power=6
+would you put it on power level three | power=3
+can you switch the power to high | power=10
+could you change the power to 8 | power=8
+would you mind dropping the power to five | power=5
+can we go with power level nine | power=9
+could you turn the power down to two | power=2
+would you set it to sixty percent power | power=6
+can you make it power level 1 | power=1
+could you put the power at max | power=10
+um can you set the power to like four | power=4
+okay so this needs gentle heat, let's do power level three | power=3
+uh i think power seven would be better for this | power=7
+so yeah could you maybe bring the power down to medium | power=5
+hey um let's go with power level eight for the leftovers | power=8
+alright before i start it, set the power to six | power=6
+you know what, put the power all the way down to one | power=1
+okay i'd like the power at half for this one | power=5
+it keeps boiling over on high, drop it to five | power=5
+the edges always get rubbery at full, let's try seven | power=7
+this cooks way too fast, power four would be better | power=4
+the bread goes tough on high, use power three | power=3
+it's not heating fast enough at five, go up to eight | power=8
+the chocolate keeps scorching, power two please | power=2
+ten is too strong for this, make it six | power=6
+power level four | power=4
+set power 9 | power=9
+use power level 7 | power=7
+switch to power three | power=3
+power down to 2 | power=2
+power up to ten | power=10
+set it to power 1 | power=1
+make the power 9 | power=9
+80 percent | power=8
+power one | power=1
+power level at medium | power=5
+high power setting | power=10
+adjust the power to 6 | power=6
+half strength | power=5
+power setting low | power=3

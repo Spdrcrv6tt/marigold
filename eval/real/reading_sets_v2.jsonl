@@ -1,0 +1,880 @@
+{"set": 1, "line": 1, "spoken": "hey breeze, up a notch", "product": "fan", "action": "faster", "values": "", "text": "up a notch", "category": "command"}
+{"set": 1, "line": 2, "spoken": "hey breeze, right, i'd like the fan shut down now", "product": "fan", "action": "off", "values": "", "text": "right, i'd like the fan shut down now", "category": "command"}
+{"set": 1, "line": 3, "spoken": "hey breeze, could you drop it down a level", "product": "fan", "action": "slower", "values": "", "text": "could you drop it down a level", "category": "command"}
+{"set": 1, "line": 4, "spoken": "hey breeze, in a large bowl combine the flour, sugar and salt", "category": "tv", "text": "in a large bowl combine the flour, sugar and salt", "product": "fan", "action": "none", "values": ""}
+{"set": 1, "line": 5, "spoken": "hey breeze, i'm going out, no need for the fan anymore", "product": "fan", "action": "off", "values": "", "text": "i'm going out, no need for the fan anymore", "category": "command"}
+{"set": 1, "line": 6, "spoken": "hey breeze, set the thermostat to seventy two", "category": "other_device", "text": "set the thermostat to seventy two", "product": "fan", "action": "none", "values": ""}
+{"set": 1, "line": 7, "spoken": "hey breeze, any chance you could fire up the fan for a bit", "product": "fan", "action": "on", "values": "", "text": "any chance you could fire up the fan for a bit", "category": "command"}
+{"set": 1, "line": 8, "spoken": "hey breeze, the spin class at the gym goes up to level ten", "category": "near", "text": "the spin class at the gym goes up to level ten", "product": "fan", "action": "none", "values": ""}
+{"set": 1, "line": 9, "spoken": "hey breeze, blow harder", "product": "fan", "action": "faster", "values": "", "text": "blow harder", "category": "command"}
+{"set": 1, "line": 10, "spoken": "hey breeze, run the fan", "product": "fan", "action": "on", "values": "", "text": "run the fan", "category": "command"}
+{"set": 1, "line": 11, "spoken": "hey breeze, can you shut the fan down for me", "product": "fan", "action": "off", "values": "", "text": "can you shut the fan down for me", "category": "command"}
+{"set": 1, "line": 12, "spoken": "hey breeze, you'll want to grab a jacket before you head out tomorrow morning", "category": "tv", "text": "you'll want to grab a jacket before you head out tomorrow morning", "product": "fan", "action": "none", "values": ""}
+{"set": 1, "line": 13, "spoken": "hey breeze, knock it down to one", "product": "fan", "action": "set_level", "values": "speed=1", "text": "knock it down to one", "category": "command"}
+{"set": 1, "line": 14, "spoken": "hey breeze, seriously", "category": "chat", "text": "seriously", "product": "fan", "action": "none", "values": ""}
+{"set": 1, "line": 15, "spoken": "hey breeze, alright i'm good, you can kill the fan", "product": "fan", "action": "off", "values": "", "text": "alright i'm good, you can kill the fan", "category": "command"}
+{"set": 1, "line": 16, "spoken": "hey breeze, would you turn off that fan please", "product": "fan", "action": "off", "values": "", "text": "would you turn off that fan please", "category": "command"}
+{"set": 1, "line": 17, "spoken": "hey breeze, you know what, go ahead and raise it one more level", "product": "fan", "action": "faster", "values": "", "text": "you know what, go ahead and raise it one more level", "category": "command"}
+{"set": 1, "line": 18, "spoken": "hey breeze, drop it a notch", "product": "fan", "action": "slower", "values": "", "text": "drop it a notch", "category": "command"}
+{"set": 1, "line": 19, "spoken": "hey breeze, alright let's try one speed higher and see how that feels", "product": "fan", "action": "faster", "values": "", "text": "alright let's try one speed higher and see how that feels", "category": "command"}
+{"set": 1, "line": 20, "spoken": "hey breeze, softer", "product": "fan", "action": "slower", "values": "", "text": "softer", "category": "command"}
+{"set": 1, "line": 21, "spoken": "hey breeze, can you help me move the couch", "category": "chat", "text": "can you help me move the couch", "product": "fan", "action": "none", "values": ""}
+{"set": 1, "line": 22, "spoken": "hey breeze, add eggs to the shopping list", "category": "other_device", "text": "add eggs to the shopping list", "product": "fan", "action": "none", "values": ""}
+{"set": 1, "line": 23, "spoken": "hey breeze, whatever", "category": "chat", "text": "whatever", "product": "fan", "action": "none", "values": ""}
+{"set": 1, "line": 24, "spoken": "hey breeze, pause the movie", "category": "other_device", "text": "pause the movie", "product": "fan", "action": "none", "values": ""}
+{"set": 1, "line": 25, "spoken": "hey breeze, hey um i'm gonna need that fan a little stronger", "product": "fan", "action": "faster", "values": "", "text": "hey um i'm gonna need that fan a little stronger", "category": "command"}
+{"set": 1, "line": 26, "spoken": "hey breeze, oscillation please", "product": "fan", "action": "oscillate", "values": "", "text": "oscillation please", "category": "command"}
+{"set": 1, "line": 27, "spoken": "hey breeze, mind killing the fan for a bit", "product": "fan", "action": "off", "values": "", "text": "mind killing the fan for a bit", "category": "command"}
+{"set": 1, "line": 28, "spoken": "hey breeze, ugh", "category": "chat", "text": "ugh", "product": "fan", "action": "none", "values": ""}
+{"set": 1, "line": 29, "spoken": "hey breeze, alright then", "category": "chat", "text": "alright then", "product": "fan", "action": "none", "values": ""}
+{"set": 1, "line": 30, "spoken": "hey breeze, is this container microwave safe", "category": "near", "text": "is this container microwave safe", "product": "fan", "action": "none", "values": ""}
+{"set": 1, "line": 31, "spoken": "hey breeze, throw on the fan real quick", "product": "fan", "action": "on", "values": "", "text": "throw on the fan real quick", "category": "command"}
+{"set": 1, "line": 32, "spoken": "hey breeze, start the car", "category": "other_device", "text": "start the car", "product": "fan", "action": "none", "values": ""}
+{"set": 1, "line": 33, "spoken": "hey breeze, flip on the fan", "product": "fan", "action": "on", "values": "", "text": "flip on the fan", "category": "command"}
+{"set": 1, "line": 34, "spoken": "hey breeze, medium", "product": "fan", "action": "set_level", "values": "speed=3", "text": "medium", "category": "command"}
+{"set": 1, "line": 35, "spoken": "hey breeze, i don't need the fan anymore", "product": "fan", "action": "off", "values": "", "text": "i don't need the fan anymore", "category": "command"}
+{"set": 1, "line": 36, "spoken": "hey breeze, could you slow the fan a little", "product": "fan", "action": "slower", "values": "", "text": "could you slow the fan a little", "category": "command"}
+{"set": 1, "line": 37, "spoken": "hey breeze, i read that microwaves don't actually cook from the inside out", "category": "near", "text": "i read that microwaves don't actually cook from the inside out", "product": "fan", "action": "none", "values": ""}
+{"set": 1, "line": 38, "spoken": "hey breeze, i'll call you back", "category": "chat", "text": "i'll call you back", "product": "fan", "action": "none", "values": ""}
+{"set": 2, "line": 1, "spoken": "hey kitchen, it's hot enough already", "product": "microwave", "action": "stop", "values": "", "text": "it's hot enough already", "category": "command"}
+{"set": 2, "line": 2, "spoken": "hey kitchen, the cheese hasn't melted yet, more time", "product": "microwave", "action": "add_30s", "values": "", "text": "the cheese hasn't melted yet, more time", "category": "command"}
+{"set": 2, "line": 3, "spoken": "hey kitchen, eh it needs a bit more", "product": "microwave", "action": "add_30s", "values": "", "text": "eh it needs a bit more", "category": "command"}
+{"set": 2, "line": 4, "spoken": "hey kitchen, ten is too strong for this, make it six", "product": "microwave", "action": "power_level", "values": "power=6", "text": "ten is too strong for this, make it six", "category": "command"}
+{"set": 2, "line": 5, "spoken": "hey kitchen, sure", "category": "chat", "text": "sure", "product": "microwave", "action": "none", "values": ""}
+{"set": 2, "line": 6, "spoken": "hey kitchen, food's in, you can start whenever", "product": "microwave", "action": "start", "values": "", "text": "food's in, you can start whenever", "category": "command"}
+{"set": 2, "line": 7, "spoken": "hey kitchen, this burrito needs about two minutes", "product": "microwave", "action": "start", "values": "time=120", "text": "this burrito needs about two minutes", "category": "command"}
+{"set": 2, "line": 8, "spoken": "hey kitchen, read me my calendar for tomorrow", "category": "other_device", "text": "read me my calendar for tomorrow", "product": "microwave", "action": "none", "values": ""}
+{"set": 2, "line": 9, "spoken": "hey kitchen, high power setting", "product": "microwave", "action": "power_level", "values": "power=10", "text": "high power setting", "category": "command"}
+{"set": 2, "line": 10, "spoken": "hey kitchen, could you change the power to 8", "product": "microwave", "action": "power_level", "values": "power=8", "text": "could you change the power to 8", "category": "command"}
+{"set": 2, "line": 11, "spoken": "hey kitchen, high power", "product": "microwave", "action": "power_level", "values": "power=10", "text": "high power", "category": "command"}
+{"set": 2, "line": 12, "spoken": "hey kitchen, start heating", "product": "microwave", "action": "start", "values": "", "text": "start heating", "category": "command"}
+{"set": 2, "line": 13, "spoken": "hey kitchen, okay go ahead and cook this for twenty minutes on medium", "product": "microwave", "action": "start", "values": "time=1200;power=5", "text": "okay go ahead and cook this for twenty minutes on medium", "category": "command"}
+{"set": 2, "line": 14, "spoken": "hey kitchen, can you switch the power to high", "product": "microwave", "action": "power_level", "values": "power=10", "text": "can you switch the power to high", "category": "command"}
+{"set": 2, "line": 15, "spoken": "hey kitchen, hmm", "category": "chat", "text": "hmm", "product": "microwave", "action": "none", "values": ""}
+{"set": 2, "line": 16, "spoken": "hey kitchen, it's boiling over", "product": "microwave", "action": "stop", "values": "", "text": "it's boiling over", "category": "command"}
+{"set": 2, "line": 17, "spoken": "hey kitchen, hold it", "product": "microwave", "action": "stop", "values": "", "text": "hold it", "category": "command"}
+{"set": 2, "line": 18, "spoken": "hey kitchen, press start", "product": "microwave", "action": "start", "values": "", "text": "press start", "category": "command"}
+{"set": 2, "line": 19, "spoken": "hey kitchen, i'm thinking about getting a haircut", "category": "chat", "text": "i'm thinking about getting a haircut", "product": "microwave", "action": "none", "values": ""}
+{"set": 2, "line": 20, "spoken": "hey kitchen, sorry", "category": "chat", "text": "sorry", "product": "microwave", "action": "none", "values": ""}
+{"set": 2, "line": 21, "spoken": "hey kitchen, this cooks way too fast, power four would be better", "product": "microwave", "action": "power_level", "values": "power=4", "text": "this cooks way too fast, power four would be better", "category": "command"}
+{"set": 2, "line": 22, "spoken": "hey kitchen, put on an extra thirty seconds", "product": "microwave", "action": "add_30s", "values": "", "text": "put on an extra thirty seconds", "category": "command"}
+{"set": 2, "line": 23, "spoken": "hey kitchen, it keeps boiling over on high, drop it to five", "product": "microwave", "action": "power_level", "values": "power=5", "text": "it keeps boiling over on high, drop it to five", "category": "command"}
+{"set": 2, "line": 24, "spoken": "hey kitchen, heat it up for a minute at power level 4", "product": "microwave", "action": "start", "values": "time=60;power=4", "text": "heat it up for a minute at power level 4", "category": "command"}
+{"set": 2, "line": 25, "spoken": "hey kitchen, mom made a casserole for the potluck", "category": "near", "text": "mom made a casserole for the potluck", "product": "microwave", "action": "none", "values": ""}
+{"set": 2, "line": 26, "spoken": "hey kitchen, uh hold on, can you pause that real quick", "product": "microwave", "action": "stop", "values": "", "text": "uh hold on, can you pause that real quick", "category": "command"}
+{"set": 2, "line": 27, "spoken": "hey kitchen, i'm a big fan of your cooking", "category": "near", "text": "i'm a big fan of your cooking", "product": "microwave", "action": "none", "values": ""}
+{"set": 2, "line": 28, "spoken": "hey kitchen, warm up the leftovers, like four minutes", "product": "microwave", "action": "start", "values": "time=240", "text": "warm up the leftovers, like four minutes", "category": "command"}
+{"set": 2, "line": 29, "spoken": "hey kitchen, blast it for three minutes", "product": "microwave", "action": "start", "values": "time=180", "text": "blast it for three minutes", "category": "command"}
+{"set": 2, "line": 30, "spoken": "hey kitchen, do a minute fifteen", "product": "microwave", "action": "start", "values": "time=75", "text": "do a minute fifteen", "category": "command"}
+{"set": 2, "line": 31, "spoken": "hey kitchen, the power went out for three hours last night", "category": "near", "text": "the power went out for three hours last night", "product": "microwave", "action": "none", "values": ""}
+{"set": 2, "line": 32, "spoken": "hey kitchen, could you set the power level to six", "product": "microwave", "action": "power_level", "values": "power=6", "text": "could you set the power level to six", "category": "command"}
+{"set": 2, "line": 33, "spoken": "hey kitchen, how many watts is your microwave", "category": "near", "text": "how many watts is your microwave", "product": "microwave", "action": "none", "values": ""}
+{"set": 2, "line": 34, "spoken": "hey kitchen, nuke this for a minute", "product": "microwave", "action": "start", "values": "time=60", "text": "nuke this for a minute", "category": "command"}
+{"set": 2, "line": 35, "spoken": "hey kitchen, start cooking for seven minutes", "product": "microwave", "action": "start", "values": "time=420", "text": "start cooking for seven minutes", "category": "command"}
+{"set": 2, "line": 36, "spoken": "hey kitchen, never mind", "category": "chat", "text": "never mind", "product": "microwave", "action": "none", "values": ""}
+{"set": 2, "line": 37, "spoken": "hey kitchen, bless you", "category": "chat", "text": "bless you", "product": "microwave", "action": "none", "values": ""}
+{"set": 2, "line": 38, "spoken": "hey kitchen, power setting low", "product": "microwave", "action": "power_level", "values": "power=3", "text": "power setting low", "category": "command"}
+{"set": 2, "line": 39, "spoken": "hey kitchen, where did i put my keys", "category": "chat", "text": "where did i put my keys", "product": "microwave", "action": "none", "values": ""}
+{"set": 2, "line": 40, "spoken": "hey kitchen, um", "category": "chat", "text": "um", "product": "microwave", "action": "none", "values": ""}
+{"set": 3, "line": 1, "spoken": "hey breeze, this program is brought to you by viewers like you", "category": "tv", "text": "this program is brought to you by viewers like you", "product": "fan", "action": "none", "values": ""}
+{"set": 3, "line": 2, "spoken": "hey breeze, okay so that's actually too strong, could you bring it down one", "product": "fan", "action": "slower", "values": "", "text": "okay so that's actually too strong, could you bring it down one", "category": "command"}
+{"set": 3, "line": 3, "spoken": "hey breeze, so like, if you could bump it up one notch that'd be great", "product": "fan", "action": "faster", "values": "", "text": "so like, if you could bump it up one notch that'd be great", "category": "command"}
+{"set": 3, "line": 4, "spoken": "hey breeze, would you mind turning up the fan a bit", "product": "fan", "action": "faster", "values": "", "text": "would you mind turning up the fan a bit", "category": "command"}
+{"set": 3, "line": 5, "spoken": "hey breeze, the batteries in the smoke detector are getting low", "category": "near", "text": "the batteries in the smoke detector are getting low", "product": "fan", "action": "none", "values": ""}
+{"set": 3, "line": 6, "spoken": "hey breeze, did anyone see where the scissors went", "category": "chat", "text": "did anyone see where the scissors went", "product": "fan", "action": "none", "values": ""}
+{"set": 3, "line": 7, "spoken": "hey breeze, could we get a bit more airflow", "product": "fan", "action": "faster", "values": "", "text": "could we get a bit more airflow", "category": "command"}
+{"set": 3, "line": 8, "spoken": "hey breeze, turn the thing off", "product": "fan", "action": "off", "values": "", "text": "turn the thing off", "category": "command"}
+{"set": 3, "line": 9, "spoken": "hey breeze, and that's going to do it for us tonight, thanks for watching", "category": "tv", "text": "and that's going to do it for us tonight, thanks for watching", "product": "fan", "action": "none", "values": ""}
+{"set": 3, "line": 10, "spoken": "hey breeze, okay before i sit down can you get the fan running", "product": "fan", "action": "on", "values": "", "text": "okay before i sit down can you get the fan running", "category": "command"}
+{"set": 3, "line": 11, "spoken": "hey breeze, that's more breeze than i need", "product": "fan", "action": "slower", "values": "", "text": "that's more breeze than i need", "category": "command"}
+{"set": 3, "line": 12, "spoken": "hey breeze, quicker", "product": "fan", "action": "faster", "values": "", "text": "quicker", "category": "command"}
+{"set": 3, "line": 13, "spoken": "hey breeze, medium was perfect yesterday, let's go back to that", "product": "fan", "action": "set_level", "values": "speed=3", "text": "medium was perfect yesterday, let's go back to that", "category": "command"}
+{"set": 3, "line": 14, "spoken": "hey breeze, time for some fan", "product": "fan", "action": "on", "values": "", "text": "time for some fan", "category": "command"}
+{"set": 3, "line": 15, "spoken": "hey breeze, second speed", "product": "fan", "action": "set_level", "values": "speed=2", "text": "second speed", "category": "command"}
+{"set": 3, "line": 16, "spoken": "hey breeze, could we take it down one speed", "product": "fan", "action": "slower", "values": "", "text": "could we take it down one speed", "category": "command"}
+{"set": 3, "line": 17, "spoken": "hey breeze, i'll be right there", "category": "chat", "text": "i'll be right there", "product": "fan", "action": "none", "values": ""}
+{"set": 3, "line": 18, "spoken": "hey breeze, shut it down", "product": "fan", "action": "off", "values": "", "text": "shut it down", "category": "command"}
+{"set": 3, "line": 19, "spoken": "hey breeze, the fan's barely doing anything", "product": "fan", "action": "faster", "values": "", "text": "the fan's barely doing anything", "category": "command"}
+{"set": 3, "line": 20, "spoken": "hey breeze, switch it off", "product": "fan", "action": "off", "values": "", "text": "switch it off", "category": "command"}
+{"set": 3, "line": 21, "spoken": "hey breeze, the middle setting", "product": "fan", "action": "set_level", "values": "speed=3", "text": "the middle setting", "category": "command"}
+{"set": 3, "line": 22, "spoken": "hey breeze, make it oscillate", "product": "fan", "action": "oscillate", "values": "", "text": "make it oscillate", "category": "command"}
+{"set": 3, "line": 23, "spoken": "hey breeze, she's a huge fan of that band", "category": "near", "text": "she's a huge fan of that band", "product": "fan", "action": "none", "values": ""}
+{"set": 3, "line": 24, "spoken": "hey breeze, nope", "category": "chat", "text": "nope", "product": "fan", "action": "none", "values": ""}
+{"set": 3, "line": 25, "spoken": "hey breeze, the swinging is making me dizzy", "product": "fan", "action": "oscillate", "values": "", "text": "the swinging is making me dizzy", "category": "command"}
+{"set": 3, "line": 26, "spoken": "hey breeze, a little fresh basil on top and we're done", "category": "tv", "text": "a little fresh basil on top and we're done", "product": "fan", "action": "none", "values": ""}
+{"set": 3, "line": 27, "spoken": "hey breeze, have the fan turn back and forth", "product": "fan", "action": "oscillate", "values": "", "text": "have the fan turn back and forth", "category": "command"}
+{"set": 3, "line": 28, "spoken": "hey breeze, uh huh", "category": "chat", "text": "uh huh", "product": "fan", "action": "none", "values": ""}
+{"set": 3, "line": 29, "spoken": "hey breeze, alright i'm heading to bed so go ahead and kill the fan", "product": "fan", "action": "off", "values": "", "text": "alright i'm heading to bed so go ahead and kill the fan", "category": "command"}
+{"set": 3, "line": 30, "spoken": "hey breeze, shut down the fan", "product": "fan", "action": "off", "values": "", "text": "shut down the fan", "category": "command"}
+{"set": 3, "line": 31, "spoken": "hey breeze, alright let's try it on the highest setting", "product": "fan", "action": "set_level", "values": "speed=5", "text": "alright let's try it on the highest setting", "category": "command"}
+{"set": 3, "line": 32, "spoken": "hey breeze, alright um time to get the fan blowing", "product": "fan", "action": "on", "values": "", "text": "alright um time to get the fan blowing", "category": "command"}
+{"set": 3, "line": 33, "spoken": "hey breeze, so yeah i'd like the fan running if that's alright", "product": "fan", "action": "on", "values": "", "text": "so yeah i'd like the fan running if that's alright", "category": "command"}
+{"set": 3, "line": 34, "spoken": "hey breeze, good night", "category": "chat", "text": "good night", "product": "fan", "action": "none", "values": ""}
+{"set": 3, "line": 35, "spoken": "hey breeze, i think it's going to rain later", "category": "chat", "text": "i think it's going to rain later", "product": "fan", "action": "none", "values": ""}
+{"set": 3, "line": 36, "spoken": "hey breeze, shut that fan down", "product": "fan", "action": "off", "values": "", "text": "shut that fan down", "category": "command"}
+{"set": 3, "line": 37, "spoken": "hey breeze, 4 please", "product": "fan", "action": "set_level", "values": "speed=4", "text": "4 please", "category": "command"}
+{"set": 3, "line": 38, "spoken": "hey breeze, folks, it's going to be a scorcher out there today", "category": "tv", "text": "folks, it's going to be a scorcher out there today", "product": "fan", "action": "none", "values": ""}
+{"set": 4, "line": 1, "spoken": "hey kitchen, don't forget your lunch", "category": "chat", "text": "don't forget your lunch", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 2, "spoken": "hey kitchen, um can you set the power to like four", "product": "microwave", "action": "power_level", "values": "power=4", "text": "um can you set the power to like four", "category": "command"}
+{"set": 4, "line": 3, "spoken": "hey kitchen, i smell something burning in the microwave", "product": "microwave", "action": "stop", "values": "", "text": "i smell something burning in the microwave", "category": "command"}
+{"set": 4, "line": 4, "spoken": "hey kitchen, can you warm up my tea for 30 seconds", "product": "microwave", "action": "start", "values": "time=30", "text": "can you warm up my tea for 30 seconds", "category": "command"}
+{"set": 4, "line": 5, "spoken": "hey kitchen, uh let's do the popcorn, three minutes on full", "product": "microwave", "action": "start", "values": "time=180;power=10", "text": "uh let's do the popcorn, three minutes on full", "category": "command"}
+{"set": 4, "line": 6, "spoken": "hey kitchen, power up to ten", "product": "microwave", "action": "power_level", "values": "power=10", "text": "power up to ten", "category": "command"}
+{"set": 4, "line": 7, "spoken": "hey kitchen, hey um just cancel whatever's running", "product": "microwave", "action": "stop", "values": "", "text": "hey um just cancel whatever's running", "category": "command"}
+{"set": 4, "line": 8, "spoken": "hey kitchen, this microwave cooks evenly every time, order yours today", "category": "tv", "text": "this microwave cooks evenly every time, order yours today", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 9, "spoken": "hey kitchen, could you reheat the pasta for two minutes", "product": "microwave", "action": "start", "values": "time=120", "text": "could you reheat the pasta for two minutes", "category": "command"}
+{"set": 4, "line": 10, "spoken": "hey kitchen, this soup's frozen solid, give it ten minutes", "product": "microwave", "action": "start", "values": "time=600", "text": "this soup's frozen solid, give it ten minutes", "category": "command"}
+{"set": 4, "line": 11, "spoken": "hey kitchen, good morning", "category": "chat", "text": "good morning", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 12, "spoken": "hey kitchen, zap it for 20 seconds", "product": "microwave", "action": "start", "values": "time=20", "text": "zap it for 20 seconds", "category": "command"}
+{"set": 4, "line": 13, "spoken": "hey kitchen, reheat for 2 minutes 30 seconds", "product": "microwave", "action": "start", "values": "time=150", "text": "reheat for 2 minutes 30 seconds", "category": "command"}
+{"set": 4, "line": 14, "spoken": "hey kitchen, can you cancel the timer", "product": "microwave", "action": "stop", "values": "", "text": "can you cancel the timer", "category": "command"}
+{"set": 4, "line": 15, "spoken": "hey kitchen, how long does rice usually take to cook", "category": "near", "text": "how long does rice usually take to cook", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 16, "spoken": "hey kitchen, gusts up to forty miles per hour are possible along the coast", "category": "tv", "text": "gusts up to forty miles per hour are possible along the coast", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 17, "spoken": "hey kitchen, max power", "product": "microwave", "action": "power_level", "values": "power=10", "text": "max power", "category": "command"}
+{"set": 4, "line": 18, "spoken": "hey kitchen, i accidentally microwaved a spoon once", "category": "near", "text": "i accidentally microwaved a spoon once", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 19, "spoken": "hey kitchen, today we're cooking with cast iron", "category": "tv", "text": "today we're cooking with cast iron", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 20, "spoken": "hey kitchen, she's at level five in her swim class", "category": "near", "text": "she's at level five in her swim class", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 21, "spoken": "hey kitchen, wait wait, stop the timer, i put the wrong thing in", "product": "microwave", "action": "stop", "values": "", "text": "wait wait, stop the timer, i put the wrong thing in", "category": "command"}
+{"set": 4, "line": 22, "spoken": "hey kitchen, let's watch a movie tonight", "category": "chat", "text": "let's watch a movie tonight", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 23, "spoken": "hey kitchen, what level are you on in that game", "category": "near", "text": "what level are you on in that game", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 24, "spoken": "hey kitchen, could you halt the cooking please", "product": "microwave", "action": "stop", "values": "", "text": "could you halt the cooking please", "category": "command"}
+{"set": 4, "line": 25, "spoken": "hey kitchen, the chocolate keeps scorching, power two please", "product": "microwave", "action": "power_level", "values": "power=2", "text": "the chocolate keeps scorching, power two please", "category": "command"}
+{"set": 4, "line": 26, "spoken": "hey kitchen, the popcorn's starting to burn", "product": "microwave", "action": "stop", "values": "", "text": "the popcorn's starting to burn", "category": "command"}
+{"set": 4, "line": 27, "spoken": "hey kitchen, um could you maybe warm this up for like two minutes", "product": "microwave", "action": "start", "values": "time=120", "text": "um could you maybe warm this up for like two minutes", "category": "command"}
+{"set": 4, "line": 28, "spoken": "hey kitchen, dim the bedroom lights", "category": "other_device", "text": "dim the bedroom lights", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 29, "spoken": "hey kitchen, after a quick commercial break, we'll be right back", "category": "tv", "text": "after a quick commercial break, we'll be right back", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 30, "spoken": "hey kitchen, switch to power three", "product": "microwave", "action": "power_level", "values": "power=3", "text": "switch to power three", "category": "command"}
+{"set": 4, "line": 31, "spoken": "hey kitchen, breaking news tonight from the state capitol", "category": "tv", "text": "breaking news tonight from the state capitol", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 32, "spoken": "hey kitchen, top it up thirty seconds", "product": "microwave", "action": "add_30s", "values": "", "text": "top it up thirty seconds", "category": "command"}
+{"set": 4, "line": 33, "spoken": "hey kitchen, power one", "product": "microwave", "action": "power_level", "values": "power=1", "text": "power one", "category": "command"}
+{"set": 4, "line": 34, "spoken": "hey kitchen, arm the security system", "category": "other_device", "text": "arm the security system", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 35, "spoken": "hey kitchen, what's the weather like tomorrow", "category": "other_device", "text": "what's the weather like tomorrow", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 36, "spoken": "hey kitchen, can you put a little more time on it", "product": "microwave", "action": "add_30s", "values": "", "text": "can you put a little more time on it", "category": "command"}
+{"set": 4, "line": 37, "spoken": "hey kitchen, that was a classic from the eighties, and up next some new music", "category": "tv", "text": "that was a classic from the eighties, and up next some new music", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 38, "spoken": "hey kitchen, you're going to be late for work", "category": "chat", "text": "you're going to be late for work", "product": "microwave", "action": "none", "values": ""}
+{"set": 4, "line": 39, "spoken": "hey kitchen, this isn't hot enough, it needs a bit more time", "product": "microwave", "action": "add_30s", "values": "", "text": "this isn't hot enough, it needs a bit more time", "category": "command"}
+{"set": 5, "line": 1, "spoken": "hey breeze, put it at 1", "product": "fan", "action": "set_level", "values": "speed=1", "text": "put it at 1", "category": "command"}
+{"set": 5, "line": 2, "spoken": "hey breeze, lower the speed a notch", "product": "fan", "action": "slower", "values": "", "text": "lower the speed a notch", "category": "command"}
+{"set": 5, "line": 3, "spoken": "hey breeze, no more swinging", "product": "fan", "action": "oscillate", "values": "", "text": "no more swinging", "category": "command"}
+{"set": 5, "line": 4, "spoken": "hey breeze, well it cooled off outside so we can probably shut the fan down now", "product": "fan", "action": "off", "values": "", "text": "well it cooled off outside so we can probably shut the fan down now", "category": "command"}
+{"set": 5, "line": 5, "spoken": "hey breeze, fire it up", "product": "fan", "action": "on", "values": "", "text": "fire it up", "category": "command"}
+{"set": 5, "line": 6, "spoken": "hey breeze, okay so i think we need the fan running now", "product": "fan", "action": "on", "values": "", "text": "okay so i think we need the fan running now", "category": "command"}
+{"set": 5, "line": 7, "spoken": "hey breeze, raise the speed one step", "product": "fan", "action": "faster", "values": "", "text": "raise the speed one step", "category": "command"}
+{"set": 5, "line": 8, "spoken": "hey breeze, the chance of rain is sixty percent on saturday", "category": "tv", "text": "the chance of rain is sixty percent on saturday", "product": "fan", "action": "none", "values": ""}
+{"set": 5, "line": 9, "spoken": "hey breeze, a little faster please", "product": "fan", "action": "faster", "values": "", "text": "a little faster please", "category": "command"}
+{"set": 5, "line": 10, "spoken": "hey breeze, that's way too much air", "product": "fan", "action": "slower", "values": "", "text": "that's way too much air", "category": "command"}
+{"set": 5, "line": 11, "spoken": "hey breeze, throw it on medium", "product": "fan", "action": "set_level", "values": "speed=3", "text": "throw it on medium", "category": "command"}
+{"set": 5, "line": 12, "spoken": "hey breeze, i don't need it that strong", "product": "fan", "action": "slower", "values": "", "text": "i don't need it that strong", "category": "command"}
+{"set": 5, "line": 13, "spoken": "hey breeze, on please", "product": "fan", "action": "on", "values": "", "text": "on please", "category": "command"}
+{"set": 5, "line": 14, "spoken": "hey breeze, um can you make it go side to side so everyone gets some air", "product": "fan", "action": "oscillate", "values": "", "text": "um can you make it go side to side so everyone gets some air", "category": "command"}
+{"set": 5, "line": 15, "spoken": "hey breeze, bump it up", "product": "fan", "action": "faster", "values": "", "text": "bump it up", "category": "command"}
+{"set": 5, "line": 16, "spoken": "hey breeze, would you mind having it oscillate", "product": "fan", "action": "oscillate", "values": "", "text": "would you mind having it oscillate", "category": "command"}
+{"set": 5, "line": 17, "spoken": "hey breeze, you're not supposed to put metal in the microwave", "category": "near", "text": "you're not supposed to put metal in the microwave", "product": "fan", "action": "none", "values": ""}
+{"set": 5, "line": 18, "spoken": "hey breeze, would you ease up on the fan a little", "product": "fan", "action": "slower", "values": "", "text": "would you ease up on the fan a little", "category": "command"}
+{"set": 5, "line": 19, "spoken": "hey breeze, toast two slices of bread on medium", "category": "other_device", "text": "toast two slices of bread on medium", "product": "fan", "action": "none", "values": ""}
+{"set": 5, "line": 20, "spoken": "hey breeze, the package came today", "category": "chat", "text": "the package came today", "product": "fan", "action": "none", "values": ""}
+{"set": 5, "line": 21, "spoken": "hey breeze, boot up the fan", "product": "fan", "action": "on", "values": "", "text": "boot up the fan", "category": "command"}
+{"set": 5, "line": 22, "spoken": "hey breeze, maybe later", "category": "chat", "text": "maybe later", "product": "fan", "action": "none", "values": ""}
+{"set": 5, "line": 23, "spoken": "hey breeze, alright fan, do your thing", "product": "fan", "action": "on", "values": "", "text": "alright fan, do your thing", "category": "command"}
+{"set": 5, "line": 24, "spoken": "hey breeze, let the steak rest for about ten minutes before slicing", "category": "tv", "text": "let the steak rest for about ten minutes before slicing", "product": "fan", "action": "none", "values": ""}
+{"set": 5, "line": 25, "spoken": "hey breeze, i'm not feeling much air over here", "product": "fan", "action": "faster", "values": "", "text": "i'm not feeling much air over here", "category": "command"}
+{"set": 5, "line": 26, "spoken": "hey breeze, the high score on this level is insane", "category": "near", "text": "the high score on this level is insane", "product": "fan", "action": "none", "values": ""}
+{"set": 5, "line": 27, "spoken": "hey breeze, kill the fan", "product": "fan", "action": "off", "values": "", "text": "kill the fan", "category": "command"}
+{"set": 5, "line": 28, "spoken": "hey breeze, it only blows on me, the others aren't getting any", "product": "fan", "action": "oscillate", "values": "", "text": "it only blows on me, the others aren't getting any", "category": "command"}
+{"set": 5, "line": 29, "spoken": "hey breeze, i'm sweating and the fan isn't even running", "product": "fan", "action": "on", "values": "", "text": "i'm sweating and the fan isn't even running", "category": "command"}
+{"set": 5, "line": 30, "spoken": "hey breeze, switch on the fan already", "product": "fan", "action": "on", "values": "", "text": "switch on the fan already", "category": "command"}
+{"set": 5, "line": 31, "spoken": "hey breeze, uh yeah let's go ahead and turn on that fan", "product": "fan", "action": "on", "values": "", "text": "uh yeah let's go ahead and turn on that fan", "category": "command"}
+{"set": 5, "line": 32, "spoken": "hey breeze, is it ok if we run the fan for a while", "product": "fan", "action": "on", "values": "", "text": "is it ok if we run the fan for a while", "category": "command"}
+{"set": 5, "line": 33, "spoken": "hey breeze, set the oven timer for twenty five minutes", "category": "other_device", "text": "set the oven timer for twenty five minutes", "product": "fan", "action": "none", "values": ""}
+{"set": 5, "line": 34, "spoken": "hey breeze, two", "product": "fan", "action": "set_level", "values": "speed=2", "text": "two", "category": "command"}
+{"set": 5, "line": 35, "spoken": "hey breeze, so yeah could you maybe just set it at four", "product": "fan", "action": "set_level", "values": "speed=4", "text": "so yeah could you maybe just set it at four", "category": "command"}
+{"set": 5, "line": 36, "spoken": "hey breeze, fan time", "product": "fan", "action": "on", "values": "", "text": "fan time", "category": "command"}
+{"set": 5, "line": 37, "spoken": "hey breeze, this is barely a whisper of air", "product": "fan", "action": "faster", "values": "", "text": "this is barely a whisper of air", "category": "command"}
+{"set": 5, "line": 38, "spoken": "hey breeze, the back and forth is driving me nuts", "product": "fan", "action": "oscillate", "values": "", "text": "the back and forth is driving me nuts", "category": "command"}
+{"set": 6, "line": 1, "spoken": "hey kitchen, can we go with power level nine", "product": "microwave", "action": "power_level", "values": "power=9", "text": "can we go with power level nine", "category": "command"}
+{"set": 6, "line": 2, "spoken": "hey kitchen, okay i'd like the power at half for this one", "product": "microwave", "action": "power_level", "values": "power=5", "text": "okay i'd like the power at half for this one", "category": "command"}
+{"set": 6, "line": 3, "spoken": "hey kitchen, power at half", "product": "microwave", "action": "power_level", "values": "power=5", "text": "power at half", "category": "command"}
+{"set": 6, "line": 4, "spoken": "hey kitchen, knock it off, it's hot enough", "product": "microwave", "action": "stop", "values": "", "text": "knock it off, it's hot enough", "category": "command"}
+{"set": 6, "line": 5, "spoken": "hey kitchen, that's not what i said", "category": "chat", "text": "that's not what i said", "product": "microwave", "action": "none", "values": ""}
+{"set": 6, "line": 6, "spoken": "hey kitchen, could you turn the power down to two", "product": "microwave", "action": "power_level", "values": "power=2", "text": "could you turn the power down to two", "category": "command"}
+{"set": 6, "line": 7, "spoken": "hey kitchen, that's plenty", "product": "microwave", "action": "stop", "values": "", "text": "that's plenty", "category": "command"}
+{"set": 6, "line": 8, "spoken": "hey kitchen, power nine", "product": "microwave", "action": "power_level", "values": "power=9", "text": "power nine", "category": "command"}
+{"set": 6, "line": 9, "spoken": "hey kitchen, cancel that", "product": "microwave", "action": "stop", "values": "", "text": "cancel that", "category": "command"}
+{"set": 6, "line": 10, "spoken": "hey kitchen, can you get it going please", "product": "microwave", "action": "start", "values": "", "text": "can you get it going please", "category": "command"}
+{"set": 6, "line": 11, "spoken": "hey kitchen, pause it", "product": "microwave", "action": "stop", "values": "", "text": "pause it", "category": "command"}
+{"set": 6, "line": 12, "spoken": "hey kitchen, could it go thirty seconds longer", "product": "microwave", "action": "add_30s", "values": "", "text": "could it go thirty seconds longer", "category": "command"}
+{"set": 6, "line": 13, "spoken": "hey kitchen, today's high will reach ninety eight with a heat index near one oh five", "category": "tv", "text": "today's high will reach ninety eight with a heat index near one oh five", "product": "microwave", "action": "none", "values": ""}
+{"set": 6, "line": 14, "spoken": "hey kitchen, it's in and the door's shut, go ahead", "product": "microwave", "action": "start", "values": "", "text": "it's in and the door's shut, go ahead", "category": "command"}
+{"set": 6, "line": 15, "spoken": "hey kitchen, ok ok it's done, quit heating", "product": "microwave", "action": "stop", "values": "", "text": "ok ok it's done, quit heating", "category": "command"}
+{"set": 6, "line": 16, "spoken": "hey kitchen, halt it", "product": "microwave", "action": "stop", "values": "", "text": "halt it", "category": "command"}
+{"set": 6, "line": 17, "spoken": "hey kitchen, stay tuned, the big reveal is coming up right after this", "category": "tv", "text": "stay tuned, the big reveal is coming up right after this", "product": "microwave", "action": "none", "values": ""}
+{"set": 6, "line": 18, "spoken": "hey kitchen, the car's making a funny noise", "category": "chat", "text": "the car's making a funny noise", "product": "microwave", "action": "none", "values": ""}
+{"set": 6, "line": 19, "spoken": "hey kitchen, slap another thirty on it", "product": "microwave", "action": "add_30s", "values": "", "text": "slap another thirty on it", "category": "command"}
+{"set": 6, "line": 20, "spoken": "hey kitchen, the popcorn's still popping a lot, let it go a little more", "product": "microwave", "action": "add_30s", "values": "", "text": "the popcorn's still popping a lot, let it go a little more", "category": "command"}
+{"set": 6, "line": 21, "spoken": "hey kitchen, 70 percent power", "product": "microwave", "action": "power_level", "values": "power=7", "text": "70 percent power", "category": "command"}
+{"set": 6, "line": 22, "spoken": "hey kitchen, brew a pot of coffee", "category": "other_device", "text": "brew a pot of coffee", "product": "microwave", "action": "none", "values": ""}
+{"set": 6, "line": 23, "spoken": "hey kitchen, quit jumping on the bed", "category": "chat", "text": "quit jumping on the bed", "product": "microwave", "action": "none", "values": ""}
+{"set": 6, "line": 24, "spoken": "hey kitchen, let's check in on traffic, there's a stalled car on the interstate", "category": "tv", "text": "let's check in on traffic, there's a stalled car on the interstate", "product": "microwave", "action": "none", "values": ""}
+{"set": 6, "line": 25, "spoken": "hey kitchen, hang on", "category": "chat", "text": "hang on", "product": "microwave", "action": "none", "values": ""}
+{"set": 6, "line": 26, "spoken": "hey kitchen, the oven takes forever to preheat", "category": "near", "text": "the oven takes forever to preheat", "product": "microwave", "action": "none", "values": ""}
+{"set": 6, "line": 27, "spoken": "hey kitchen, power to 4", "product": "microwave", "action": "power_level", "values": "power=4", "text": "power to 4", "category": "command"}
+{"set": 6, "line": 28, "spoken": "hey kitchen, two minutes", "product": "microwave", "action": "start", "values": "time=120", "text": "two minutes", "category": "command"}
+{"set": 6, "line": 29, "spoken": "hey kitchen, the bidding opens at fifty dollars", "category": "tv", "text": "the bidding opens at fifty dollars", "product": "microwave", "action": "none", "values": ""}
+{"set": 6, "line": 30, "spoken": "hey kitchen, throw this in for two and a half minutes", "product": "microwave", "action": "start", "values": "time=150", "text": "throw this in for two and a half minutes", "category": "command"}
+{"set": 6, "line": 31, "spoken": "hey kitchen, back to you in the studio", "category": "tv", "text": "back to you in the studio", "product": "microwave", "action": "none", "values": ""}
+{"set": 6, "line": 32, "spoken": "hey kitchen, something's sparking in there", "product": "microwave", "action": "stop", "values": "", "text": "something's sparking in there", "category": "command"}
+{"set": 6, "line": 33, "spoken": "hey kitchen, hey um let's go with power level eight for the leftovers", "product": "microwave", "action": "power_level", "values": "power=8", "text": "hey um let's go with power level eight for the leftovers", "category": "command"}
+{"set": 6, "line": 34, "spoken": "hey kitchen, that egg's about to explode", "product": "microwave", "action": "stop", "values": "", "text": "that egg's about to explode", "category": "command"}
+{"set": 6, "line": 35, "spoken": "hey kitchen, still lukewarm, give it some more", "product": "microwave", "action": "add_30s", "values": "", "text": "still lukewarm, give it some more", "category": "command"}
+{"set": 6, "line": 36, "spoken": "hey kitchen, could you heat this for a hundred seconds", "product": "microwave", "action": "start", "values": "time=100", "text": "could you heat this for a hundred seconds", "category": "command"}
+{"set": 6, "line": 37, "spoken": "hey kitchen, thanks", "category": "chat", "text": "thanks", "product": "microwave", "action": "none", "values": ""}
+{"set": 6, "line": 38, "spoken": "hey kitchen, would you mind pausing it for a second", "product": "microwave", "action": "stop", "values": "", "text": "would you mind pausing it for a second", "category": "command"}
+{"set": 6, "line": 39, "spoken": "hey kitchen, alright before i start it, set the power to six", "product": "microwave", "action": "power_level", "values": "power=6", "text": "alright before i start it, set the power to six", "category": "command"}
+{"set": 7, "line": 1, "spoken": "hey breeze, the home team is up by six with two minutes to go", "category": "tv", "text": "the home team is up by six with two minutes to go", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 2, "spoken": "hey breeze, done with the fan for tonight", "product": "fan", "action": "off", "values": "", "text": "done with the fan for tonight", "category": "command"}
+{"set": 7, "line": 3, "spoken": "hey breeze, winds out of the south at ten to fifteen miles per hour", "category": "tv", "text": "winds out of the south at ten to fifteen miles per hour", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 4, "spoken": "hey breeze, increase the fan speed", "product": "fan", "action": "faster", "values": "", "text": "increase the fan speed", "category": "command"}
+{"set": 7, "line": 5, "spoken": "hey breeze, kick on the fan", "product": "fan", "action": "on", "values": "", "text": "kick on the fan", "category": "command"}
+{"set": 7, "line": 6, "spoken": "hey breeze, kill it", "product": "fan", "action": "off", "values": "", "text": "kill it", "category": "command"}
+{"set": 7, "line": 7, "spoken": "hey breeze, wait what", "category": "chat", "text": "wait what", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 8, "spoken": "hey breeze, it's like a wind tunnel in here", "product": "fan", "action": "slower", "values": "", "text": "it's like a wind tunnel in here", "category": "command"}
+{"set": 7, "line": 9, "spoken": "hey breeze, got it", "category": "chat", "text": "got it", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 10, "spoken": "hey breeze, good evening and welcome to the six o'clock news", "category": "tv", "text": "good evening and welcome to the six o'clock news", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 11, "spoken": "hey breeze, where's your brother", "category": "chat", "text": "where's your brother", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 12, "spoken": "hey breeze, it says to let it stand for two minutes after heating", "category": "near", "text": "it says to let it stand for two minutes after heating", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 13, "spoken": "hey breeze, turn it up", "product": "fan", "action": "faster", "values": "", "text": "turn it up", "category": "command"}
+{"set": 7, "line": 14, "spoken": "hey breeze, turn on the sprinklers", "category": "other_device", "text": "turn on the sprinklers", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 15, "spoken": "hey breeze, kill that thing", "product": "fan", "action": "off", "values": "", "text": "kill that thing", "category": "command"}
+{"set": 7, "line": 16, "spoken": "hey breeze, the fans at the game were going crazy", "category": "near", "text": "the fans at the game were going crazy", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 17, "spoken": "hey breeze, the speed limit on our street is thirty", "category": "near", "text": "the speed limit on our street is thirty", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 18, "spoken": "hey breeze, we flipped the breaker and the power came back", "category": "near", "text": "we flipped the breaker and the power came back", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 19, "spoken": "hey breeze, can it be a little gentler please", "product": "fan", "action": "slower", "values": "", "text": "can it be a little gentler please", "category": "command"}
+{"set": 7, "line": 20, "spoken": "hey breeze, i want the fan running", "product": "fan", "action": "on", "values": "", "text": "i want the fan running", "category": "command"}
+{"set": 7, "line": 21, "spoken": "hey breeze, my laptop fan gets so loud when i play games", "category": "near", "text": "my laptop fan gets so loud when i play games", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 22, "spoken": "hey breeze, yeah", "category": "chat", "text": "yeah", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 23, "spoken": "hey breeze, could we get the fan started", "product": "fan", "action": "on", "values": "", "text": "could we get the fan started", "category": "command"}
+{"set": 7, "line": 24, "spoken": "hey breeze, less blast please", "product": "fan", "action": "slower", "values": "", "text": "less blast please", "category": "command"}
+{"set": 7, "line": 25, "spoken": "hey breeze, only high helps in this heat, so put it there", "product": "fan", "action": "set_level", "values": "speed=5", "text": "only high helps in this heat, so put it there", "category": "command"}
+{"set": 7, "line": 26, "spoken": "hey breeze, the national weather service has issued a heat advisory for the area", "category": "tv", "text": "the national weather service has issued a heat advisory for the area", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 27, "spoken": "hey breeze, sounds good", "category": "chat", "text": "sounds good", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 28, "spoken": "hey breeze, the meeting got cancelled", "category": "chat", "text": "the meeting got cancelled", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 29, "spoken": "hey breeze, can you get the fan to swivel please", "product": "fan", "action": "oscillate", "values": "", "text": "can you get the fan to swivel please", "category": "command"}
+{"set": 7, "line": 30, "spoken": "hey breeze, um can we go down one speed, it's a bit much", "product": "fan", "action": "slower", "values": "", "text": "um can we go down one speed, it's a bit much", "category": "command"}
+{"set": 7, "line": 31, "spoken": "hey breeze, switch off the oscillation", "product": "fan", "action": "oscillate", "values": "", "text": "switch off the oscillation", "category": "command"}
+{"set": 7, "line": 32, "spoken": "hey breeze, can you bump the fan up one speed", "product": "fan", "action": "faster", "values": "", "text": "can you bump the fan up one speed", "category": "command"}
+{"set": 7, "line": 33, "spoken": "hey breeze, could you get the fan going for me", "product": "fan", "action": "on", "values": "", "text": "could you get the fan going for me", "category": "command"}
+{"set": 7, "line": 34, "spoken": "hey breeze, have it do the side to side thing", "product": "fan", "action": "oscillate", "values": "", "text": "have it do the side to side thing", "category": "command"}
+{"set": 7, "line": 35, "spoken": "hey breeze, tell your sister it's time to eat", "category": "chat", "text": "tell your sister it's time to eat", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 36, "spoken": "hey breeze, call mom", "category": "other_device", "text": "call mom", "product": "fan", "action": "none", "values": ""}
+{"set": 7, "line": 37, "spoken": "hey breeze, notch it up", "product": "fan", "action": "faster", "values": "", "text": "notch it up", "category": "command"}
+{"set": 7, "line": 38, "spoken": "hey breeze, would it be possible to run it on high", "product": "fan", "action": "set_level", "values": "speed=5", "text": "would it be possible to run it on high", "category": "command"}
+{"set": 8, "line": 1, "spoken": "hey kitchen, increase the time by half a minute", "product": "microwave", "action": "add_30s", "values": "", "text": "increase the time by half a minute", "category": "command"}
+{"set": 8, "line": 2, "spoken": "hey kitchen, unlock the back door", "category": "other_device", "text": "unlock the back door", "product": "microwave", "action": "none", "values": ""}
+{"set": 8, "line": 3, "spoken": "hey kitchen, put some more time on", "product": "microwave", "action": "add_30s", "values": "", "text": "put some more time on", "category": "command"}
+{"set": 8, "line": 4, "spoken": "hey kitchen, could you shut the microwave off", "product": "microwave", "action": "stop", "values": "", "text": "could you shut the microwave off", "category": "command"}
+{"set": 8, "line": 5, "spoken": "hey kitchen, coming up, a local bakery that's been in business for fifty years", "category": "tv", "text": "coming up, a local bakery that's been in business for fifty years", "product": "microwave", "action": "none", "values": ""}
+{"set": 8, "line": 6, "spoken": "hey kitchen, would you turn the microwave off now", "product": "microwave", "action": "stop", "values": "", "text": "would you turn the microwave off now", "category": "command"}
+{"set": 8, "line": 7, "spoken": "hey kitchen, shuffle my workout playlist", "category": "other_device", "text": "shuffle my workout playlist", "product": "microwave", "action": "none", "values": ""}
+{"set": 8, "line": 8, "spoken": "hey kitchen, 3 minutes", "product": "microwave", "action": "start", "values": "time=180", "text": "3 minutes", "category": "command"}
+{"set": 8, "line": 9, "spoken": "hey kitchen, just a smidge more time", "product": "microwave", "action": "add_30s", "values": "", "text": "just a smidge more time", "category": "command"}
+{"set": 8, "line": 10, "spoken": "hey kitchen, power eight", "product": "microwave", "action": "power_level", "values": "power=8", "text": "power eight", "category": "command"}
+{"set": 8, "line": 11, "spoken": "hey kitchen, fire it up for six minutes", "product": "microwave", "action": "start", "values": "time=360", "text": "fire it up for six minutes", "category": "command"}
+{"set": 8, "line": 12, "spoken": "hey kitchen, okay one more thing, add half a minute to the timer", "product": "microwave", "action": "add_30s", "values": "", "text": "okay one more thing, add half a minute to the timer", "category": "command"}
+{"set": 8, "line": 13, "spoken": "hey kitchen, use power level 7", "product": "microwave", "action": "power_level", "values": "power=7", "text": "use power level 7", "category": "command"}
+{"set": 8, "line": 14, "spoken": "hey kitchen, hit start", "product": "microwave", "action": "start", "values": "", "text": "hit start", "category": "command"}
+{"set": 8, "line": 15, "spoken": "hey kitchen, okay so i need this soup heated for about four minutes", "product": "microwave", "action": "start", "values": "time=240", "text": "okay so i need this soup heated for about four minutes", "category": "command"}
+{"set": 8, "line": 16, "spoken": "hey kitchen, would you please stop heating that", "product": "microwave", "action": "stop", "values": "", "text": "would you please stop heating that", "category": "command"}
+{"set": 8, "line": 17, "spoken": "hey kitchen, my mom always cooks everything on high", "category": "near", "text": "my mom always cooks everything on high", "product": "microwave", "action": "none", "values": ""}
+{"set": 8, "line": 18, "spoken": "hey kitchen, happy birthday sweetie", "category": "chat", "text": "happy birthday sweetie", "product": "microwave", "action": "none", "values": ""}
+{"set": 8, "line": 19, "spoken": "hey kitchen, and the winner is", "category": "tv", "text": "and the winner is", "product": "microwave", "action": "none", "values": ""}
+{"set": 8, "line": 20, "spoken": "hey kitchen, expect scattered storms this afternoon, so keep the umbrella handy", "category": "tv", "text": "expect scattered storms this afternoon, so keep the umbrella handy", "product": "microwave", "action": "none", "values": ""}
+{"set": 8, "line": 21, "spoken": "hey kitchen, scratch that, cancel the cooking", "product": "microwave", "action": "stop", "values": "", "text": "scratch that, cancel the cooking", "category": "command"}
+{"set": 8, "line": 22, "spoken": "hey kitchen, set it to power 1", "product": "microwave", "action": "power_level", "values": "power=1", "text": "set it to power 1", "category": "command"}
+{"set": 8, "line": 23, "spoken": "hey kitchen, more time please", "product": "microwave", "action": "add_30s", "values": "", "text": "more time please", "category": "command"}
+{"set": 8, "line": 24, "spoken": "hey kitchen, the cheese is going everywhere, hold it", "product": "microwave", "action": "stop", "values": "", "text": "the cheese is going everywhere, hold it", "category": "command"}
+{"set": 8, "line": 25, "spoken": "hey kitchen, can you believe it's already november", "category": "chat", "text": "can you believe it's already november", "product": "microwave", "action": "none", "values": ""}
+{"set": 8, "line": 26, "spoken": "hey kitchen, hey um can you just add a touch more time to that", "product": "microwave", "action": "add_30s", "values": "", "text": "hey um can you just add a touch more time to that", "category": "command"}
+{"set": 8, "line": 27, "spoken": "hey kitchen, while that simmers we'll move on to the sauce", "category": "tv", "text": "while that simmers we'll move on to the sauce", "product": "microwave", "action": "none", "values": ""}
+{"set": 8, "line": 28, "spoken": "hey kitchen, would you set it to sixty percent power", "product": "microwave", "action": "power_level", "values": "power=6", "text": "would you set it to sixty percent power", "category": "command"}
+{"set": 8, "line": 29, "spoken": "hey kitchen, take it down to power two", "product": "microwave", "action": "power_level", "values": "power=2", "text": "take it down to power two", "category": "command"}
+{"set": 8, "line": 30, "spoken": "hey kitchen, let's do power seven", "product": "microwave", "action": "power_level", "values": "power=7", "text": "let's do power seven", "category": "command"}
+{"set": 8, "line": 31, "spoken": "hey kitchen, who left popcorn kernels in the microwave", "category": "near", "text": "who left popcorn kernels in the microwave", "product": "microwave", "action": "none", "values": ""}
+{"set": 8, "line": 32, "spoken": "hey kitchen, the hair dryer has a high and a low setting", "category": "near", "text": "the hair dryer has a high and a low setting", "product": "microwave", "action": "none", "values": ""}
+{"set": 8, "line": 33, "spoken": "hey kitchen, officials say power has been restored to most customers", "category": "tv", "text": "officials say power has been restored to most customers", "product": "microwave", "action": "none", "values": ""}
+{"set": 8, "line": 34, "spoken": "hey kitchen, make the power 9", "product": "microwave", "action": "power_level", "values": "power=9", "text": "make the power 9", "category": "command"}
+{"set": 8, "line": 35, "spoken": "hey kitchen, 30 more", "product": "microwave", "action": "add_30s", "values": "", "text": "30 more", "category": "command"}
+{"set": 8, "line": 36, "spoken": "hey kitchen, begin cooking", "product": "microwave", "action": "start", "values": "", "text": "begin cooking", "category": "command"}
+{"set": 8, "line": 37, "spoken": "hey kitchen, stop it", "product": "microwave", "action": "stop", "values": "", "text": "stop it", "category": "command"}
+{"set": 8, "line": 38, "spoken": "hey kitchen, power level 2", "product": "microwave", "action": "power_level", "values": "power=2", "text": "power level 2", "category": "command"}
+{"set": 8, "line": 39, "spoken": "hey kitchen, stop it right now", "product": "microwave", "action": "stop", "values": "", "text": "stop it right now", "category": "command"}
+{"set": 9, "line": 1, "spoken": "hey breeze, no fan right now", "product": "fan", "action": "off", "values": "", "text": "no fan right now", "category": "command"}
+{"set": 9, "line": 2, "spoken": "hey breeze, make it stop turning its head", "product": "fan", "action": "oscillate", "values": "", "text": "make it stop turning its head", "category": "command"}
+{"set": 9, "line": 3, "spoken": "hey breeze, my hair is flying all over the place", "product": "fan", "action": "slower", "values": "", "text": "my hair is flying all over the place", "category": "command"}
+{"set": 9, "line": 4, "spoken": "hey breeze, set it to swivel", "product": "fan", "action": "oscillate", "values": "", "text": "set it to swivel", "category": "command"}
+{"set": 9, "line": 5, "spoken": "hey breeze, you know what, i'd like it a touch slower", "product": "fan", "action": "slower", "values": "", "text": "you know what, i'd like it a touch slower", "category": "command"}
+{"set": 9, "line": 6, "spoken": "hey breeze, put her on high", "product": "fan", "action": "set_level", "values": "speed=5", "text": "put her on high", "category": "command"}
+{"set": 9, "line": 7, "spoken": "hey breeze, the fan belt in my truck is squealing", "category": "near", "text": "the fan belt in my truck is squealing", "product": "fan", "action": "none", "values": ""}
+{"set": 9, "line": 8, "spoken": "hey breeze, put it on level three", "product": "fan", "action": "set_level", "values": "speed=3", "text": "put it on level three", "category": "command"}
+{"set": 9, "line": 9, "spoken": "hey breeze, nobody started the fan and it's sweltering", "product": "fan", "action": "on", "values": "", "text": "nobody started the fan and it's sweltering", "category": "command"}
+{"set": 9, "line": 10, "spoken": "hey breeze, less breeze please", "product": "fan", "action": "slower", "values": "", "text": "less breeze please", "category": "command"}
+{"set": 9, "line": 11, "spoken": "hey breeze, make it speed four", "product": "fan", "action": "set_level", "values": "speed=4", "text": "make it speed four", "category": "command"}
+{"set": 9, "line": 12, "spoken": "hey breeze, could you power up the fan", "product": "fan", "action": "on", "values": "", "text": "could you power up the fan", "category": "command"}
+{"set": 9, "line": 13, "spoken": "hey breeze, hey um can we do speed one, it's getting late", "product": "fan", "action": "set_level", "values": "speed=1", "text": "hey um can we do speed one, it's getting late", "category": "command"}
+{"set": 9, "line": 14, "spoken": "hey breeze, juice it a little", "product": "fan", "action": "faster", "values": "", "text": "juice it a little", "category": "command"}
+{"set": 9, "line": 15, "spoken": "hey breeze, the governor will hold a press conference at noon", "category": "tv", "text": "the governor will hold a press conference at noon", "product": "fan", "action": "none", "values": ""}
+{"set": 9, "line": 16, "spoken": "hey breeze, speed one is plenty for me", "product": "fan", "action": "set_level", "values": "speed=1", "text": "speed one is plenty for me", "category": "command"}
+{"set": 9, "line": 17, "spoken": "hey breeze, mind lowering it a notch", "product": "fan", "action": "slower", "values": "", "text": "mind lowering it a notch", "category": "command"}
+{"set": 9, "line": 18, "spoken": "hey breeze, this breeze is way too weak", "product": "fan", "action": "faster", "values": "", "text": "this breeze is way too weak", "category": "command"}
+{"set": 9, "line": 19, "spoken": "hey breeze, off with the fan", "product": "fan", "action": "off", "values": "", "text": "off with the fan", "category": "command"}
+{"set": 9, "line": 20, "spoken": "hey breeze, could you make the fan a little faster", "product": "fan", "action": "faster", "values": "", "text": "could you make the fan a little faster", "category": "command"}
+{"set": 9, "line": 21, "spoken": "hey breeze, could you stop it from turning side to side", "product": "fan", "action": "oscillate", "values": "", "text": "could you stop it from turning side to side", "category": "command"}
+{"set": 9, "line": 22, "spoken": "hey breeze, huh", "category": "chat", "text": "huh", "product": "fan", "action": "none", "values": ""}
+{"set": 9, "line": 23, "spoken": "hey breeze, the pitcher's fastball is touching ninety eight today", "category": "tv", "text": "the pitcher's fastball is touching ninety eight today", "product": "fan", "action": "none", "values": ""}
+{"set": 9, "line": 24, "spoken": "hey breeze, low is all i need tonight", "product": "fan", "action": "set_level", "values": "speed=1", "text": "low is all i need tonight", "category": "command"}
+{"set": 9, "line": 25, "spoken": "hey breeze, we need to clean out the garage", "category": "chat", "text": "we need to clean out the garage", "product": "fan", "action": "none", "values": ""}
+{"set": 9, "line": 26, "spoken": "hey breeze, on high", "product": "fan", "action": "set_level", "values": "speed=5", "text": "on high", "category": "command"}
+{"set": 9, "line": 27, "spoken": "hey breeze, it's cool enough now, the fan can rest", "product": "fan", "action": "off", "values": "", "text": "it's cool enough now, the fan can rest", "category": "command"}
+{"set": 9, "line": 28, "spoken": "hey breeze, tone it down", "product": "fan", "action": "slower", "values": "", "text": "tone it down", "category": "command"}
+{"set": 9, "line": 29, "spoken": "hey breeze, the electric bill was way higher this month", "category": "near", "text": "the electric bill was way higher this month", "product": "fan", "action": "none", "values": ""}
+{"set": 9, "line": 30, "spoken": "hey breeze, uh you know what, let's just switch off the fan for now", "product": "fan", "action": "off", "values": "", "text": "uh you know what, let's just switch off the fan for now", "category": "command"}
+{"set": 9, "line": 31, "spoken": "hey breeze, you know what, go ahead and let it oscillate", "product": "fan", "action": "oscillate", "values": "", "text": "you know what, go ahead and let it oscillate", "category": "command"}
+{"set": 9, "line": 32, "spoken": "hey breeze, make it swing around", "product": "fan", "action": "oscillate", "values": "", "text": "make it swing around", "category": "command"}
+{"set": 9, "line": 33, "spoken": "hey breeze, can it go a little quicker", "product": "fan", "action": "faster", "values": "", "text": "can it go a little quicker", "category": "command"}
+{"set": 9, "line": 34, "spoken": "hey breeze, more wind", "product": "fan", "action": "faster", "values": "", "text": "more wind", "category": "command"}
+{"set": 9, "line": 35, "spoken": "hey breeze, uh yeah let's drop the fan down a little", "product": "fan", "action": "slower", "values": "", "text": "uh yeah let's drop the fan down a little", "category": "command"}
+{"set": 9, "line": 36, "spoken": "hey breeze, the judges are tasting the risotto now", "category": "tv", "text": "the judges are tasting the risotto now", "product": "fan", "action": "none", "values": ""}
+{"set": 9, "line": 37, "spoken": "hey breeze, that crust looks absolutely perfect", "category": "tv", "text": "that crust looks absolutely perfect", "product": "fan", "action": "none", "values": ""}
+{"set": 9, "line": 38, "spoken": "hey breeze, stop panning", "product": "fan", "action": "oscillate", "values": "", "text": "stop panning", "category": "command"}
+{"set": 10, "line": 1, "spoken": "hey kitchen, give it a minute thirty", "product": "microwave", "action": "start", "values": "time=90", "text": "give it a minute thirty", "category": "command"}
+{"set": 10, "line": 2, "spoken": "hey kitchen, could you extend it by half a minute", "product": "microwave", "action": "add_30s", "values": "", "text": "could you extend it by half a minute", "category": "command"}
+{"set": 10, "line": 3, "spoken": "hey kitchen, no way", "category": "chat", "text": "no way", "product": "microwave", "action": "none", "values": ""}
+{"set": 10, "line": 4, "spoken": "hey kitchen, end the timer", "product": "microwave", "action": "stop", "values": "", "text": "end the timer", "category": "command"}
+{"set": 10, "line": 5, "spoken": "hey kitchen, the coffee's cold again, ugh, forty seconds should do it", "product": "microwave", "action": "start", "values": "time=40", "text": "the coffee's cold again, ugh, forty seconds should do it", "category": "command"}
+{"set": 10, "line": 6, "spoken": "hey kitchen, that'll do, shut it down", "product": "microwave", "action": "stop", "values": "", "text": "that'll do, shut it down", "category": "command"}
+{"set": 10, "line": 7, "spoken": "hey kitchen, abort", "product": "microwave", "action": "stop", "values": "", "text": "abort", "category": "command"}
+{"set": 10, "line": 8, "spoken": "hey kitchen, can i get 30 more", "product": "microwave", "action": "add_30s", "values": "", "text": "can i get 30 more", "category": "command"}
+{"set": 10, "line": 9, "spoken": "hey kitchen, go ahead and start", "product": "microwave", "action": "start", "values": "", "text": "go ahead and start", "category": "command"}
+{"set": 10, "line": 10, "spoken": "hey kitchen, hey um can you just heat this plate up for a minute forty five", "product": "microwave", "action": "start", "values": "time=105", "text": "hey um can you just heat this plate up for a minute forty five", "category": "command"}
+{"set": 10, "line": 11, "spoken": "hey kitchen, that was a great movie", "category": "chat", "text": "that was a great movie", "product": "microwave", "action": "none", "values": ""}
+{"set": 10, "line": 12, "spoken": "hey kitchen, warm it for 25 seconds", "product": "microwave", "action": "start", "values": "time=25", "text": "warm it for 25 seconds", "category": "command"}
+{"set": 10, "line": 13, "spoken": "hey kitchen, power 6", "product": "microwave", "action": "power_level", "values": "power=6", "text": "power 6", "category": "command"}
+{"set": 10, "line": 14, "spoken": "hey kitchen, it's your turn", "category": "chat", "text": "it's your turn", "product": "microwave", "action": "none", "values": ""}
+{"set": 10, "line": 15, "spoken": "hey kitchen, lower the power to 4", "product": "microwave", "action": "power_level", "values": "power=4", "text": "lower the power to 4", "category": "command"}
+{"set": 10, "line": 16, "spoken": "hey kitchen, cancel the program", "product": "microwave", "action": "stop", "values": "", "text": "cancel the program", "category": "command"}
+{"set": 10, "line": 17, "spoken": "hey kitchen, stop heating", "product": "microwave", "action": "stop", "values": "", "text": "stop heating", "category": "command"}
+{"set": 10, "line": 18, "spoken": "hey kitchen, you look nice today", "category": "chat", "text": "you look nice today", "product": "microwave", "action": "none", "values": ""}
+{"set": 10, "line": 19, "spoken": "hey kitchen, heat my coffee for 45 seconds", "product": "microwave", "action": "start", "values": "time=45", "text": "heat my coffee for 45 seconds", "category": "command"}
+{"set": 10, "line": 20, "spoken": "hey kitchen, add half a minute", "product": "microwave", "action": "add_30s", "values": "", "text": "add half a minute", "category": "command"}
+{"set": 10, "line": 21, "spoken": "hey kitchen, what's on my to do list today", "category": "other_device", "text": "what's on my to do list today", "product": "microwave", "action": "none", "values": ""}
+{"set": 10, "line": 22, "spoken": "hey kitchen, did you lock the car", "category": "chat", "text": "did you lock the car", "product": "microwave", "action": "none", "values": ""}
+{"set": 10, "line": 23, "spoken": "hey kitchen, could you warm this for a minute and a half", "product": "microwave", "action": "start", "values": "time=90", "text": "could you warm this for a minute and a half", "category": "command"}
+{"set": 10, "line": 24, "spoken": "hey kitchen, it's way overdone already", "product": "microwave", "action": "stop", "values": "", "text": "it's way overdone already", "category": "command"}
+{"set": 10, "line": 25, "spoken": "hey kitchen, okay so that's not quite there, give it a little extra", "product": "microwave", "action": "add_30s", "values": "", "text": "okay so that's not quite there, give it a little extra", "category": "command"}
+{"set": 10, "line": 26, "spoken": "hey kitchen, four minutes on high", "product": "microwave", "action": "start", "values": "time=240;power=10", "text": "four minutes on high", "category": "command"}
+{"set": 10, "line": 27, "spoken": "hey kitchen, tack thirty seconds onto it", "product": "microwave", "action": "add_30s", "values": "", "text": "tack thirty seconds onto it", "category": "command"}
+{"set": 10, "line": 28, "spoken": "hey kitchen, and that's how you get a perfect sear every time", "category": "tv", "text": "and that's how you get a perfect sear every time", "product": "microwave", "action": "none", "values": ""}
+{"set": 10, "line": 29, "spoken": "hey kitchen, can we get another thirty on there", "product": "microwave", "action": "add_30s", "values": "", "text": "can we get another thirty on there", "category": "command"}
+{"set": 10, "line": 30, "spoken": "hey kitchen, would you put it on power level three", "product": "microwave", "action": "power_level", "values": "power=3", "text": "would you put it on power level three", "category": "command"}
+{"set": 10, "line": 31, "spoken": "hey kitchen, set power 9", "product": "microwave", "action": "power_level", "values": "power=9", "text": "set power 9", "category": "command"}
+{"set": 10, "line": 32, "spoken": "hey kitchen, what's the password for the wifi", "category": "chat", "text": "what's the password for the wifi", "product": "microwave", "action": "none", "values": ""}
+{"set": 10, "line": 33, "spoken": "hey kitchen, i have a headache", "category": "chat", "text": "i have a headache", "product": "microwave", "action": "none", "values": ""}
+{"set": 10, "line": 34, "spoken": "hey kitchen, can we stop it for a sec, i need to stir", "product": "microwave", "action": "stop", "values": "", "text": "can we stop it for a sec, i need to stir", "category": "command"}
+{"set": 10, "line": 35, "spoken": "hey kitchen, you know what, put the power all the way down to one", "product": "microwave", "action": "power_level", "values": "power=1", "text": "you know what, put the power all the way down to one", "category": "command"}
+{"set": 10, "line": 36, "spoken": "hey kitchen, stop teasing your brother", "category": "chat", "text": "stop teasing your brother", "product": "microwave", "action": "none", "values": ""}
+{"set": 10, "line": 37, "spoken": "hey kitchen, so i'm making oatmeal, can you run it two minutes at half", "product": "microwave", "action": "start", "values": "time=120;power=5", "text": "so i'm making oatmeal, can you run it two minutes at half", "category": "command"}
+{"set": 10, "line": 38, "spoken": "hey kitchen, have you finished your homework", "category": "chat", "text": "have you finished your homework", "product": "microwave", "action": "none", "values": ""}
+{"set": 10, "line": 39, "spoken": "hey kitchen, throw thirty more on there", "product": "microwave", "action": "add_30s", "values": "", "text": "throw thirty more on there", "category": "command"}
+{"set": 11, "line": 1, "spoken": "hey breeze, the fan's off and it's a sauna in here", "product": "fan", "action": "on", "values": "", "text": "the fan's off and it's a sauna in here", "category": "command"}
+{"set": 11, "line": 2, "spoken": "hey breeze, the trash goes out tonight", "category": "chat", "text": "the trash goes out tonight", "product": "fan", "action": "none", "values": ""}
+{"set": 11, "line": 3, "spoken": "hey breeze, um can you put it on like speed three", "product": "fan", "action": "set_level", "values": "speed=3", "text": "um can you put it on like speed three", "category": "command"}
+{"set": 11, "line": 4, "spoken": "hey breeze, ok we're done with the fan", "product": "fan", "action": "off", "values": "", "text": "ok we're done with the fan", "category": "command"}
+{"set": 11, "line": 5, "spoken": "hey breeze, kick it up a notch", "product": "fan", "action": "faster", "values": "", "text": "kick it up a notch", "category": "command"}
+{"set": 11, "line": 6, "spoken": "hey breeze, i'm going to take a shower", "category": "chat", "text": "i'm going to take a shower", "product": "fan", "action": "none", "values": ""}
+{"set": 11, "line": 7, "spoken": "hey breeze, traffic and weather together every ten minutes", "category": "tv", "text": "traffic and weather together every ten minutes", "product": "fan", "action": "none", "values": ""}
+{"set": 11, "line": 8, "spoken": "hey breeze, could you set it to the slowest speed", "product": "fan", "action": "set_level", "values": "speed=1", "text": "could you set it to the slowest speed", "category": "command"}
+{"set": 11, "line": 9, "spoken": "hey breeze, i'm roasting even with the fan running", "product": "fan", "action": "faster", "values": "", "text": "i'm roasting even with the fan running", "category": "command"}
+{"set": 11, "line": 10, "spoken": "hey breeze, set the fan to two", "product": "fan", "action": "set_level", "values": "speed=2", "text": "set the fan to two", "category": "command"}
+{"set": 11, "line": 11, "spoken": "hey breeze, start it up", "product": "fan", "action": "on", "values": "", "text": "start it up", "category": "command"}
+{"set": 11, "line": 12, "spoken": "hey breeze, coming up after the break, five things you need to know before the weekend", "category": "tv", "text": "coming up after the break, five things you need to know before the weekend", "product": "fan", "action": "none", "values": ""}
+{"set": 11, "line": 13, "spoken": "hey breeze, overnight lows dropping into the upper forties", "category": "tv", "text": "overnight lows dropping into the upper forties", "product": "fan", "action": "none", "values": ""}
+{"set": 11, "line": 14, "spoken": "hey breeze, ask your doctor if this medication is right for you", "category": "tv", "text": "ask your doctor if this medication is right for you", "product": "fan", "action": "none", "values": ""}
+{"set": 11, "line": 15, "spoken": "hey breeze, the internet speed has been terrible all week", "category": "near", "text": "the internet speed has been terrible all week", "product": "fan", "action": "none", "values": ""}
+{"set": 11, "line": 16, "spoken": "hey breeze, crank it to five", "product": "fan", "action": "set_level", "values": "speed=5", "text": "crank it to five", "category": "command"}
+{"set": 11, "line": 17, "spoken": "hey breeze, can we have it on level 1 please", "product": "fan", "action": "set_level", "values": "speed=1", "text": "can we have it on level 1 please", "category": "command"}
+{"set": 11, "line": 18, "spoken": "hey breeze, no more fan", "product": "fan", "action": "off", "values": "", "text": "no more fan", "category": "command"}
+{"set": 11, "line": 19, "spoken": "hey breeze, get the fan going", "product": "fan", "action": "on", "values": "", "text": "get the fan going", "category": "command"}
+{"set": 11, "line": 20, "spoken": "hey breeze, reduce the fan speed", "product": "fan", "action": "slower", "values": "", "text": "reduce the fan speed", "category": "command"}
+{"set": 11, "line": 21, "spoken": "hey breeze, i feel like i'm in a hurricane", "product": "fan", "action": "slower", "values": "", "text": "i feel like i'm in a hurricane", "category": "command"}
+{"set": 11, "line": 22, "spoken": "hey breeze, could you turn it to setting four", "product": "fan", "action": "set_level", "values": "speed=4", "text": "could you turn it to setting four", "category": "command"}
+{"set": 11, "line": 23, "spoken": "hey breeze, the kids are finally asleep", "category": "chat", "text": "the kids are finally asleep", "product": "fan", "action": "none", "values": ""}
+{"set": 11, "line": 24, "spoken": "hey breeze, the power company is working on the lines tomorrow", "category": "near", "text": "the power company is working on the lines tomorrow", "product": "fan", "action": "none", "values": ""}
+{"set": 11, "line": 25, "spoken": "hey breeze, i can't believe you would do this to me after everything we've been through", "category": "tv", "text": "i can't believe you would do this to me after everything we've been through", "product": "fan", "action": "none", "values": ""}
+{"set": 11, "line": 26, "spoken": "hey breeze, that's a three point shot from way downtown", "category": "tv", "text": "that's a three point shot from way downtown", "product": "fan", "action": "none", "values": ""}
+{"set": 11, "line": 27, "spoken": "hey breeze, i could really use the fan right now", "product": "fan", "action": "on", "values": "", "text": "i could really use the fan right now", "category": "command"}
+{"set": 11, "line": 28, "spoken": "hey breeze, what do you want for dinner tonight", "category": "chat", "text": "what do you want for dinner tonight", "product": "fan", "action": "none", "values": ""}
+{"set": 11, "line": 29, "spoken": "hey breeze, turn down the fan", "product": "fan", "action": "slower", "values": "", "text": "turn down the fan", "category": "command"}
+{"set": 11, "line": 30, "spoken": "hey breeze, would you switch on the swivel", "product": "fan", "action": "oscillate", "values": "", "text": "would you switch on the swivel", "category": "command"}
+{"set": 11, "line": 31, "spoken": "hey breeze, would you set the fan speed to two please", "product": "fan", "action": "set_level", "values": "speed=2", "text": "would you set the fan speed to two please", "category": "command"}
+{"set": 11, "line": 32, "spoken": "hey breeze, bump it to four", "product": "fan", "action": "set_level", "values": "speed=4", "text": "bump it to four", "category": "command"}
+{"set": 11, "line": 33, "spoken": "hey breeze, could we turn off the fan now", "product": "fan", "action": "off", "values": "", "text": "could we turn off the fan now", "category": "command"}
+{"set": 11, "line": 34, "spoken": "hey breeze, could you switch off the fan please", "product": "fan", "action": "off", "values": "", "text": "could you switch off the fan please", "category": "command"}
+{"set": 11, "line": 35, "spoken": "hey breeze, so i think one speed lower would be better", "product": "fan", "action": "slower", "values": "", "text": "so i think one speed lower would be better", "category": "command"}
+{"set": 11, "line": 36, "spoken": "hey breeze, top speed", "product": "fan", "action": "set_level", "values": "speed=5", "text": "top speed", "category": "command"}
+{"set": 11, "line": 37, "spoken": "hey breeze, okay so it's still kind of warm, can we go up one more speed", "product": "fan", "action": "faster", "values": "", "text": "okay so it's still kind of warm, can we go up one more speed", "category": "command"}
+{"set": 11, "line": 38, "spoken": "hey breeze, could you make it pan across the room", "product": "fan", "action": "oscillate", "values": "", "text": "could you make it pan across the room", "category": "command"}
+{"set": 12, "line": 1, "spoken": "hey kitchen, who left the front door open", "category": "chat", "text": "who left the front door open", "product": "microwave", "action": "none", "values": ""}
+{"set": 12, "line": 2, "spoken": "hey kitchen, the popping stopped, it's done", "product": "microwave", "action": "stop", "values": "", "text": "the popping stopped, it's done", "category": "command"}
+{"set": 12, "line": 3, "spoken": "hey kitchen, stretch it another half minute", "product": "microwave", "action": "add_30s", "values": "", "text": "stretch it another half minute", "category": "command"}
+{"set": 12, "line": 4, "spoken": "hey kitchen, alright so put this on for twelve minutes at power level eight", "product": "microwave", "action": "start", "values": "time=720;power=8", "text": "alright so put this on for twelve minutes at power level eight", "category": "command"}
+{"set": 12, "line": 5, "spoken": "hey kitchen, the ceiling fan in the guest room wobbles a lot", "category": "near", "text": "the ceiling fan in the guest room wobbles a lot", "product": "microwave", "action": "none", "values": ""}
+{"set": 12, "line": 6, "spoken": "hey kitchen, abort the cooking", "product": "microwave", "action": "stop", "values": "", "text": "abort the cooking", "category": "command"}
+{"set": 12, "line": 7, "spoken": "hey kitchen, the burrito's still icy inside, it needs more time", "product": "microwave", "action": "add_30s", "values": "", "text": "the burrito's still icy inside, it needs more time", "category": "command"}
+{"set": 12, "line": 8, "spoken": "hey kitchen, fifteen minutes on low", "product": "microwave", "action": "start", "values": "time=900;power=3", "text": "fifteen minutes on low", "category": "command"}
+{"set": 12, "line": 9, "spoken": "hey kitchen, power level at medium", "product": "microwave", "action": "power_level", "values": "power=5", "text": "power level at medium", "category": "command"}
+{"set": 12, "line": 10, "spoken": "hey kitchen, the butter's not melted all the way yet, a little more", "product": "microwave", "action": "add_30s", "values": "", "text": "the butter's not melted all the way yet, a little more", "category": "command"}
+{"set": 12, "line": 11, "spoken": "hey kitchen, half a minute more", "product": "microwave", "action": "add_30s", "values": "", "text": "half a minute more", "category": "command"}
+{"set": 12, "line": 12, "spoken": "hey kitchen, go", "product": "microwave", "action": "start", "values": "", "text": "go", "category": "command"}
+{"set": 12, "line": 13, "spoken": "hey kitchen, alright you can go ahead and end it now", "product": "microwave", "action": "stop", "values": "", "text": "alright you can go ahead and end it now", "category": "command"}
+{"set": 12, "line": 14, "spoken": "hey kitchen, plus half a minute", "product": "microwave", "action": "add_30s", "values": "", "text": "plus half a minute", "category": "command"}
+{"set": 12, "line": 15, "spoken": "hey kitchen, power level four", "product": "microwave", "action": "power_level", "values": "power=4", "text": "power level four", "category": "command"}
+{"set": 12, "line": 16, "spoken": "hey kitchen, could you put the power at max", "product": "microwave", "action": "power_level", "values": "power=10", "text": "could you put the power at max", "category": "command"}
+{"set": 12, "line": 17, "spoken": "hey kitchen, could you run the microwave for two minutes on low", "product": "microwave", "action": "start", "values": "time=120;power=3", "text": "could you run the microwave for two minutes on low", "category": "command"}
+{"set": 12, "line": 18, "spoken": "hey kitchen, our flight leaves at six in the morning", "category": "chat", "text": "our flight leaves at six in the morning", "product": "microwave", "action": "none", "values": ""}
+{"set": 12, "line": 19, "spoken": "hey kitchen, switch the microwave off", "product": "microwave", "action": "stop", "values": "", "text": "switch the microwave off", "category": "command"}
+{"set": 12, "line": 20, "spoken": "hey kitchen, would you cook this for eight minutes please", "product": "microwave", "action": "start", "values": "time=480", "text": "would you cook this for eight minutes please", "category": "command"}
+{"set": 12, "line": 21, "spoken": "hey kitchen, tack on thirty", "product": "microwave", "action": "add_30s", "values": "", "text": "tack on thirty", "category": "command"}
+{"set": 12, "line": 22, "spoken": "hey kitchen, bump the timer up thirty seconds", "product": "microwave", "action": "add_30s", "values": "", "text": "bump the timer up thirty seconds", "category": "command"}
+{"set": 12, "line": 23, "spoken": "hey kitchen, a little more time please", "product": "microwave", "action": "add_30s", "values": "", "text": "a little more time please", "category": "command"}
+{"set": 12, "line": 24, "spoken": "hey kitchen, um can you stop it, i think that's long enough", "product": "microwave", "action": "stop", "values": "", "text": "um can you stop it, i think that's long enough", "category": "command"}
+{"set": 12, "line": 25, "spoken": "hey kitchen, it's still cold in the middle, needs a bit more", "product": "microwave", "action": "add_30s", "values": "", "text": "it's still cold in the middle, needs a bit more", "category": "command"}
+{"set": 12, "line": 26, "spoken": "hey kitchen, a bit more time", "product": "microwave", "action": "add_30s", "values": "", "text": "a bit more time", "category": "command"}
+{"set": 12, "line": 27, "spoken": "hey kitchen, our old fan used to make a clicking noise", "category": "near", "text": "our old fan used to make a clicking noise", "product": "microwave", "action": "none", "values": ""}
+{"set": 12, "line": 28, "spoken": "hey kitchen, get cooking", "product": "microwave", "action": "start", "values": "", "text": "get cooking", "category": "command"}
+{"set": 12, "line": 29, "spoken": "hey kitchen, call now and we'll double your order, just pay separate shipping", "category": "tv", "text": "call now and we'll double your order, just pay separate shipping", "product": "microwave", "action": "none", "values": ""}
+{"set": 12, "line": 30, "spoken": "hey kitchen, so yeah could you maybe bring the power down to medium", "product": "microwave", "action": "power_level", "values": "power=5", "text": "so yeah could you maybe bring the power down to medium", "category": "command"}
+{"set": 12, "line": 31, "spoken": "hey kitchen, run it ten minutes on medium", "product": "microwave", "action": "start", "values": "time=600;power=5", "text": "run it ten minutes on medium", "category": "command"}
+{"set": 12, "line": 32, "spoken": "hey kitchen, the soup's bubbling all over the place", "product": "microwave", "action": "stop", "values": "", "text": "the soup's bubbling all over the place", "category": "command"}
+{"set": 12, "line": 33, "spoken": "hey kitchen, more time on the clock", "product": "microwave", "action": "add_30s", "values": "", "text": "more time on the clock", "category": "command"}
+{"set": 12, "line": 34, "spoken": "hey kitchen, did you hear that noise", "category": "chat", "text": "did you hear that noise", "product": "microwave", "action": "none", "values": ""}
+{"set": 12, "line": 35, "spoken": "hey kitchen, start a load of laundry", "category": "other_device", "text": "start a load of laundry", "product": "microwave", "action": "none", "values": ""}
+{"set": 12, "line": 36, "spoken": "hey kitchen, let it ride for an extra half minute", "product": "microwave", "action": "add_30s", "values": "", "text": "let it ride for an extra half minute", "category": "command"}
+{"set": 12, "line": 37, "spoken": "hey kitchen, adjust the power to 6", "product": "microwave", "action": "power_level", "values": "power=6", "text": "adjust the power to 6", "category": "command"}
+{"set": 12, "line": 38, "spoken": "hey kitchen, 80 percent", "product": "microwave", "action": "power_level", "values": "power=8", "text": "80 percent", "category": "command"}
+{"set": 12, "line": 39, "spoken": "hey kitchen, would you mind adding 30 seconds to that", "product": "microwave", "action": "add_30s", "values": "", "text": "would you mind adding 30 seconds to that", "category": "command"}
+{"set": 13, "line": 1, "spoken": "hey breeze, alright let's knock the speed down by one and see", "product": "fan", "action": "slower", "values": "", "text": "alright let's knock the speed down by one and see", "category": "command"}
+{"set": 13, "line": 2, "spoken": "hey breeze, speed three", "product": "fan", "action": "set_level", "values": "speed=3", "text": "speed three", "category": "command"}
+{"set": 13, "line": 3, "spoken": "hey breeze, can it move back and forth please", "product": "fan", "action": "oscillate", "values": "", "text": "can it move back and forth please", "category": "command"}
+{"set": 13, "line": 4, "spoken": "hey breeze, i set a timer on my phone so i don't forget the laundry", "category": "near", "text": "i set a timer on my phone so i don't forget the laundry", "product": "fan", "action": "none", "values": ""}
+{"set": 13, "line": 5, "spoken": "hey breeze, this home has three bedrooms, two baths and a gorgeous kitchen", "category": "tv", "text": "this home has three bedrooms, two baths and a gorgeous kitchen", "product": "fan", "action": "none", "values": ""}
+{"set": 13, "line": 6, "spoken": "hey breeze, i'll be back in like twenty minutes", "category": "chat", "text": "i'll be back in like twenty minutes", "product": "fan", "action": "none", "values": ""}
+{"set": 13, "line": 7, "spoken": "hey breeze, make it blow harder", "product": "fan", "action": "faster", "values": "", "text": "make it blow harder", "category": "command"}
+{"set": 13, "line": 8, "spoken": "hey breeze, stop running the fan", "product": "fan", "action": "off", "values": "", "text": "stop running the fan", "category": "command"}
+{"set": 13, "line": 9, "spoken": "hey breeze, number four", "product": "fan", "action": "set_level", "values": "speed=4", "text": "number four", "category": "command"}
+{"set": 13, "line": 10, "spoken": "hey breeze, crank that fan up a bit", "product": "fan", "action": "faster", "values": "", "text": "crank that fan up a bit", "category": "command"}
+{"set": 13, "line": 11, "spoken": "hey breeze, i can barely feel anything from this fan", "product": "fan", "action": "faster", "values": "", "text": "i can barely feel anything from this fan", "category": "command"}
+{"set": 13, "line": 12, "spoken": "hey breeze, dial it back", "product": "fan", "action": "slower", "values": "", "text": "dial it back", "category": "command"}
+{"set": 13, "line": 13, "spoken": "hey breeze, excuse me", "category": "chat", "text": "excuse me", "product": "fan", "action": "none", "values": ""}
+{"set": 13, "line": 14, "spoken": "hey breeze, it's so stuffy and the air isn't moving at all", "product": "fan", "action": "on", "values": "", "text": "it's so stuffy and the air isn't moving at all", "category": "command"}
+{"set": 13, "line": 15, "spoken": "hey breeze, mind cranking the fan up a little", "product": "fan", "action": "faster", "values": "", "text": "mind cranking the fan up a little", "category": "command"}
+{"set": 13, "line": 16, "spoken": "hey breeze, the napkins keep flying off the table", "product": "fan", "action": "slower", "values": "", "text": "the napkins keep flying off the table", "category": "command"}
+{"set": 13, "line": 17, "spoken": "hey breeze, would you please stop the swiveling", "product": "fan", "action": "oscillate", "values": "", "text": "would you please stop the swiveling", "category": "command"}
+{"set": 13, "line": 18, "spoken": "hey breeze, stop swiveling", "product": "fan", "action": "oscillate", "values": "", "text": "stop swiveling", "category": "command"}
+{"set": 13, "line": 19, "spoken": "hey breeze, that game has a hundred levels", "category": "near", "text": "that game has a hundred levels", "product": "fan", "action": "none", "values": ""}
+{"set": 13, "line": 20, "spoken": "hey breeze, swivel", "product": "fan", "action": "oscillate", "values": "", "text": "swivel", "category": "command"}
+{"set": 13, "line": 21, "spoken": "hey breeze, so yeah let's have it swivel around for a while", "product": "fan", "action": "oscillate", "values": "", "text": "so yeah let's have it swivel around for a while", "category": "command"}
+{"set": 13, "line": 22, "spoken": "hey breeze, he got pulled over for speeding on the highway", "category": "near", "text": "he got pulled over for speeding on the highway", "product": "fan", "action": "none", "values": ""}
+{"set": 13, "line": 23, "spoken": "hey breeze, a bit less", "product": "fan", "action": "slower", "values": "", "text": "a bit less", "category": "command"}
+{"set": 13, "line": 24, "spoken": "hey breeze, back it off", "product": "fan", "action": "slower", "values": "", "text": "back it off", "category": "command"}
+{"set": 13, "line": 25, "spoken": "hey breeze, my back is killing me", "category": "chat", "text": "my back is killing me", "product": "fan", "action": "none", "values": ""}
+{"set": 13, "line": 26, "spoken": "hey breeze, give it some more juice", "product": "fan", "action": "faster", "values": "", "text": "give it some more juice", "category": "command"}
+{"set": 13, "line": 27, "spoken": "hey breeze, quit the swiveling", "product": "fan", "action": "oscillate", "values": "", "text": "quit the swiveling", "category": "command"}
+{"set": 13, "line": 28, "spoken": "hey breeze, bring the fan to life", "product": "fan", "action": "on", "values": "", "text": "bring the fan to life", "category": "command"}
+{"set": 13, "line": 29, "spoken": "hey breeze, not so fast", "product": "fan", "action": "slower", "values": "", "text": "not so fast", "category": "command"}
+{"set": 13, "line": 30, "spoken": "hey breeze, nix the fan", "product": "fan", "action": "off", "values": "", "text": "nix the fan", "category": "command"}
+{"set": 13, "line": 31, "spoken": "hey breeze, start the sweeping motion", "product": "fan", "action": "oscillate", "values": "", "text": "start the sweeping motion", "category": "command"}
+{"set": 13, "line": 32, "spoken": "hey breeze, is today the fifteenth", "category": "chat", "text": "is today the fifteenth", "product": "fan", "action": "none", "values": ""}
+{"set": 13, "line": 33, "spoken": "hey breeze, this fan was only twenty dollars at the hardware store", "category": "near", "text": "this fan was only twenty dollars at the hardware store", "product": "fan", "action": "none", "values": ""}
+{"set": 13, "line": 34, "spoken": "hey breeze, the fan's been going all day, give it a rest", "product": "fan", "action": "off", "values": "", "text": "the fan's been going all day, give it a rest", "category": "command"}
+{"set": 13, "line": 35, "spoken": "hey breeze, rev it up a bit", "product": "fan", "action": "faster", "values": "", "text": "rev it up a bit", "category": "command"}
+{"set": 13, "line": 36, "spoken": "hey breeze, could you change the speed to 5", "product": "fan", "action": "set_level", "values": "speed=5", "text": "could you change the speed to 5", "category": "command"}
+{"set": 13, "line": 37, "spoken": "hey breeze, okay so i'm actually done, could you shut down that fan", "product": "fan", "action": "off", "values": "", "text": "okay so i'm actually done, could you shut down that fan", "category": "command"}
+{"set": 13, "line": 38, "spoken": "hey breeze, set an alarm for six thirty", "category": "other_device", "text": "set an alarm for six thirty", "product": "fan", "action": "none", "values": ""}
+{"set": 14, "line": 1, "spoken": "hey kitchen, have you seen my phone charger", "category": "chat", "text": "have you seen my phone charger", "product": "microwave", "action": "none", "values": ""}
+{"set": 14, "line": 2, "spoken": "hey kitchen, could you tack on a few more seconds", "product": "microwave", "action": "add_30s", "values": "", "text": "could you tack on a few more seconds", "category": "command"}
+{"set": 14, "line": 3, "spoken": "hey kitchen, um it's still kind of cold, could you add like thirty seconds", "product": "microwave", "action": "add_30s", "values": "", "text": "um it's still kind of cold, could you add like thirty seconds", "category": "command"}
+{"set": 14, "line": 4, "spoken": "hey kitchen, it's not heating fast enough at five, go up to eight", "product": "microwave", "action": "power_level", "values": "power=8", "text": "it's not heating fast enough at five, go up to eight", "category": "command"}
+{"set": 14, "line": 5, "spoken": "hey kitchen, would you mind heating this for three and a half minutes", "product": "microwave", "action": "start", "values": "time=210", "text": "would you mind heating this for three and a half minutes", "category": "command"}
+{"set": 14, "line": 6, "spoken": "hey kitchen, kill the microwave", "product": "microwave", "action": "stop", "values": "", "text": "kill the microwave", "category": "command"}
+{"set": 14, "line": 7, "spoken": "hey kitchen, bring the power down to half", "product": "microwave", "action": "power_level", "values": "power=5", "text": "bring the power down to half", "category": "command"}
+{"set": 14, "line": 8, "spoken": "hey kitchen, we should start packing for the trip", "category": "chat", "text": "we should start packing for the trip", "product": "microwave", "action": "none", "values": ""}
+{"set": 14, "line": 9, "spoken": "hey kitchen, begin heating for eighty seconds", "product": "microwave", "action": "start", "values": "time=80", "text": "begin heating for eighty seconds", "category": "command"}
+{"set": 14, "line": 10, "spoken": "hey kitchen, pause the microwave", "product": "microwave", "action": "stop", "values": "", "text": "pause the microwave", "category": "command"}
+{"set": 14, "line": 11, "spoken": "hey kitchen, cancel cooking", "product": "microwave", "action": "stop", "values": "", "text": "cancel cooking", "category": "command"}
+{"set": 14, "line": 12, "spoken": "hey kitchen, one minute please", "product": "microwave", "action": "start", "values": "time=60", "text": "one minute please", "category": "command"}
+{"set": 14, "line": 13, "spoken": "hey kitchen, thirty extra seconds", "product": "microwave", "action": "add_30s", "values": "", "text": "thirty extra seconds", "category": "command"}
+{"set": 14, "line": 14, "spoken": "hey kitchen, hit the add thirty button", "product": "microwave", "action": "add_30s", "values": "", "text": "hit the add thirty button", "category": "command"}
+{"set": 14, "line": 15, "spoken": "hey kitchen, mind stopping it right there", "product": "microwave", "action": "stop", "values": "", "text": "mind stopping it right there", "category": "command"}
+{"set": 14, "line": 16, "spoken": "hey kitchen, can you make it power level 1", "product": "microwave", "action": "power_level", "values": "power=1", "text": "can you make it power level 1", "category": "command"}
+{"set": 14, "line": 17, "spoken": "hey kitchen, our contestants have thirty minutes left on the clock", "category": "tv", "text": "our contestants have thirty minutes left on the clock", "product": "microwave", "action": "none", "values": ""}
+{"set": 14, "line": 18, "spoken": "hey kitchen, pop it in for 90 seconds", "product": "microwave", "action": "start", "values": "time=90", "text": "pop it in for 90 seconds", "category": "command"}
+{"set": 14, "line": 19, "spoken": "hey kitchen, low power", "product": "microwave", "action": "power_level", "values": "power=3", "text": "low power", "category": "command"}
+{"set": 14, "line": 20, "spoken": "hey kitchen, bump the power to eight", "product": "microwave", "action": "power_level", "values": "power=8", "text": "bump the power to eight", "category": "command"}
+{"set": 14, "line": 21, "spoken": "hey kitchen, cook it on 70 percent for three minutes", "product": "microwave", "action": "start", "values": "time=180;power=7", "text": "cook it on 70 percent for three minutes", "category": "command"}
+{"set": 14, "line": 22, "spoken": "hey kitchen, right so the box says five and a half minutes, go ahead", "product": "microwave", "action": "start", "values": "time=330", "text": "right so the box says five and a half minutes, go ahead", "category": "command"}
+{"set": 14, "line": 23, "spoken": "hey kitchen, no", "category": "chat", "text": "no", "product": "microwave", "action": "none", "values": ""}
+{"set": 14, "line": 24, "spoken": "hey kitchen, my sister's coming over sunday", "category": "chat", "text": "my sister's coming over sunday", "product": "microwave", "action": "none", "values": ""}
+{"set": 14, "line": 25, "spoken": "hey kitchen, would you mind dropping the power to five", "product": "microwave", "action": "power_level", "values": "power=5", "text": "would you mind dropping the power to five", "category": "command"}
+{"set": 14, "line": 26, "spoken": "hey kitchen, start the dishwasher", "category": "other_device", "text": "start the dishwasher", "product": "microwave", "action": "none", "values": ""}
+{"set": 14, "line": 27, "spoken": "hey kitchen, dad's cooking tonight", "category": "near", "text": "dad's cooking tonight", "product": "microwave", "action": "none", "values": ""}
+{"set": 14, "line": 28, "spoken": "hey kitchen, preheat the oven to four hundred", "category": "other_device", "text": "preheat the oven to four hundred", "product": "microwave", "action": "none", "values": ""}
+{"set": 14, "line": 29, "spoken": "hey kitchen, uh yeah i think it needs about thirty more", "product": "microwave", "action": "add_30s", "values": "", "text": "uh yeah i think it needs about thirty more", "category": "command"}
+{"set": 14, "line": 30, "spoken": "hey kitchen, can you run it half a minute more", "product": "microwave", "action": "add_30s", "values": "", "text": "can you run it half a minute more", "category": "command"}
+{"set": 14, "line": 31, "spoken": "hey kitchen, turn the lights on in the kitchen", "category": "other_device", "text": "turn the lights on in the kitchen", "product": "microwave", "action": "none", "values": ""}
+{"set": 14, "line": 32, "spoken": "hey kitchen, crank the power up to 10", "product": "microwave", "action": "power_level", "values": "power=10", "text": "crank the power up to 10", "category": "command"}
+{"set": 14, "line": 33, "spoken": "hey kitchen, i burned the toast again this morning", "category": "near", "text": "i burned the toast again this morning", "product": "microwave", "action": "none", "values": ""}
+{"set": 14, "line": 34, "spoken": "hey kitchen, next episode", "category": "other_device", "text": "next episode", "product": "microwave", "action": "none", "values": ""}
+{"set": 14, "line": 35, "spoken": "hey kitchen, half minute extra", "product": "microwave", "action": "add_30s", "values": "", "text": "half minute extra", "category": "command"}
+{"set": 14, "line": 36, "spoken": "hey kitchen, that's so funny", "category": "chat", "text": "that's so funny", "product": "microwave", "action": "none", "values": ""}
+{"set": 14, "line": 37, "spoken": "hey kitchen, the bag says three minutes for popcorn, let's do that", "product": "microwave", "action": "start", "values": "time=180", "text": "the bag says three minutes for popcorn, let's do that", "category": "command"}
+{"set": 14, "line": 38, "spoken": "hey kitchen, would you give it thirty extra seconds", "product": "microwave", "action": "add_30s", "values": "", "text": "would you give it thirty extra seconds", "category": "command"}
+{"set": 14, "line": 39, "spoken": "hey kitchen, whose turn is it to do the dishes", "category": "chat", "text": "whose turn is it to do the dishes", "product": "microwave", "action": "none", "values": ""}
+{"set": 15, "line": 1, "spoken": "hey breeze, on", "product": "fan", "action": "on", "values": "", "text": "on", "category": "command"}
+{"set": 15, "line": 2, "spoken": "hey breeze, start rotating", "product": "fan", "action": "oscillate", "values": "", "text": "start rotating", "category": "command"}
+{"set": 15, "line": 3, "spoken": "hey breeze, we're out of paper towels", "category": "chat", "text": "we're out of paper towels", "product": "fan", "action": "none", "values": ""}
+{"set": 15, "line": 4, "spoken": "hey breeze, could you set the fan to speed two", "product": "fan", "action": "set_level", "values": "speed=2", "text": "could you set the fan to speed two", "category": "command"}
+{"set": 15, "line": 5, "spoken": "hey breeze, set a reminder to call the dentist at nine", "category": "other_device", "text": "set a reminder to call the dentist at nine", "product": "fan", "action": "none", "values": ""}
+{"set": 15, "line": 6, "spoken": "hey breeze, lock it in place", "product": "fan", "action": "oscillate", "values": "", "text": "lock it in place", "category": "command"}
+{"set": 15, "line": 7, "spoken": "hey breeze, my papers keep blowing off the desk", "product": "fan", "action": "slower", "values": "", "text": "my papers keep blowing off the desk", "category": "command"}
+{"set": 15, "line": 8, "spoken": "hey breeze, level three please", "product": "fan", "action": "set_level", "values": "speed=3", "text": "level three please", "category": "command"}
+{"set": 15, "line": 9, "spoken": "hey breeze, one step faster", "product": "fan", "action": "faster", "values": "", "text": "one step faster", "category": "command"}
+{"set": 15, "line": 10, "spoken": "hey breeze, engage the fan", "product": "fan", "action": "on", "values": "", "text": "engage the fan", "category": "command"}
+{"set": 15, "line": 11, "spoken": "hey breeze, turn it to five", "product": "fan", "action": "set_level", "values": "speed=5", "text": "turn it to five", "category": "command"}
+{"set": 15, "line": 12, "spoken": "hey breeze, can you lower the fan by one step", "product": "fan", "action": "slower", "values": "", "text": "can you lower the fan by one step", "category": "command"}
+{"set": 15, "line": 13, "spoken": "hey breeze, the kitchen timer fell behind the fridge", "category": "near", "text": "the kitchen timer fell behind the fridge", "product": "fan", "action": "none", "values": ""}
+{"set": 15, "line": 14, "spoken": "hey breeze, hey so if you don't mind could you start up the fan for me", "product": "fan", "action": "on", "values": "", "text": "hey so if you don't mind could you start up the fan for me", "category": "command"}
+{"set": 15, "line": 15, "spoken": "hey breeze, come here", "category": "chat", "text": "come here", "product": "fan", "action": "none", "values": ""}
+{"set": 15, "line": 16, "spoken": "hey breeze, lock the front door", "category": "other_device", "text": "lock the front door", "product": "fan", "action": "none", "values": ""}
+{"set": 15, "line": 17, "spoken": "hey breeze, we don't need the fan running all night", "product": "fan", "action": "off", "values": "", "text": "we don't need the fan running all night", "category": "command"}
+{"set": 15, "line": 18, "spoken": "hey breeze, go up one speed", "product": "fan", "action": "faster", "values": "", "text": "go up one speed", "category": "command"}
+{"set": 15, "line": 19, "spoken": "hey breeze, i want air on everyone, not just me", "product": "fan", "action": "oscillate", "values": "", "text": "i want air on everyone, not just me", "category": "command"}
+{"set": 15, "line": 20, "spoken": "hey breeze, let it rotate", "product": "fan", "action": "oscillate", "values": "", "text": "let it rotate", "category": "command"}
+{"set": 15, "line": 21, "spoken": "hey breeze, go to the max setting", "product": "fan", "action": "set_level", "values": "speed=5", "text": "go to the max setting", "category": "command"}
+{"set": 15, "line": 22, "spoken": "hey breeze, just stick it on two", "product": "fan", "action": "set_level", "values": "speed=2", "text": "just stick it on two", "category": "command"}
+{"set": 15, "line": 23, "spoken": "hey breeze, kill the power to the fan", "product": "fan", "action": "off", "values": "", "text": "kill the power to the fan", "category": "command"}
+{"set": 15, "line": 24, "spoken": "hey breeze, decrease the fan speed by one", "product": "fan", "action": "slower", "values": "", "text": "decrease the fan speed by one", "category": "command"}
+{"set": 15, "line": 25, "spoken": "hey breeze, the cat knocked over my plant", "category": "chat", "text": "the cat knocked over my plant", "product": "fan", "action": "none", "values": ""}
+{"set": 15, "line": 26, "spoken": "hey breeze, up to the next speed", "product": "fan", "action": "faster", "values": "", "text": "up to the next speed", "category": "command"}
+{"set": 15, "line": 27, "spoken": "hey breeze, um i was wondering if you could switch on the fan", "product": "fan", "action": "on", "values": "", "text": "um i was wondering if you could switch on the fan", "category": "command"}
+{"set": 15, "line": 28, "spoken": "hey breeze, go full blast", "product": "fan", "action": "set_level", "values": "speed=5", "text": "go full blast", "category": "command"}
+{"set": 15, "line": 29, "spoken": "hey breeze, who keeps leaving the microwave door open", "category": "near", "text": "who keeps leaving the microwave door open", "product": "fan", "action": "none", "values": ""}
+{"set": 15, "line": 30, "spoken": "hey breeze, dial it down a bit", "product": "fan", "action": "slower", "values": "", "text": "dial it down a bit", "category": "command"}
+{"set": 15, "line": 31, "spoken": "hey breeze, what time does your class start tomorrow", "category": "chat", "text": "what time does your class start tomorrow", "product": "fan", "action": "none", "values": ""}
+{"set": 15, "line": 32, "spoken": "hey breeze, calm it down", "product": "fan", "action": "slower", "values": "", "text": "calm it down", "category": "command"}
+{"set": 15, "line": 33, "spoken": "hey breeze, it's hardly blowing at all", "product": "fan", "action": "faster", "values": "", "text": "it's hardly blowing at all", "category": "command"}
+{"set": 15, "line": 34, "spoken": "hey breeze, what time is it in london", "category": "other_device", "text": "what time is it in london", "product": "fan", "action": "none", "values": ""}
+{"set": 15, "line": 35, "spoken": "hey breeze, chill out on the fan a little", "product": "fan", "action": "slower", "values": "", "text": "chill out on the fan a little", "category": "command"}
+{"set": 15, "line": 36, "spoken": "hey breeze, easy there, turn it down some", "product": "fan", "action": "slower", "values": "", "text": "easy there, turn it down some", "category": "command"}
+{"set": 15, "line": 37, "spoken": "hey breeze, sweep mode on", "product": "fan", "action": "oscillate", "values": "", "text": "sweep mode on", "category": "command"}
+{"set": 15, "line": 38, "spoken": "hey breeze, whoa, too much, bring it down", "product": "fan", "action": "slower", "values": "", "text": "whoa, too much, bring it down", "category": "command"}
+{"set": 16, "line": 1, "spoken": "hey kitchen, extra thirty", "product": "microwave", "action": "add_30s", "values": "", "text": "extra thirty", "category": "command"}
+{"set": 16, "line": 2, "spoken": "hey kitchen, drop it to power level one", "product": "microwave", "action": "power_level", "values": "power=1", "text": "drop it to power level one", "category": "command"}
+{"set": 16, "line": 3, "spoken": "hey kitchen, so the middle's still frozen, add another half minute", "product": "microwave", "action": "add_30s", "values": "", "text": "so the middle's still frozen, add another half minute", "category": "command"}
+{"set": 16, "line": 4, "spoken": "hey kitchen, knock the power down to three", "product": "microwave", "action": "power_level", "values": "power=3", "text": "knock the power down to three", "category": "command"}
+{"set": 16, "line": 5, "spoken": "hey kitchen, power all the way up", "product": "microwave", "action": "power_level", "values": "power=10", "text": "power all the way up", "category": "command"}
+{"set": 16, "line": 6, "spoken": "hey kitchen, bump it thirty", "product": "microwave", "action": "add_30s", "values": "", "text": "bump it thirty", "category": "command"}
+{"set": 16, "line": 7, "spoken": "hey kitchen, cut it", "product": "microwave", "action": "stop", "values": "", "text": "cut it", "category": "command"}
+{"set": 16, "line": 8, "spoken": "hey kitchen, add another 30", "product": "microwave", "action": "add_30s", "values": "", "text": "add another 30", "category": "command"}
+{"set": 16, "line": 9, "spoken": "hey kitchen, hit the brakes", "product": "microwave", "action": "stop", "values": "", "text": "hit the brakes", "category": "command"}
+{"set": 16, "line": 10, "spoken": "hey kitchen, can you do one minute at power seven", "product": "microwave", "action": "start", "values": "time=60;power=7", "text": "can you do one minute at power seven", "category": "command"}
+{"set": 16, "line": 11, "spoken": "hey kitchen, we're good, cut it off", "product": "microwave", "action": "stop", "values": "", "text": "we're good, cut it off", "category": "command"}
+{"set": 16, "line": 12, "spoken": "hey kitchen, i got a new job", "category": "chat", "text": "i got a new job", "product": "microwave", "action": "none", "values": ""}
+{"set": 16, "line": 13, "spoken": "hey kitchen, another half minute", "product": "microwave", "action": "add_30s", "values": "", "text": "another half minute", "category": "command"}
+{"set": 16, "line": 14, "spoken": "hey kitchen, power down to 2", "product": "microwave", "action": "power_level", "values": "power=2", "text": "power down to 2", "category": "command"}
+{"set": 16, "line": 15, "spoken": "hey kitchen, that came out barely warm, give it a little extra", "product": "microwave", "action": "add_30s", "values": "", "text": "that came out barely warm, give it a little extra", "category": "command"}
+{"set": 16, "line": 16, "spoken": "hey kitchen, whoa, stop right there", "product": "microwave", "action": "stop", "values": "", "text": "whoa, stop right there", "category": "command"}
+{"set": 16, "line": 17, "spoken": "hey kitchen, would you please start it for 15 seconds", "product": "microwave", "action": "start", "values": "time=15", "text": "would you please start it for 15 seconds", "category": "command"}
+{"set": 16, "line": 18, "spoken": "hey kitchen, cook for 4 minutes at power 6", "product": "microwave", "action": "start", "values": "time=240;power=6", "text": "cook for 4 minutes at power 6", "category": "command"}
+{"set": 16, "line": 19, "spoken": "hey kitchen, ninety seconds please", "product": "microwave", "action": "start", "values": "time=90", "text": "ninety seconds please", "category": "command"}
+{"set": 16, "line": 20, "spoken": "hey kitchen, microwave for 10 seconds", "product": "microwave", "action": "start", "values": "time=10", "text": "microwave for 10 seconds", "category": "command"}
+{"set": 16, "line": 21, "spoken": "hey kitchen, see you later", "category": "chat", "text": "see you later", "product": "microwave", "action": "none", "values": ""}
+{"set": 16, "line": 22, "spoken": "hey kitchen, close the blinds", "category": "other_device", "text": "close the blinds", "product": "microwave", "action": "none", "values": ""}
+{"set": 16, "line": 23, "spoken": "hey kitchen, give me a hug", "category": "chat", "text": "give me a hug", "product": "microwave", "action": "none", "values": ""}
+{"set": 16, "line": 24, "spoken": "hey kitchen, i'm home", "category": "chat", "text": "i'm home", "product": "microwave", "action": "none", "values": ""}
+{"set": 16, "line": 25, "spoken": "hey kitchen, power to medium", "product": "microwave", "action": "power_level", "values": "power=5", "text": "power to medium", "category": "command"}
+{"set": 16, "line": 26, "spoken": "hey kitchen, alright let's put thirty seconds back on there", "product": "microwave", "action": "add_30s", "values": "", "text": "alright let's put thirty seconds back on there", "category": "command"}
+{"set": 16, "line": 27, "spoken": "hey kitchen, the edges always get rubbery at full, let's try seven", "product": "microwave", "action": "power_level", "values": "power=7", "text": "the edges always get rubbery at full, let's try seven", "category": "command"}
+{"set": 16, "line": 28, "spoken": "hey kitchen, run the robot vacuum in the kitchen", "category": "other_device", "text": "run the robot vacuum in the kitchen", "product": "microwave", "action": "none", "values": ""}
+{"set": 16, "line": 29, "spoken": "hey kitchen, kill the timer", "product": "microwave", "action": "stop", "values": "", "text": "kill the timer", "category": "command"}
+{"set": 16, "line": 30, "spoken": "hey kitchen, we're out of milk again", "category": "chat", "text": "we're out of milk again", "product": "microwave", "action": "none", "values": ""}
+{"set": 16, "line": 31, "spoken": "hey kitchen, could you add on half a minute", "product": "microwave", "action": "add_30s", "values": "", "text": "could you add on half a minute", "category": "command"}
+{"set": 16, "line": 32, "spoken": "hey kitchen, would you add a bit more time please", "product": "microwave", "action": "add_30s", "values": "", "text": "would you add a bit more time please", "category": "command"}
+{"set": 16, "line": 33, "spoken": "hey kitchen, halt", "product": "microwave", "action": "stop", "values": "", "text": "halt", "category": "command"}
+{"set": 16, "line": 34, "spoken": "hey kitchen, you know what, add thirty to whatever's left", "product": "microwave", "action": "add_30s", "values": "", "text": "you know what, add thirty to whatever's left", "category": "command"}
+{"set": 16, "line": 35, "spoken": "hey kitchen, 45 seconds", "product": "microwave", "action": "start", "values": "time=45", "text": "45 seconds", "category": "command"}
+{"set": 16, "line": 36, "spoken": "hey kitchen, this cookbook has a whole chapter on microwave meals", "category": "near", "text": "this cookbook has a whole chapter on microwave meals", "product": "microwave", "action": "none", "values": ""}
+{"set": 16, "line": 37, "spoken": "hey kitchen, could you stop it please", "product": "microwave", "action": "stop", "values": "", "text": "could you stop it please", "category": "command"}
+{"set": 16, "line": 38, "spoken": "hey kitchen, nuke it", "product": "microwave", "action": "start", "values": "", "text": "nuke it", "category": "command"}
+{"set": 16, "line": 39, "spoken": "hey kitchen, keep it going a bit longer", "product": "microwave", "action": "add_30s", "values": "", "text": "keep it going a bit longer", "category": "command"}
+{"set": 17, "line": 1, "spoken": "hey breeze, gimme level four", "product": "fan", "action": "set_level", "values": "speed=4", "text": "gimme level four", "category": "command"}
+{"set": 17, "line": 2, "spoken": "hey breeze, side to side", "product": "fan", "action": "oscillate", "values": "", "text": "side to side", "category": "command"}
+{"set": 17, "line": 3, "spoken": "hey breeze, did you feed the dog", "category": "chat", "text": "did you feed the dog", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 4, "spoken": "hey breeze, cool", "category": "chat", "text": "cool", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 5, "spoken": "hey breeze, air on", "product": "fan", "action": "on", "values": "", "text": "air on", "category": "command"}
+{"set": 17, "line": 6, "spoken": "hey breeze, i'm going to the store, need anything", "category": "chat", "text": "i'm going to the store, need anything", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 7, "spoken": "hey breeze, the baby's crying", "category": "chat", "text": "the baby's crying", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 8, "spoken": "hey breeze, change it to one", "product": "fan", "action": "set_level", "values": "speed=1", "text": "change it to one", "category": "command"}
+{"set": 17, "line": 9, "spoken": "hey breeze, fan please", "product": "fan", "action": "on", "values": "", "text": "fan please", "category": "command"}
+{"set": 17, "line": 10, "spoken": "hey breeze, i like my steak cooked medium", "category": "near", "text": "i like my steak cooked medium", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 11, "spoken": "hey breeze, can you switch it to level three", "product": "fan", "action": "set_level", "values": "speed=3", "text": "can you switch it to level three", "category": "command"}
+{"set": 17, "line": 12, "spoken": "hey breeze, five is too much and three's not enough, let's do four", "product": "fan", "action": "set_level", "values": "speed=4", "text": "five is too much and three's not enough, let's do four", "category": "command"}
+{"set": 17, "line": 13, "spoken": "hey breeze, would you mind turning off the fan", "product": "fan", "action": "off", "values": "", "text": "would you mind turning off the fan", "category": "command"}
+{"set": 17, "line": 14, "spoken": "hey breeze, i'll do the laundry tomorrow", "category": "chat", "text": "i'll do the laundry tomorrow", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 15, "spoken": "hey breeze, go faster", "product": "fan", "action": "faster", "values": "", "text": "go faster", "category": "command"}
+{"set": 17, "line": 16, "spoken": "hey breeze, we should repaint this room", "category": "chat", "text": "we should repaint this room", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 17, "spoken": "hey breeze, your mom called earlier", "category": "chat", "text": "your mom called earlier", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 18, "spoken": "hey breeze, let me think about it", "category": "chat", "text": "let me think about it", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 19, "spoken": "hey breeze, it's still stuffy, the fan needs to work harder", "product": "fan", "action": "faster", "values": "", "text": "it's still stuffy, the fan needs to work harder", "category": "command"}
+{"set": 17, "line": 20, "spoken": "hey breeze, let's have the fan running", "product": "fan", "action": "on", "values": "", "text": "let's have the fan running", "category": "command"}
+{"set": 17, "line": 21, "spoken": "hey breeze, love you", "category": "chat", "text": "love you", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 22, "spoken": "hey breeze, it's blowing a little too hard", "product": "fan", "action": "slower", "values": "", "text": "it's blowing a little too hard", "category": "command"}
+{"set": 17, "line": 23, "spoken": "hey breeze, could you set it to sweep the whole room", "product": "fan", "action": "oscillate", "values": "", "text": "could you set it to sweep the whole room", "category": "command"}
+{"set": 17, "line": 24, "spoken": "hey breeze, thank you so much", "category": "chat", "text": "thank you so much", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 25, "spoken": "hey breeze, can you keep the fan from swinging around", "product": "fan", "action": "oscillate", "values": "", "text": "can you keep the fan from swinging around", "category": "command"}
+{"set": 17, "line": 26, "spoken": "hey breeze, the water pressure in the shower is so low", "category": "near", "text": "the water pressure in the shower is so low", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 27, "spoken": "hey breeze, stop the head from moving", "product": "fan", "action": "oscillate", "values": "", "text": "stop the head from moving", "category": "command"}
+{"set": 17, "line": 28, "spoken": "hey breeze, would you reduce the speed by one", "product": "fan", "action": "slower", "values": "", "text": "would you reduce the speed by one", "category": "command"}
+{"set": 17, "line": 29, "spoken": "hey breeze, shut it off", "product": "fan", "action": "off", "values": "", "text": "shut it off", "category": "command"}
+{"set": 17, "line": 30, "spoken": "hey breeze, the fan's blasting me", "product": "fan", "action": "slower", "values": "", "text": "the fan's blasting me", "category": "command"}
+{"set": 17, "line": 31, "spoken": "hey breeze, change the channel to the game", "category": "other_device", "text": "change the channel to the game", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 32, "spoken": "hey breeze, shut her down", "product": "fan", "action": "off", "values": "", "text": "shut her down", "category": "command"}
+{"set": 17, "line": 33, "spoken": "hey breeze, enable the swivel", "product": "fan", "action": "oscillate", "values": "", "text": "enable the swivel", "category": "command"}
+{"set": 17, "line": 34, "spoken": "hey breeze, the crowd is on its feet here in the fourth quarter", "category": "tv", "text": "the crowd is on its feet here in the fourth quarter", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 35, "spoken": "hey breeze, that runner set a new speed record", "category": "near", "text": "that runner set a new speed record", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 36, "spoken": "hey breeze, welcome back to the kitchen, today we're making a lemon tart", "category": "tv", "text": "welcome back to the kitchen, today we're making a lemon tart", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 37, "spoken": "hey breeze, your shoes are in the hallway", "category": "chat", "text": "your shoes are in the hallway", "product": "fan", "action": "none", "values": ""}
+{"set": 17, "line": 38, "spoken": "hey breeze, nobody's even in here, why is the fan still running", "product": "fan", "action": "off", "values": "", "text": "nobody's even in here, why is the fan still running", "category": "command"}
+{"set": 18, "line": 1, "spoken": "hey kitchen, i need to call the plumber tomorrow", "category": "chat", "text": "i need to call the plumber tomorrow", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 2, "spoken": "hey kitchen, enough", "product": "microwave", "action": "stop", "values": "", "text": "enough", "category": "command"}
+{"set": 18, "line": 3, "spoken": "hey kitchen, our microwave came with the house", "category": "near", "text": "our microwave came with the house", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 4, "spoken": "hey kitchen, look at the size of that spider", "category": "chat", "text": "look at the size of that spider", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 5, "spoken": "hey kitchen, oh my gosh", "category": "chat", "text": "oh my gosh", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 6, "spoken": "hey kitchen, thirty seconds more please", "product": "microwave", "action": "add_30s", "values": "", "text": "thirty seconds more please", "category": "command"}
+{"set": 18, "line": 7, "spoken": "hey kitchen, turn on the bathroom heater", "category": "other_device", "text": "turn on the bathroom heater", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 8, "spoken": "hey kitchen, my brother is learning to cook", "category": "near", "text": "my brother is learning to cook", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 9, "spoken": "hey kitchen, turn on the porch light", "category": "other_device", "text": "turn on the porch light", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 10, "spoken": "hey kitchen, open the garage door", "category": "other_device", "text": "open the garage door", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 11, "spoken": "hey kitchen, the sprinkler timer is set for the wrong day", "category": "near", "text": "the sprinkler timer is set for the wrong day", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 12, "spoken": "hey kitchen, stop now", "product": "microwave", "action": "stop", "values": "", "text": "stop now", "category": "command"}
+{"set": 18, "line": 13, "spoken": "hey kitchen, can you pause it so i can check on it", "product": "microwave", "action": "stop", "values": "", "text": "can you pause it so i can check on it", "category": "command"}
+{"set": 18, "line": 14, "spoken": "hey kitchen, okay so this needs gentle heat, let's do power level three", "product": "microwave", "action": "power_level", "values": "power=3", "text": "okay so this needs gentle heat, let's do power level three", "category": "command"}
+{"set": 18, "line": 15, "spoken": "hey kitchen, mute the tv", "category": "other_device", "text": "mute the tv", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 16, "spoken": "hey kitchen, stop the clock", "product": "microwave", "action": "stop", "values": "", "text": "stop the clock", "category": "command"}
+{"set": 18, "line": 17, "spoken": "hey kitchen, quit", "product": "microwave", "action": "stop", "values": "", "text": "quit", "category": "command"}
+{"set": 18, "line": 18, "spoken": "hey kitchen, half strength", "product": "microwave", "action": "power_level", "values": "power=5", "text": "half strength", "category": "command"}
+{"set": 18, "line": 19, "spoken": "hey kitchen, oh no, there's a fork in there", "product": "microwave", "action": "stop", "values": "", "text": "oh no, there's a fork in there", "category": "command"}
+{"set": 18, "line": 20, "spoken": "hey kitchen, do you know how to change the clock on the microwave", "category": "near", "text": "do you know how to change the clock on the microwave", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 21, "spoken": "hey kitchen, okay so i need to take it out early, go ahead and stop", "product": "microwave", "action": "stop", "values": "", "text": "okay so i need to take it out early, go ahead and stop", "category": "command"}
+{"set": 18, "line": 22, "spoken": "hey kitchen, the game starts at seven", "category": "chat", "text": "the game starts at seven", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 23, "spoken": "hey kitchen, leftovers usually take about four minutes, so go for it", "product": "microwave", "action": "start", "values": "time=240", "text": "leftovers usually take about four minutes, so go for it", "category": "command"}
+{"set": 18, "line": 24, "spoken": "hey kitchen, put it on hold", "product": "microwave", "action": "stop", "values": "", "text": "put it on hold", "category": "command"}
+{"set": 18, "line": 25, "spoken": "hey kitchen, uh i think power seven would be better for this", "product": "microwave", "action": "power_level", "values": "power=7", "text": "uh i think power seven would be better for this", "category": "command"}
+{"set": 18, "line": 26, "spoken": "hey kitchen, you can see the cheese is just beginning to bubble", "category": "tv", "text": "you can see the cheese is just beginning to bubble", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 27, "spoken": "hey kitchen, the toilet's running again", "category": "chat", "text": "the toilet's running again", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 28, "spoken": "hey kitchen, extend the time by thirty seconds", "product": "microwave", "action": "add_30s", "values": "", "text": "extend the time by thirty seconds", "category": "command"}
+{"set": 18, "line": 29, "spoken": "hey kitchen, nah stop that, i changed my mind", "product": "microwave", "action": "stop", "values": "", "text": "nah stop that, i changed my mind", "category": "command"}
+{"set": 18, "line": 30, "spoken": "hey kitchen, go brush your teeth", "category": "chat", "text": "go brush your teeth", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 31, "spoken": "hey kitchen, you're welcome", "category": "chat", "text": "you're welcome", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 32, "spoken": "hey kitchen, the bread goes tough on high, use power three", "product": "microwave", "action": "power_level", "values": "power=3", "text": "the bread goes tough on high, use power three", "category": "command"}
+{"set": 18, "line": 33, "spoken": "hey kitchen, heat for one minute twenty", "product": "microwave", "action": "start", "values": "time=80", "text": "heat for one minute twenty", "category": "command"}
+{"set": 18, "line": 34, "spoken": "hey kitchen, really", "category": "chat", "text": "really", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 35, "spoken": "hey kitchen, did you see what she posted", "category": "chat", "text": "did you see what she posted", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 36, "spoken": "hey kitchen, what did the doctor say", "category": "chat", "text": "what did the doctor say", "product": "microwave", "action": "none", "values": ""}
+{"set": 18, "line": 37, "spoken": "hey kitchen, so actually i forgot to cover the bowl, could you stop it", "product": "microwave", "action": "stop", "values": "", "text": "so actually i forgot to cover the bowl, could you stop it", "category": "command"}
+{"set": 18, "line": 38, "spoken": "hey kitchen, just a tad longer", "product": "microwave", "action": "add_30s", "values": "", "text": "just a tad longer", "category": "command"}
+{"set": 18, "line": 39, "spoken": "hey kitchen, give it another thirty", "product": "microwave", "action": "add_30s", "values": "", "text": "give it another thirty", "category": "command"}
+{"set": 19, "line": 1, "spoken": "hey breeze, bump the speed one higher", "product": "fan", "action": "faster", "values": "", "text": "bump the speed one higher", "category": "command"}
+{"set": 19, "line": 2, "spoken": "hey breeze, activate the fan", "product": "fan", "action": "on", "values": "", "text": "activate the fan", "category": "command"}
+{"set": 19, "line": 3, "spoken": "hey breeze, that's not nearly enough air", "product": "fan", "action": "faster", "values": "", "text": "that's not nearly enough air", "category": "command"}
+{"set": 19, "line": 4, "spoken": "hey breeze, i can never figure out the settings on her microwave", "category": "near", "text": "i can never figure out the settings on her microwave", "product": "fan", "action": "none", "values": ""}
+{"set": 19, "line": 5, "spoken": "hey breeze, the dog needs to go out", "category": "chat", "text": "the dog needs to go out", "product": "fan", "action": "none", "values": ""}
+{"set": 19, "line": 6, "spoken": "hey breeze, less wind", "product": "fan", "action": "slower", "values": "", "text": "less wind", "category": "command"}
+{"set": 19, "line": 7, "spoken": "hey breeze, turn the oscillation on", "product": "fan", "action": "oscillate", "values": "", "text": "turn the oscillation on", "category": "command"}
+{"set": 19, "line": 8, "spoken": "hey breeze, rotate", "product": "fan", "action": "oscillate", "values": "", "text": "rotate", "category": "command"}
+{"set": 19, "line": 9, "spoken": "hey breeze, who's at the door", "category": "chat", "text": "who's at the door", "product": "fan", "action": "none", "values": ""}
+{"set": 19, "line": 10, "spoken": "hey breeze, my phone battery is at ten percent", "category": "near", "text": "my phone battery is at ten percent", "product": "fan", "action": "none", "values": ""}
+{"set": 19, "line": 11, "spoken": "hey breeze, how many ounces are in a cup", "category": "other_device", "text": "how many ounces are in a cup", "product": "fan", "action": "none", "values": ""}
+{"set": 19, "line": 12, "spoken": "hey breeze, switch it on", "product": "fan", "action": "on", "values": "", "text": "switch it on", "category": "command"}
+{"set": 19, "line": 13, "spoken": "hey breeze, level 2", "product": "fan", "action": "set_level", "values": "speed=2", "text": "level 2", "category": "command"}
+{"set": 19, "line": 14, "spoken": "hey breeze, you know what, go ahead and fire up the fan", "product": "fan", "action": "on", "values": "", "text": "you know what, go ahead and fire up the fan", "category": "command"}
+{"set": 19, "line": 15, "spoken": "hey breeze, let it sweep the room", "product": "fan", "action": "oscillate", "values": "", "text": "let it sweep the room", "category": "command"}
+{"set": 19, "line": 16, "spoken": "hey breeze, oops", "category": "chat", "text": "oops", "product": "fan", "action": "none", "values": ""}
+{"set": 19, "line": 17, "spoken": "hey breeze, okay so i'd like the fan to sweep back and forth if possible", "product": "fan", "action": "oscillate", "values": "", "text": "okay so i'd like the fan to sweep back and forth if possible", "category": "command"}
+{"set": 19, "line": 18, "spoken": "hey breeze, medium setting please", "product": "fan", "action": "set_level", "values": "speed=3", "text": "medium setting please", "category": "command"}
+{"set": 19, "line": 19, "spoken": "hey breeze, gimme a stronger breeze", "product": "fan", "action": "faster", "values": "", "text": "gimme a stronger breeze", "category": "command"}
+{"set": 19, "line": 20, "spoken": "hey breeze, so um set it to the fourth setting, that's the one i like", "product": "fan", "action": "set_level", "values": "speed=4", "text": "so um set it to the fourth setting, that's the one i like", "category": "command"}
+{"set": 19, "line": 21, "spoken": "hey breeze, the storm knocked out power to half the county", "category": "near", "text": "the storm knocked out power to half the county", "product": "fan", "action": "none", "values": ""}
+{"set": 19, "line": 22, "spoken": "hey breeze, deactivate the fan", "product": "fan", "action": "off", "values": "", "text": "deactivate the fan", "category": "command"}
+{"set": 19, "line": 23, "spoken": "hey breeze, you know what, just put it on 3", "product": "fan", "action": "set_level", "values": "speed=3", "text": "you know what, just put it on 3", "category": "command"}
+{"set": 19, "line": 24, "spoken": "hey breeze, i'm so tired", "category": "chat", "text": "i'm so tired", "product": "fan", "action": "none", "values": ""}
+{"set": 19, "line": 25, "spoken": "hey breeze, the lowest setting", "product": "fan", "action": "set_level", "values": "speed=1", "text": "the lowest setting", "category": "command"}
+{"set": 19, "line": 26, "spoken": "hey breeze, uh yeah i think the fan could go a bit faster", "product": "fan", "action": "faster", "values": "", "text": "uh yeah i think the fan could go a bit faster", "category": "command"}
+{"set": 19, "line": 27, "spoken": "hey breeze, knock it down a notch", "product": "fan", "action": "slower", "values": "", "text": "knock it down a notch", "category": "command"}
+{"set": 19, "line": 28, "spoken": "hey breeze, start up the fan", "product": "fan", "action": "on", "values": "", "text": "start up the fan", "category": "command"}
+{"set": 19, "line": 29, "spoken": "hey breeze, would you please flip on the fan", "product": "fan", "action": "on", "values": "", "text": "would you please flip on the fan", "category": "command"}
+{"set": 19, "line": 30, "spoken": "hey breeze, the chicken took way longer to cook than i expected", "category": "near", "text": "the chicken took way longer to cook than i expected", "product": "fan", "action": "none", "values": ""}
+{"set": 19, "line": 31, "spoken": "hey breeze, it's muggy in here, i need that fan going", "product": "fan", "action": "on", "values": "", "text": "it's muggy in here, i need that fan going", "category": "command"}
+{"set": 19, "line": 32, "spoken": "hey breeze, the microwave at work always smells like fish", "category": "near", "text": "the microwave at work always smells like fish", "product": "fan", "action": "none", "values": ""}
+{"set": 19, "line": 33, "spoken": "hey breeze, go ahead and run the fan for a while", "product": "fan", "action": "on", "values": "", "text": "go ahead and run the fan for a while", "category": "command"}
+{"set": 19, "line": 34, "spoken": "hey breeze, turn the volume up on the tv", "category": "other_device", "text": "turn the volume up on the tv", "product": "fan", "action": "none", "values": ""}
+{"set": 19, "line": 35, "spoken": "hey breeze, what", "category": "chat", "text": "what", "product": "fan", "action": "none", "values": ""}
+{"set": 19, "line": 36, "spoken": "hey breeze, would you mind switching on the fan", "product": "fan", "action": "on", "values": "", "text": "would you mind switching on the fan", "category": "command"}
+{"set": 19, "line": 37, "spoken": "hey breeze, put the fan to work", "product": "fan", "action": "on", "values": "", "text": "put the fan to work", "category": "command"}
+{"set": 19, "line": 38, "spoken": "hey breeze, this is way too strong", "product": "fan", "action": "slower", "values": "", "text": "this is way too strong", "category": "command"}
+{"set": 20, "line": 1, "spoken": "hey breeze, would you start up the fan please", "product": "fan", "action": "on", "values": "", "text": "would you start up the fan please", "category": "command"}
+{"set": 20, "line": 2, "spoken": "hey breeze, power up the fan", "product": "fan", "action": "on", "values": "", "text": "power up the fan", "category": "command"}
+{"set": 20, "line": 3, "spoken": "hey breeze, could you make the fan sweep side to side", "product": "fan", "action": "oscillate", "values": "", "text": "could you make the fan sweep side to side", "category": "command"}
+{"set": 20, "line": 4, "spoken": "hey breeze, i'm going to bed", "category": "chat", "text": "i'm going to bed", "product": "fan", "action": "none", "values": ""}
+{"set": 20, "line": 5, "spoken": "hey breeze, setting 5", "product": "fan", "action": "set_level", "values": "speed=5", "text": "setting 5", "category": "command"}
+{"set": 20, "line": 6, "spoken": "hey breeze, gentler", "product": "fan", "action": "slower", "values": "", "text": "gentler", "category": "command"}
+{"set": 20, "line": 7, "spoken": "hey breeze, play some jazz in the living room", "category": "other_device", "text": "play some jazz in the living room", "product": "fan", "action": "none", "values": ""}
+{"set": 20, "line": 8, "spoken": "hey breeze, that's a great idea", "category": "chat", "text": "that's a great idea", "product": "fan", "action": "none", "values": ""}
+{"set": 20, "line": 9, "spoken": "hey breeze, microwave popcorn is never as good as stovetop", "category": "near", "text": "microwave popcorn is never as good as stovetop", "product": "fan", "action": "none", "values": ""}
+{"set": 20, "line": 10, "spoken": "hey breeze, yo get that fan going", "product": "fan", "action": "on", "values": "", "text": "yo get that fan going", "category": "command"}
+{"set": 20, "line": 11, "spoken": "hey breeze, that's plenty of fan for today", "product": "fan", "action": "off", "values": "", "text": "that's plenty of fan for today", "category": "command"}
+{"set": 20, "line": 12, "spoken": "hey breeze, my grandma still has her microwave from the eighties", "category": "near", "text": "my grandma still has her microwave from the eighties", "product": "fan", "action": "none", "values": ""}
+{"set": 20, "line": 13, "spoken": "hey breeze, keep it pointed at me", "product": "fan", "action": "oscillate", "values": "", "text": "keep it pointed at me", "category": "command"}
+{"set": 20, "line": 14, "spoken": "hey breeze, okay i'm leaving the room so the fan can go off", "product": "fan", "action": "off", "values": "", "text": "okay i'm leaving the room so the fan can go off", "category": "command"}
+{"set": 20, "line": 15, "spoken": "hey breeze, let's get more breeze going", "product": "fan", "action": "faster", "values": "", "text": "let's get more breeze going", "category": "command"}
+{"set": 20, "line": 16, "spoken": "hey breeze, pump it up", "product": "fan", "action": "faster", "values": "", "text": "pump it up", "category": "command"}
+{"set": 20, "line": 17, "spoken": "hey breeze, step it down", "product": "fan", "action": "slower", "values": "", "text": "step it down", "category": "command"}
+{"set": 20, "line": 18, "spoken": "hey breeze, enough fan", "product": "fan", "action": "off", "values": "", "text": "enough fan", "category": "command"}
+{"set": 20, "line": 19, "spoken": "hey breeze, stop rotating", "product": "fan", "action": "oscillate", "values": "", "text": "stop rotating", "category": "command"}
+{"set": 20, "line": 20, "spoken": "hey breeze, grandma's birthday is next week", "category": "chat", "text": "grandma's birthday is next week", "product": "fan", "action": "none", "values": ""}
+{"set": 20, "line": 21, "spoken": "hey breeze, turn off the tv", "category": "other_device", "text": "turn off the tv", "product": "fan", "action": "none", "values": ""}
+{"set": 20, "line": 22, "spoken": "hey breeze, back it down one", "product": "fan", "action": "slower", "values": "", "text": "back it down one", "category": "command"}
+{"set": 20, "line": 23, "spoken": "hey breeze, more speed", "product": "fan", "action": "faster", "values": "", "text": "more speed", "category": "command"}
+{"set": 20, "line": 24, "spoken": "hey breeze, only one side of the room is getting any air", "product": "fan", "action": "oscillate", "values": "", "text": "only one side of the room is getting any air", "category": "command"}
+{"set": 20, "line": 25, "spoken": "hey breeze, i keep losing the breeze every time it turns away", "product": "fan", "action": "oscillate", "values": "", "text": "i keep losing the breeze every time it turns away", "category": "command"}
+{"set": 20, "line": 26, "spoken": "hey breeze, switch to high", "product": "fan", "action": "set_level", "values": "speed=5", "text": "switch to high", "category": "command"}
+{"set": 20, "line": 27, "spoken": "hey breeze, not so hard", "product": "fan", "action": "slower", "values": "", "text": "not so hard", "category": "command"}
+{"set": 20, "line": 28, "spoken": "hey breeze, hurry up, we're going to miss the bus", "category": "chat", "text": "hurry up, we're going to miss the bus", "product": "fan", "action": "none", "values": ""}
+{"set": 20, "line": 29, "spoken": "hey breeze, did you take your medicine", "category": "chat", "text": "did you take your medicine", "product": "fan", "action": "none", "values": ""}
+{"set": 20, "line": 30, "spoken": "hey breeze, the window's open now so we're good without the fan", "product": "fan", "action": "off", "values": "", "text": "the window's open now so we're good without the fan", "category": "command"}
+{"set": 20, "line": 31, "spoken": "hey breeze, hold on", "category": "chat", "text": "hold on", "product": "fan", "action": "none", "values": ""}
+{"set": 20, "line": 32, "spoken": "hey breeze, we should get a new fan for the bedroom", "category": "near", "text": "we should get a new fan for the bedroom", "product": "fan", "action": "none", "values": ""}
+{"set": 20, "line": 33, "spoken": "hey breeze, bring the speed down", "product": "fan", "action": "slower", "values": "", "text": "bring the speed down", "category": "command"}
+{"set": 20, "line": 34, "spoken": "hey breeze, she said she'd text when she lands", "category": "chat", "text": "she said she'd text when she lands", "product": "fan", "action": "none", "values": ""}
+{"set": 20, "line": 35, "spoken": "hey breeze, a cold front moves through tomorrow bringing much cooler air", "category": "tv", "text": "a cold front moves through tomorrow bringing much cooler air", "product": "fan", "action": "none", "values": ""}
+{"set": 20, "line": 36, "spoken": "hey breeze, oh well", "category": "chat", "text": "oh well", "product": "fan", "action": "none", "values": ""}
+{"set": 20, "line": 37, "spoken": "hey breeze, hey if it's not too much trouble could you power the fan down", "product": "fan", "action": "off", "values": "", "text": "hey if it's not too much trouble could you power the fan down", "category": "command"}
+{"set": 21, "line": 1, "spoken": "hey breeze, pan around", "product": "fan", "action": "oscillate", "values": "", "text": "pan around", "category": "command"}
+{"set": 21, "line": 2, "spoken": "hey breeze, get it swiveling", "product": "fan", "action": "oscillate", "values": "", "text": "get it swiveling", "category": "command"}
+{"set": 21, "line": 3, "spoken": "hey breeze, freeze the head where it is", "product": "fan", "action": "oscillate", "values": "", "text": "freeze the head where it is", "category": "command"}
+{"set": 21, "line": 4, "spoken": "hey breeze, stronger", "product": "fan", "action": "faster", "values": "", "text": "stronger", "category": "command"}
+{"set": 21, "line": 5, "spoken": "hey breeze, crank it", "product": "fan", "action": "faster", "values": "", "text": "crank it", "category": "command"}
+{"set": 21, "line": 6, "spoken": "hey breeze, dinner should be ready in about twenty minutes", "category": "near", "text": "dinner should be ready in about twenty minutes", "product": "fan", "action": "none", "values": ""}
+{"set": 21, "line": 7, "spoken": "hey breeze, um could you maybe get the fan going, it's kind of stuffy", "product": "fan", "action": "on", "values": "", "text": "um could you maybe get the fan going, it's kind of stuffy", "category": "command"}
+{"set": 21, "line": 8, "spoken": "hey breeze, he's racing down the sideline and nobody's going to catch him", "category": "tv", "text": "he's racing down the sideline and nobody's going to catch him", "product": "fan", "action": "none", "values": ""}
+{"set": 21, "line": 9, "spoken": "hey breeze, let it wander back and forth", "product": "fan", "action": "oscillate", "values": "", "text": "let it wander back and forth", "category": "command"}
+{"set": 21, "line": 10, "spoken": "hey breeze, my car goes from zero to sixty in about nine seconds", "category": "near", "text": "my car goes from zero to sixty in about nine seconds", "product": "fan", "action": "none", "values": ""}
+{"set": 21, "line": 11, "spoken": "hey breeze, i forgot to water the garden", "category": "chat", "text": "i forgot to water the garden", "product": "fan", "action": "none", "values": ""}
+{"set": 21, "line": 12, "spoken": "hey breeze, anyway", "category": "chat", "text": "anyway", "product": "fan", "action": "none", "values": ""}
+{"set": 21, "line": 13, "spoken": "hey breeze, power it up", "product": "fan", "action": "on", "values": "", "text": "power it up", "category": "command"}
+{"set": 21, "line": 14, "spoken": "hey breeze, how was school today", "category": "chat", "text": "how was school today", "product": "fan", "action": "none", "values": ""}
+{"set": 21, "line": 15, "spoken": "hey breeze, a little slower please", "product": "fan", "action": "slower", "values": "", "text": "a little slower please", "category": "command"}
+{"set": 21, "line": 16, "spoken": "hey breeze, it's way too windy in here", "product": "fan", "action": "slower", "values": "", "text": "it's way too windy in here", "category": "command"}
+{"set": 21, "line": 17, "spoken": "hey breeze, the fan's not even on and i'm melting", "product": "fan", "action": "on", "values": "", "text": "the fan's not even on and i'm melting", "category": "command"}
+{"set": 21, "line": 18, "spoken": "hey breeze, step it up", "product": "fan", "action": "faster", "values": "", "text": "step it up", "category": "command"}
+{"set": 21, "line": 19, "spoken": "hey breeze, um yeah i think you can switch off the fan now", "product": "fan", "action": "off", "values": "", "text": "um yeah i think you can switch off the fan now", "category": "command"}
+{"set": 21, "line": 20, "spoken": "hey breeze, keep the head from rotating", "product": "fan", "action": "oscillate", "values": "", "text": "keep the head from rotating", "category": "command"}
+{"set": 21, "line": 21, "spoken": "hey breeze, would you please increase the fan by one step", "product": "fan", "action": "faster", "values": "", "text": "would you please increase the fan by one step", "category": "command"}
+{"set": 21, "line": 22, "spoken": "hey breeze, set the air fryer for twelve minutes", "category": "other_device", "text": "set the air fryer for twelve minutes", "product": "fan", "action": "none", "values": ""}
+{"set": 21, "line": 23, "spoken": "hey breeze, stop the side to side", "product": "fan", "action": "oscillate", "values": "", "text": "stop the side to side", "category": "command"}
+{"set": 21, "line": 24, "spoken": "hey breeze, swing", "product": "fan", "action": "oscillate", "values": "", "text": "swing", "category": "command"}
+{"set": 21, "line": 25, "spoken": "hey breeze, could you up the speed by one", "product": "fan", "action": "faster", "values": "", "text": "could you up the speed by one", "category": "command"}
+{"set": 21, "line": 26, "spoken": "hey breeze, could you make the breeze softer", "product": "fan", "action": "slower", "values": "", "text": "could you make the breeze softer", "category": "command"}
+{"set": 21, "line": 27, "spoken": "hey breeze, sweep", "product": "fan", "action": "oscillate", "values": "", "text": "sweep", "category": "command"}
+{"set": 21, "line": 28, "spoken": "hey breeze, off", "product": "fan", "action": "off", "values": "", "text": "off", "category": "command"}
+{"set": 21, "line": 29, "spoken": "hey breeze, i don't know", "category": "chat", "text": "i don't know", "product": "fan", "action": "none", "values": ""}
+{"set": 21, "line": 30, "spoken": "hey breeze, um could you maybe nudge the fan up just a little", "product": "fan", "action": "faster", "values": "", "text": "um could you maybe nudge the fan up just a little", "category": "command"}
+{"set": 21, "line": 31, "spoken": "hey breeze, we should get a dog", "category": "chat", "text": "we should get a dog", "product": "fan", "action": "none", "values": ""}
+{"set": 21, "line": 32, "spoken": "hey breeze, can you pick up the kids at three", "category": "chat", "text": "can you pick up the kids at three", "product": "fan", "action": "none", "values": ""}
+{"set": 21, "line": 33, "spoken": "hey breeze, would you put it on medium please", "product": "fan", "action": "set_level", "values": "speed=3", "text": "would you put it on medium please", "category": "command"}
+{"set": 21, "line": 34, "spoken": "hey breeze, i need to get gas tomorrow", "category": "chat", "text": "i need to get gas tomorrow", "product": "fan", "action": "none", "values": ""}
+{"set": 21, "line": 35, "spoken": "hey breeze, come on, give me more than that", "product": "fan", "action": "faster", "values": "", "text": "come on, give me more than that", "category": "command"}
+{"set": 21, "line": 36, "spoken": "hey breeze, okay so let's go with level two for now", "product": "fan", "action": "set_level", "values": "speed=2", "text": "okay so let's go with level two for now", "category": "command"}
+{"set": 21, "line": 37, "spoken": "hey breeze, the new tower fan with five speeds is on sale this week only", "category": "tv", "text": "the new tower fan with five speeds is on sale this week only", "product": "fan", "action": "none", "values": ""}
+{"set": 22, "line": 1, "spoken": "hey breeze, make the fan stop", "product": "fan", "action": "off", "values": "", "text": "make the fan stop", "category": "command"}
+{"set": 22, "line": 2, "spoken": "hey breeze, let me finish this email first", "category": "chat", "text": "let me finish this email first", "product": "fan", "action": "none", "values": ""}
+{"set": 22, "line": 3, "spoken": "hey breeze, the blender has five speeds but i only ever use two", "category": "near", "text": "the blender has five speeds but i only ever use two", "product": "fan", "action": "none", "values": ""}
+{"set": 22, "line": 4, "spoken": "hey breeze, back and forth", "product": "fan", "action": "oscillate", "values": "", "text": "back and forth", "category": "command"}
+{"set": 22, "line": 5, "spoken": "hey breeze, would you raise the fan speed a notch", "product": "fan", "action": "faster", "values": "", "text": "would you raise the fan speed a notch", "category": "command"}
+{"set": 22, "line": 6, "spoken": "hey breeze, why is the dog barking", "category": "chat", "text": "why is the dog barking", "product": "fan", "action": "none", "values": ""}
+{"set": 22, "line": 7, "spoken": "hey breeze, would you mind putting the fan at four", "product": "fan", "action": "set_level", "values": "speed=4", "text": "would you mind putting the fan at four", "category": "command"}
+{"set": 22, "line": 8, "spoken": "hey breeze, quit the fan", "product": "fan", "action": "off", "values": "", "text": "quit the fan", "category": "command"}
+{"set": 22, "line": 9, "spoken": "hey breeze, switch off the fan", "product": "fan", "action": "off", "values": "", "text": "switch off the fan", "category": "command"}
+{"set": 22, "line": 10, "spoken": "hey breeze, skip this song", "category": "other_device", "text": "skip this song", "product": "fan", "action": "none", "values": ""}
+{"set": 22, "line": 11, "spoken": "hey breeze, the cable guy is coming between two and four", "category": "chat", "text": "the cable guy is coming between two and four", "product": "fan", "action": "none", "values": ""}
+{"set": 22, "line": 12, "spoken": "hey breeze, set speed 2", "product": "fan", "action": "set_level", "values": "speed=2", "text": "set speed 2", "category": "command"}
+{"set": 22, "line": 13, "spoken": "hey breeze, can you grab the mail on your way in", "category": "chat", "text": "can you grab the mail on your way in", "product": "fan", "action": "none", "values": ""}
+{"set": 22, "line": 14, "spoken": "hey breeze, off please", "product": "fan", "action": "off", "values": "", "text": "off please", "category": "command"}
+{"set": 22, "line": 15, "spoken": "hey breeze, i'm still sweating even with the fan going", "product": "fan", "action": "faster", "values": "", "text": "i'm still sweating even with the fan going", "category": "command"}
+{"set": 22, "line": 16, "spoken": "hey breeze, the fan blades are really dusty, i'll clean them this weekend", "category": "near", "text": "the fan blades are really dusty, i'll clean them this weekend", "product": "fan", "action": "none", "values": ""}
+{"set": 22, "line": 17, "spoken": "hey breeze, low please", "product": "fan", "action": "set_level", "values": "speed=1", "text": "low please", "category": "command"}
+{"set": 22, "line": 18, "spoken": "hey breeze, okay i'd like it on the second speed please", "product": "fan", "action": "set_level", "values": "speed=2", "text": "okay i'd like it on the second speed please", "category": "command"}
+{"set": 22, "line": 19, "spoken": "hey breeze, drop it to low", "product": "fan", "action": "set_level", "values": "speed=1", "text": "drop it to low", "category": "command"}
+{"set": 22, "line": 20, "spoken": "hey breeze, could you make the breeze a bit stronger please", "product": "fan", "action": "faster", "values": "", "text": "could you make the breeze a bit stronger please", "category": "command"}
+{"set": 22, "line": 21, "spoken": "hey breeze, let's go for a walk after lunch", "category": "chat", "text": "let's go for a walk after lunch", "product": "fan", "action": "none", "values": ""}
+{"set": 22, "line": 22, "spoken": "hey breeze, i can't hear the tv over that fan, just shut it", "product": "fan", "action": "off", "values": "", "text": "i can't hear the tv over that fan, just shut it", "category": "command"}
+{"set": 22, "line": 23, "spoken": "hey breeze, speed number five", "product": "fan", "action": "set_level", "values": "speed=5", "text": "speed number five", "category": "command"}
+{"set": 22, "line": 24, "spoken": "hey breeze, is it alright if we stop running the fan now", "product": "fan", "action": "off", "values": "", "text": "is it alright if we stop running the fan now", "category": "command"}
+{"set": 22, "line": 25, "spoken": "hey breeze, i just stubbed my toe", "category": "chat", "text": "i just stubbed my toe", "product": "fan", "action": "none", "values": ""}
+{"set": 22, "line": 26, "spoken": "hey breeze, power the fan down", "product": "fan", "action": "off", "values": "", "text": "power the fan down", "category": "command"}
+{"set": 22, "line": 27, "spoken": "hey breeze, cut the fan", "product": "fan", "action": "off", "values": "", "text": "cut the fan", "category": "command"}
+{"set": 22, "line": 28, "spoken": "hey breeze, would you mind turning the fan down a bit", "product": "fan", "action": "slower", "values": "", "text": "would you mind turning the fan down a bit", "category": "command"}
+{"set": 22, "line": 29, "spoken": "hey breeze, ease up", "product": "fan", "action": "slower", "values": "", "text": "ease up", "category": "command"}
+{"set": 22, "line": 30, "spoken": "hey breeze, do you think we could have the fan going", "product": "fan", "action": "on", "values": "", "text": "do you think we could have the fan going", "category": "command"}
+{"set": 22, "line": 31, "spoken": "hey breeze, uh i think medium would be about right", "product": "fan", "action": "set_level", "values": "speed=3", "text": "uh i think medium would be about right", "category": "command"}
+{"set": 22, "line": 32, "spoken": "hey breeze, could you please make the fan stop", "product": "fan", "action": "off", "values": "", "text": "could you please make the fan stop", "category": "command"}
+{"set": 22, "line": 33, "spoken": "hey breeze, uh could you maybe stop the back and forth thing", "product": "fan", "action": "oscillate", "values": "", "text": "uh could you maybe stop the back and forth thing", "category": "command"}
+{"set": 22, "line": 34, "spoken": "hey breeze, kick it up", "product": "fan", "action": "faster", "values": "", "text": "kick it up", "category": "command"}
+{"set": 22, "line": 35, "spoken": "hey breeze, mind getting the fan running", "product": "fan", "action": "on", "values": "", "text": "mind getting the fan running", "category": "command"}
+{"set": 22, "line": 36, "spoken": "hey breeze, down a notch", "product": "fan", "action": "slower", "values": "", "text": "down a notch", "category": "command"}
+{"set": 22, "line": 37, "spoken": "hey breeze, the recipe says to bake it for forty minutes", "category": "near", "text": "the recipe says to bake it for forty minutes", "product": "fan", "action": "none", "values": ""}
+{"set": 23, "line": 1, "spoken": "hey breeze, stronger please", "product": "fan", "action": "faster", "values": "", "text": "stronger please", "category": "command"}
+{"set": 23, "line": 2, "spoken": "hey breeze, one step slower", "product": "fan", "action": "slower", "values": "", "text": "one step slower", "category": "command"}
+{"set": 23, "line": 3, "spoken": "hey breeze, would you please power down the fan", "product": "fan", "action": "off", "values": "", "text": "would you please power down the fan", "category": "command"}
+{"set": 23, "line": 4, "spoken": "hey breeze, alright i want it to stop moving and just blow straight ahead", "product": "fan", "action": "oscillate", "values": "", "text": "alright i want it to stop moving and just blow straight ahead", "category": "command"}
+{"set": 23, "line": 5, "spoken": "hey breeze, um could you maybe just turn off the fan for me", "product": "fan", "action": "off", "values": "", "text": "um could you maybe just turn off the fan for me", "category": "command"}
+{"set": 23, "line": 6, "spoken": "hey breeze, lose the fan for now", "product": "fan", "action": "off", "values": "", "text": "lose the fan for now", "category": "command"}
+{"set": 23, "line": 7, "spoken": "hey breeze, so um i don't think we need the fan anymore, you can shut it off", "product": "fan", "action": "off", "values": "", "text": "so um i don't think we need the fan anymore, you can shut it off", "category": "command"}
+{"set": 23, "line": 8, "spoken": "hey breeze, you're listening to the morning show, it's six forty five", "category": "tv", "text": "you're listening to the morning show, it's six forty five", "product": "fan", "action": "none", "values": ""}
+{"set": 23, "line": 9, "spoken": "hey breeze, are you coming to the game saturday", "category": "chat", "text": "are you coming to the game saturday", "product": "fan", "action": "none", "values": ""}
+{"set": 23, "line": 10, "spoken": "hey breeze, run it at level 4", "product": "fan", "action": "set_level", "values": "speed=4", "text": "run it at level 4", "category": "command"}
+{"set": 23, "line": 11, "spoken": "hey breeze, okay", "category": "chat", "text": "okay", "product": "fan", "action": "none", "values": ""}
+{"set": 23, "line": 12, "spoken": "hey breeze, the new fan is so much quieter than the old one", "category": "near", "text": "the new fan is so much quieter than the old one", "product": "fan", "action": "none", "values": ""}
+{"set": 23, "line": 13, "spoken": "hey breeze, let's speed this thing up", "product": "fan", "action": "faster", "values": "", "text": "let's speed this thing up", "category": "command"}
+{"set": 23, "line": 14, "spoken": "hey breeze, power it down", "product": "fan", "action": "off", "values": "", "text": "power it down", "category": "command"}
+{"set": 23, "line": 15, "spoken": "hey breeze, next week we'll show you how to make the perfect pie crust", "category": "tv", "text": "next week we'll show you how to make the perfect pie crust", "product": "fan", "action": "none", "values": ""}
+{"set": 23, "line": 16, "spoken": "hey breeze, turn the fan all the way off", "product": "fan", "action": "off", "values": "", "text": "turn the fan all the way off", "category": "command"}
+{"set": 23, "line": 17, "spoken": "hey breeze, the neighbors are having a party again", "category": "chat", "text": "the neighbors are having a party again", "product": "fan", "action": "none", "values": ""}
+{"set": 23, "line": 18, "spoken": "hey breeze, do you want to go to the lake this weekend", "category": "chat", "text": "do you want to go to the lake this weekend", "product": "fan", "action": "none", "values": ""}
+{"set": 23, "line": 19, "spoken": "hey breeze, the fan's just sitting there and i'm dying in this heat", "product": "fan", "action": "on", "values": "", "text": "the fan's just sitting there and i'm dying in this heat", "category": "command"}
+{"set": 23, "line": 20, "spoken": "hey breeze, let's do three", "product": "fan", "action": "set_level", "values": "speed=3", "text": "let's do three", "category": "command"}
+{"set": 23, "line": 21, "spoken": "hey breeze, give the fan more power", "product": "fan", "action": "faster", "values": "", "text": "give the fan more power", "category": "command"}
+{"set": 23, "line": 22, "spoken": "hey breeze, hey um the fan's a little intense, could you back it off a step", "product": "fan", "action": "slower", "values": "", "text": "hey um the fan's a little intense, could you back it off a step", "category": "command"}
+{"set": 23, "line": 23, "spoken": "hey breeze, turn the thermostat down two degrees", "category": "other_device", "text": "turn the thermostat down two degrees", "product": "fan", "action": "none", "values": ""}
+{"set": 23, "line": 24, "spoken": "hey breeze, the sweeping is annoying, keep it on me", "product": "fan", "action": "oscillate", "values": "", "text": "the sweeping is annoying, keep it on me", "category": "command"}
+{"set": 23, "line": 25, "spoken": "hey breeze, get it going", "product": "fan", "action": "on", "values": "", "text": "get it going", "category": "command"}
+{"set": 23, "line": 26, "spoken": "hey breeze, why isn't the fan running, it's like an oven in here", "product": "fan", "action": "on", "values": "", "text": "why isn't the fan running, it's like an oven in here", "category": "command"}
+{"set": 23, "line": 27, "spoken": "hey breeze, it just points one way the whole time", "product": "fan", "action": "oscillate", "values": "", "text": "it just points one way the whole time", "category": "command"}
+{"set": 23, "line": 28, "spoken": "hey breeze, go down one speed", "product": "fan", "action": "slower", "values": "", "text": "go down one speed", "category": "command"}
+{"set": 23, "line": 29, "spoken": "hey breeze, get that thing blowing", "product": "fan", "action": "on", "values": "", "text": "get that thing blowing", "category": "command"}
+{"set": 23, "line": 30, "spoken": "hey breeze, hey um can the fan like rotate around the room", "product": "fan", "action": "oscillate", "values": "", "text": "hey um can the fan like rotate around the room", "category": "command"}
+{"set": 23, "line": 31, "spoken": "hey breeze, send a text to jake saying i'm on my way", "category": "other_device", "text": "send a text to jake saying i'm on my way", "product": "fan", "action": "none", "values": ""}
+{"set": 23, "line": 32, "spoken": "hey breeze, put your shoes on, we're leaving", "category": "chat", "text": "put your shoes on, we're leaving", "product": "fan", "action": "none", "values": ""}
+{"set": 23, "line": 33, "spoken": "hey breeze, switch on the fan", "product": "fan", "action": "on", "values": "", "text": "switch on the fan", "category": "command"}
+{"set": 23, "line": 34, "spoken": "hey breeze, i can't find the remote", "category": "chat", "text": "i can't find the remote", "product": "fan", "action": "none", "values": ""}
+{"set": 23, "line": 35, "spoken": "hey breeze, it's getting warm so let's go ahead and run the fan", "product": "fan", "action": "on", "values": "", "text": "it's getting warm so let's go ahead and run the fan", "category": "command"}
+{"set": 23, "line": 36, "spoken": "hey breeze, take it down a peg", "product": "fan", "action": "slower", "values": "", "text": "take it down a peg", "category": "command"}
+{"set": 23, "line": 37, "spoken": "hey breeze, that fan's just wasting electricity at this point", "product": "fan", "action": "off", "values": "", "text": "that fan's just wasting electricity at this point", "category": "command"}

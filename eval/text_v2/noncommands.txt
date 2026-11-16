@@ -1,0 +1,290 @@
+# marigold held-out eval, text_v2: non-commands
+# TEST-ONLY: every line in this file is test data; never train, tune, set thresholds or write config examples from it
+# written blind on 2026-11-16 from sdk/configs/fan.json and sdk/configs/microwave.json only
+# format: a "## <block>" line starts a block; each line after it is one utterance heard after a (real or false) wake
+# no line may trigger any fan or microwave action; blocks: chat 130, near 60, tv 50, other_device 40
+# lowercase, no trailing punctuation, one utterance per line, no values
+## chat
+hang on
+never mind
+hmm
+um
+okay
+yeah
+no
+sure
+what
+huh
+oh well
+whatever
+anyway
+uh huh
+really
+no way
+got it
+thanks
+bless you
+excuse me
+sorry
+oops
+good night
+hold on
+wait what
+i don't know
+maybe later
+sounds good
+love you
+see you later
+good morning
+oh my gosh
+nope
+alright then
+come here
+i'm home
+ugh
+seriously
+cool
+thank you so much
+you're welcome
+did you feed the dog
+where did i put my keys
+what do you want for dinner tonight
+can you grab the mail on your way in
+the dog needs to go out
+i'm going to take a shower
+have you seen my phone charger
+what time does your class start tomorrow
+we're out of milk again
+your mom called earlier
+i'll be back in like twenty minutes
+don't forget your lunch
+who left the front door open
+the game starts at seven
+can you help me move the couch
+i think it's going to rain later
+the kids are finally asleep
+did you lock the car
+whose turn is it to do the dishes
+let's watch a movie tonight
+i have a headache
+i need to call the plumber tomorrow
+that's so funny
+tell your sister it's time to eat
+are you coming to the game saturday
+i can't find the remote
+how was school today
+i'm so tired
+the neighbors are having a party again
+we should repaint this room
+did you take your medicine
+my back is killing me
+let's go for a walk after lunch
+what's the password for the wifi
+the cat knocked over my plant
+i'll do the laundry tomorrow
+have you finished your homework
+your shoes are in the hallway
+grandma's birthday is next week
+i'm thinking about getting a haircut
+the car's making a funny noise
+what did the doctor say
+can you pick up the kids at three
+i forgot to water the garden
+the package came today
+why is the dog barking
+we need to clean out the garage
+do you want to go to the lake this weekend
+i just stubbed my toe
+the trash goes out tonight
+she said she'd text when she lands
+did anyone see where the scissors went
+you're going to be late for work
+let me finish this email first
+the baby's crying
+our flight leaves at six in the morning
+i'm going to bed
+that was a great movie
+happy birthday sweetie
+you look nice today
+go brush your teeth
+stop teasing your brother
+we should start packing for the trip
+the meeting got cancelled
+hurry up, we're going to miss the bus
+i got a new job
+my sister's coming over sunday
+the toilet's running again
+did you hear that noise
+look at the size of that spider
+i'm going to the store, need anything
+we're out of paper towels
+put your shoes on, we're leaving
+that's not what i said
+give me a hug
+i'll call you back
+let me think about it
+it's your turn
+who's at the door
+i need to get gas tomorrow
+the cable guy is coming between two and four
+we should get a dog
+is today the fifteenth
+quit jumping on the bed
+can you believe it's already november
+where's your brother
+did you see what she posted
+that's a great idea
+i'll be right there
+## near
+my grandma still has her microwave from the eighties
+the ceiling fan in the guest room wobbles a lot
+is this container microwave safe
+you're not supposed to put metal in the microwave
+the power went out for three hours last night
+the internet speed has been terrible all week
+what level are you on in that game
+i set a timer on my phone so i don't forget the laundry
+we should get a new fan for the bedroom
+the recipe says to bake it for forty minutes
+who left popcorn kernels in the microwave
+dad's cooking tonight
+the speed limit on our street is thirty
+the microwave at work always smells like fish
+my phone battery is at ten percent
+i read that microwaves don't actually cook from the inside out
+the electric bill was way higher this month
+our old fan used to make a clicking noise
+how long does rice usually take to cook
+she's at level five in her swim class
+the fan belt in my truck is squealing
+i burned the toast again this morning
+the storm knocked out power to half the county
+the kitchen timer fell behind the fridge
+this cookbook has a whole chapter on microwave meals
+i like my steak cooked medium
+the blender has five speeds but i only ever use two
+he got pulled over for speeding on the highway
+my laptop fan gets so loud when i play games
+mom made a casserole for the potluck
+the oven takes forever to preheat
+the power company is working on the lines tomorrow
+how many watts is your microwave
+the water pressure in the shower is so low
+the sprinkler timer is set for the wrong day
+that runner set a new speed record
+the fans at the game were going crazy
+she's a huge fan of that band
+i'm a big fan of your cooking
+who keeps leaving the microwave door open
+microwave popcorn is never as good as stovetop
+the high score on this level is insane
+my brother is learning to cook
+the batteries in the smoke detector are getting low
+the fan blades are really dusty, i'll clean them this weekend
+dinner should be ready in about twenty minutes
+this fan was only twenty dollars at the hardware store
+i can never figure out the settings on her microwave
+the hair dryer has a high and a low setting
+we flipped the breaker and the power came back
+my car goes from zero to sixty in about nine seconds
+the chicken took way longer to cook than i expected
+our microwave came with the house
+that game has a hundred levels
+it says to let it stand for two minutes after heating
+i accidentally microwaved a spoon once
+do you know how to change the clock on the microwave
+the spin class at the gym goes up to level ten
+my mom always cooks everything on high
+the new fan is so much quieter than the old one
+## tv
+coming up after the break, five things you need to know before the weekend
+good evening and welcome to the six o'clock news
+and that's going to do it for us tonight, thanks for watching
+welcome back to the kitchen, today we're making a lemon tart
+while that simmers we'll move on to the sauce
+you can see the cheese is just beginning to bubble
+the judges are tasting the risotto now
+that crust looks absolutely perfect
+our contestants have thirty minutes left on the clock
+a little fresh basil on top and we're done
+next week we'll show you how to make the perfect pie crust
+today's high will reach ninety eight with a heat index near one oh five
+winds out of the south at ten to fifteen miles per hour
+expect scattered storms this afternoon, so keep the umbrella handy
+overnight lows dropping into the upper forties
+a cold front moves through tomorrow bringing much cooler air
+gusts up to forty miles per hour are possible along the coast
+let's check in on traffic, there's a stalled car on the interstate
+you're listening to the morning show, it's six forty five
+that was a classic from the eighties, and up next some new music
+traffic and weather together every ten minutes
+he's racing down the sideline and nobody's going to catch him
+the pitcher's fastball is touching ninety eight today
+that's a three point shot from way downtown
+the crowd is on its feet here in the fourth quarter
+breaking news tonight from the state capitol
+officials say power has been restored to most customers
+call now and we'll double your order, just pay separate shipping
+ask your doctor if this medication is right for you
+stay tuned, the big reveal is coming up right after this
+i can't believe you would do this to me after everything we've been through
+this home has three bedrooms, two baths and a gorgeous kitchen
+the bidding opens at fifty dollars
+and the winner is
+this program is brought to you by viewers like you
+the governor will hold a press conference at noon
+coming up, a local bakery that's been in business for fifty years
+you'll want to grab a jacket before you head out tomorrow morning
+the chance of rain is sixty percent on saturday
+after a quick commercial break, we'll be right back
+this microwave cooks evenly every time, order yours today
+the new tower fan with five speeds is on sale this week only
+folks, it's going to be a scorcher out there today
+today we're cooking with cast iron
+and that's how you get a perfect sear every time
+let the steak rest for about ten minutes before slicing
+in a large bowl combine the flour, sugar and salt
+the national weather service has issued a heat advisory for the area
+back to you in the studio
+the home team is up by six with two minutes to go
+## other_device
+turn on the porch light
+lock the front door
+set the thermostat to seventy two
+play some jazz in the living room
+what's the weather like tomorrow
+add eggs to the shopping list
+call mom
+set an alarm for six thirty
+dim the bedroom lights
+turn off the tv
+open the garage door
+skip this song
+start the dishwasher
+run the robot vacuum in the kitchen
+turn the volume up on the tv
+pause the movie
+preheat the oven to four hundred
+start a load of laundry
+turn on the bathroom heater
+brew a pot of coffee
+what time is it in london
+set the oven timer for twenty five minutes
+turn the thermostat down two degrees
+read me my calendar for tomorrow
+turn on the sprinklers
+close the blinds
+unlock the back door
+next episode
+turn the lights on in the kitchen
+set the air fryer for twelve minutes
+toast two slices of bread on medium
+arm the security system
+shuffle my workout playlist
+what's on my to do list today
+send a text to jake saying i'm on my way
+mute the tv
+change the channel to the game
+set a reminder to call the dentist at nine
+how many ounces are in a cup
+start the car
