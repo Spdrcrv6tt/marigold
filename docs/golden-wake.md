@@ -87,3 +87,18 @@ At the start of a session every A is −32768 and the refractory count is 0.
 ## 7. Test vectors
 
 sw/wake/golden/vectors.py writes three cases (breeze: one wake at a forced sensitivity and refractory 10; lumen_segments: two pronunciation variants, 11 wakes, an en drop between two segments; carrier_op: the SDK's own template at sensitivity 0.5 on "Hey Breeze, turn the fan up a little.", one wake) into rtl/wake/tb/vectors/<case>/: x.txt (samples), case.json (en segments, sens, template), cfg.mem (config SRAM with the template at byte 0x123) and expected.txt (per frame: 64 feature lines, 40 logit lines, the best score; plus "W k" per wake). rtl/wake/tb/run.sh runs them through Verilator and cocotb, with ROM and config-port stalls, and two negative controls (a corrupted input sample and a flipped ROM bit) that must fail.
+
+## 8. Format 2 (wake v2): bigger network, 16 lanes, VAD gating
+
+**Frozen Nov 15, 2026, 9 PM.** Parameters: sw/wake/golden/wake_int_v2.npz, identical word for word to rtl/wake/mem2/wake_rom.mem; checkpoint data/wake/q3/best.pt. Format 2 is the chip's wake model from now on; format 1 (mem/) stays available through the parameters.
+
+Format 2 keeps sections 3 to 6 unchanged (front end, integer layer rules, keyword scorer, template bytes, SDK G2P) and changes three things. The same RTL serves both formats through parameters (mg_wake: LANES, C, NOUT, GATE, PREROLL); format 1 is LANES = 4, C = 96, NOUT = 40, GATE = 0, PREROLL = 0.
+
+1. **Network width.** C = 240 channels (same 12-layer structure and dilations): 318,960 weights at 4 bits. 16 MAC lanes and 4 requantization multipliers; the output layer is padded to NOUT = 48 channels with zero weights, biases and multipliers, and the padded logits are dropped.
+2. **ROM image** (rtl/wake/mem2/wake_rom.mem, 22,083 words of 64 bits = 1,413 kbit): the format 1 order with LANES lanes per word: per layer one word holding S; per group of 16 output channels 8 bias words (lane j's int32 at bit 32j of the 512-bit concatenation of the 8 words, word 0 lowest), one weight word per input or tap (lane j's 4-bit weight at bit 4j), 4 multiplier words (lane j's M at bit 16j of the 256-bit concatenation). Format 1's image is the LANES = 4 case of the same rule (sw/wake/export.py rom_words).
+3. **VAD gating** (golden.py run2):
+   - in_vad as seen with sample n is the flag of VAD frame floor(n/256) − 1 (held between VAD frame ends; 0 before the first). The spotter samples it with the trigger sample of real-time frame t' (n = 320t' + 559): v(t').
+   - The front end runs every frame (features go into a ring of PREROLL + 1 = 11 slots). Frame t is run through the network and the keyword DP at real-time frame t + PREROLL (PREROLL = 10, 200 ms), and only if v(t), ..., v(t + PREROLL) contains a 1 ("active"). Frames whose t + PREROLL is past the end of the stream are never run.
+   - A run is a maximal stretch of active frames. At the first frame of a run the network's history is zero (taps before the run read 0), every DP state is −32768 and the refractory count is 0.
+   - A fire for frame t raises `wake` with the in_valid of sample **k = 320(t + PREROLL) + 879**.
+   - Power intent: outside runs only the front end, the sample ring and the schedule are clocked; the network, ROM and DP are clock-gated off.

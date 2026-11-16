@@ -1,5 +1,36 @@
 # Phase 1: wake spotter (wake agent, Nov 15, 2026)
 
+## Wake v2 (golden format 2, frozen Nov 15, 9 PM): the bigger spotter, now the chip's wake model
+
+John asked for a bigger spotter after v1. v2 keeps v1's front end, layer rules, keyword scorer and template, widens the network to 240 channels (318,960 weights at 4 bits, ROM image 1,413 kbit), runs it on 16 MAC lanes, and adds VAD gating (docs/golden-wake.md section 8). The RTL is the same parametric code as v1 (rtl/wake/, mg_wake #(.LANES(16), .C(240), .NOUT(48), .GATE(1), .PREROLL(10), .MEMDIR(".../rtl/wake/mem2/"))); the interface to the core is unchanged except that a wake now comes 200 ms later (k = 320(t + 10) + 879).
+
+**v1 vs v2, frozen integer models, same test protocol** (synthetic TTS from the 21 eval voices, 84 clips per condition; false wakes over the same 53.5 h; SDK default sensitivity 0.5 = wake_sens 12, chosen on dev for both):
+
+| | v1 "hey breeze" | v2 "hey breeze" | v1 "hey kitchen" | v2 "hey kitchen" |
+|---|---|---|---|---|
+| clean | 64.3% | **70.2%** | 70.2% | **75.0%** |
+| 10 dB SNR | 45.2% | **57.1%** | 46.4% | **69.0%** |
+| synthetic room (1-3 m) | 69.0% | 67.9% | 65.5% | **82.1%** |
+| room + 10 dB noise | 51.2% | 50.0% | 48.8% | **69.0%** |
+| false wakes per 24 h | 2.2 | **0.4** | 0.0 | 0.0 |
+
+- Over all six phrases at the test operating point with at most 1 false wake per 24 h: v1 (wake_sens 11) 71% clean, 39% at 10 dB SNR, 61% room, 30% room + noise; v2 (wake_sens 15, 0.97 per 24 h) 91 / 67 / 84 / 55%.
+- v2 at sensitivity 1.0 (wake_sens 18): "hey breeze" 88 / 74 / 82 / 64% at 3.1 false wakes per 24 h, "hey kitchen" 91 / 81 / 93 / 86% at 5.4.
+- **Targets 5 and 6 are still not met together**: at about 1 false wake per 24 h, detection is 50-82% depending on condition (95% needed). v2 roughly halves the gap in noise.
+- Phone error on dev-clean: v2 17.4% float, 18.6% at 4 bits (v1: 29.8% and 32.1%). The 4-bit loss fell from 2.3 to 1.2 points.
+- **What VAD gating costs:** v2 without gating at wake_sens 12 scores 71 / 58 / 68 / 57% ("hey breeze") and 74 / 70 / 82 / 70% ("hey kitchen") at the same false wakes. Gating costs 0-7 points (the most in room + noise). On dev it cost v1 up to 10 points at 10 dB SNR, because the VAD stays off in some speech-like noise. The VAD (rtl/model/vad_model.py, exact) was on for 91-95% of the speech streams, 49-51% of the music and 85% of the TV-like audio.
+
+**Hardware v2** (estimates for 28 nm unless marked measured):
+- RTL bit-exact (measured): 3 format-2 cases (VAD flags from the exact VAD model driving in_vad, 5 wakes, an en drop), plain and with ROM/config-port stalls, 0 mismatches. A corrupted sample and a flipped ROM bit fail as required. The parametric RTL still passes all v1 vectors (LANES 4, no gating).
+- Clocks (measured in simulation): front end about 22k every frame; when the network runs, about 45k of 61,440 (about 52k with stalls). Averaged over the test streams: 28-35k.
+- Area: ROM 1,413 kbit ≈ 0.085 mm²; logic 93k NAND2-equivalents (Yosys generic gates, memories excluded) ≈ 0.045-0.067 mm²; RAM about 127 kbit ≈ 0.015-0.03 mm². Total about **0.15-0.18 mm²**, at or a little over the 0.15 mm² limit.
+- Power (hand estimate, not measured): front end always on about 3 µW; network + DP about 12-15 µW while running, so about 2.5-3 µW at 20% speech duty; leakage about 2-3 µW. Total **about 7-9 µW at 20% speech duty** (about 17-21 µW with speech all the time). Target was 25 µW or less. Cheap next cut: read each pointwise input word once per 16 inputs instead of every clock (about 25% of the network's RAM energy).
+- Training: as v1 (LibriSpeech + train-voice TTS, the same augmentation), 8 float epochs + 2 QAT epochs. Sporadic CUDA "illegal memory access" faults on the shared GPU (three times, in different code) were handled by resumable checkpoints (sw/wake/train_loop.sh, eval_retry.sh).
+
+Files for v2: sw/wake/golden/wake_int_v2.npz (= rtl/wake/mem2/wake_rom.mem, checked word for word), rtl/wake/tb/vectors2/, sw/wake/vadflags.py (exact VAD flags for every eval stream), results data/wake/res/v2g_*.json (gated) and v2_*.json (ungated), checkpoints data/wake/f3, data/wake/q3.
+
+## Wake v1 (golden format 1, frozen Nov 15, 7 PM)
+
 Marigold's always-on, type-to-train wake-word spotter: the OEM types the wake phrase in the SDK, the SDK turns it into phones (CMUdict), and the chip matches a phone-posterior stream against that template. Golden model frozen (format 1, docs/golden-wake.md), RTL bit-exact (rtl/wake/). **Targets 5 and 6 are not met together by this v1**; the numbers are below. Every detection number is measured on **synthetic TTS speech** (no real recordings exist yet).
 
 ## Summary

@@ -44,3 +44,5 @@
   - Same interface, so the RTL change is parameters plus a ROM image.
   - Freeze by 2 AM, or keep v1.
   - The second-stage wake confirm by the core stays an iteration-2 item.
+- 2026-11-15, 9 PM, wake v2 (John: a bigger spotter tonight): golden format 2 frozen and adopted. 240-channel phone CNN (318,960 weights at 4 bits, 1,413 kbit ROM), 16 MAC lanes, VAD gating with a 200 ms look-ahead (wake at k = 320(t + 10) + 879), same RTL parameterised. At the SDK default it beats v1 on synthetic TTS ("hey kitchen" 75/69/82/69% vs 70/46/65/49% across clean, 10 dB SNR, room, room + noise; "hey breeze" 70/57/68/50% vs 64/45/69/51%) with fewer false wakes (0.4 and 0.0 per 24 h vs 2.2 and 0.0). Targets 5 and 6 are still not met together. Area estimate 0.15-0.18 mm² (limit 0.15). Power estimate about 7-9 µW at 20% speech duty (target 25 µW or less).
+

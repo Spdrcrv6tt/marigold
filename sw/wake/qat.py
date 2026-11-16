@@ -49,6 +49,10 @@ class QNet(nn.Module):
         sd["_kinds"], sd["_dils"] = self.kinds, self.dils
         return sd
 
+    def load_state_dict(self, sd, strict=True):
+        sd = {k: v for k, v in sd.items() if not k.startswith("_")}
+        return super().load_state_dict(sd, strict)
+
     def scales_w(self, W):
         return (W.detach().abs().amax(dim=(1, 2)) / 7).clamp(min=1e-8)
 
