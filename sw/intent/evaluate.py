@@ -27,7 +27,8 @@ import compile as C  # noqa: E402
 
 HEAD = ("chat", "near", "tv")
 CONDS = {"clean": "data/tts/eval/manifest.jsonl", "fan10db": "data/tts/eval_noisy/fan10db/manifest.jsonl",
-         "microwave10db": "data/tts/eval_noisy/microwave10db/manifest.jsonl"}
+         "microwave10db": "data/tts/eval_noisy/microwave10db/manifest.jsonl",
+         "v2": "data/tts/eval_v2/manifest.jsonl"}   # iteration 2: blind test set eval/text_v2 (TEST-ONLY, eval voices)
 
 
 def load_rows(path):
@@ -233,10 +234,11 @@ def one_variant(a, prod, cfg, b, name2id, rows, out, vname):
         Q, T = out[c]
         pred, best = decide(b, Q, thr)
         sel = lambda f: np.array([i for i, r in enumerate(rs) if f(r)], dtype=int)
-        para = sel(lambda r: r["set"] == "paraphrases" and r["product"] == prod and r["split"] == "test")
+        sp = "v2" if c.startswith("v2") else "test"      # v2 rows are all test rows; threshold and margin from v1 dev
+        para = sel(lambda r: r["set"] == "paraphrases" and r["product"] == prod and r["split"] == sp)
         typed = sel(lambda r: r["set"] == f"config:{prod}")
-        nonc = sel(lambda r: r["set"] == "noncommands" and r["split"] == "test" and r["category"] in HEAD)
-        other = sel(lambda r: r["set"] == "noncommands" and r["split"] == "test" and r["category"] == "other_device")
+        nonc = sel(lambda r: r["set"] == "noncommands" and r["split"] == sp and r["category"] in HEAD)
+        other = sel(lambda r: r["set"] == "noncommands" and r["split"] == sp and r["category"] == "other_device")
         y = lambda ix: np.array([name2id[rs[i]["action"]] for i in ix])
         d = {}
         d["t2_unseen_acc"] = float((pred[para] == y(para)).mean())

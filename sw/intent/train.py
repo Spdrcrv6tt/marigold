@@ -28,16 +28,26 @@ SR = 16000
 MIX = {"tts_cmd": 0.45, "tts_none": 0.10, "libri": 0.30, "sc": 0.15}
 
 
-def load_index(targets):
+def load_index(targets, protos=None):
     z = np.load(targets, allow_pickle=True)
     tid = {t: i for i, t in enumerate(z["texts"])}
     rows = [json.loads(l) for l in open(ROOT / "data/intent/index_train.jsonl", encoding="utf8")]
     groups = {k: [] for k in MIX}
+    pa_id, p_id = {}, {}
+    if protos is not None:      # decision labels (iteration 2): (product, action) index, product index, kind
+        pa_id = {s_: i for i, s_ in enumerate(protos["pa"])}
+        p_id = {s_: i for i, s_ in enumerate(protos["prods"])}
     for r in rows:
         if r["text"] not in tid:
             continue
         r["tid"] = tid[r["text"]]
         g = ("tts_cmd" if r["kind"] == "cmd" else "tts_none") if r["src"] == "tts" else r["src"]
+        # dk: 1 = command of a training product (pa >= 0); 0 = non-command speech (TTS 'none' of a known product,
+        # LibriSpeech); -1 = no decision loss (Speech Commands words such as 'on', 'off', 'stop' are commands for
+        # many products)
+        r["pa"] = pa_id.get(f"{r.get('product')}|{r.get('action')}", -1) if g == "tts_cmd" else -1
+        r["pp"] = p_id.get(r.get("product"), -1) if r["src"] == "tts" else -1
+        r["dk"] = 1 if r["pa"] >= 0 else 0 if (g == "libri" or (g == "tts_none" and r["pp"] >= 0)) else -1
         groups[g].append(r)
     return groups, z["Y"].astype(np.float32)
 
@@ -121,7 +131,7 @@ class Batches(torch.utils.data.IterableDataset):
             byp.setdefault(r.get("product"), []).append(r)
         prods = sorted(byp, key=str)
         while True:
-            xs, tids, txt, cm = [], [], [], []
+            xs, tids, txt, cm, lab = [], [], [], [], []
             pool = [x for p_ in rng.sample(prods, self.ppb) for x in byp[p_]] if self.ppb else None
             for g in rng.choices(keys, w, k=self.bs):
                 # commands of only a few products per batch: the in-batch negatives are the product's other actions
@@ -139,6 +149,7 @@ class Batches(torch.utils.data.IterableDataset):
                     continue
                 x = aug(x)[: int(self.max_s * SR)]
                 xs.append(x); tids.append(r["tid"]); txt.append(r["text"]); cm.append(0.0 if "start" in r else 1.0)
+                lab.append((r.get("pa", -1), r.get("pp", -1), r.get("dk", -1)))
             n = max(len(x) for x in xs)
             pcm = np.zeros((len(xs), n), np.float32)
             for i, x in enumerate(xs):
@@ -148,7 +159,7 @@ class Batches(torch.utils.data.IterableDataset):
             for i, s in enumerate(tg):
                 tgt[i, : len(s)] = s
             yield (torch.from_numpy(pcm), torch.tensor([len(x) for x in xs]), torch.tensor(tids),
-                   torch.from_numpy(tgt), torch.tensor([len(s) for s in tg]), torch.tensor(cm))
+                   torch.from_numpy(tgt), torch.tensor([len(s) for s in tg]), torch.tensor(cm), torch.tensor(lab))
 
 
 def main():
@@ -175,6 +186,12 @@ def main():
     ap.add_argument("--lr-scale", type=float, default=5e-4)
     ap.add_argument("--float-ref", default="", help="QAT: the float model to distill from (default --init)")
     ap.add_argument("--fw", type=float, default=0.5, help="QAT: weight of 1 - cos(q, float model q)")
+    ap.add_argument("--protos", default="", help="decision loss (iteration 2): data/intent/protos-<teacher>.npz")
+    ap.add_argument("--dec-w", type=float, default=1.0, help="weight of the decision loss")
+    ap.add_argument("--dec-tau", type=float, default=0.05, help="decision softmax temperature (cosine units)")
+    ap.add_argument("--dec-m", type=float, default=0.05, help="additive margin on the true class (cosine units)")
+    ap.add_argument("--aux-w", type=float, default=1.0, help="weight of the distillation losses (1 - cos, relational KD)")
+    ap.add_argument("--thr0", type=float, default=0.45, help="initial reject threshold of the decision loss (cosine)")
     a = ap.parse_args()
     torch.manual_seed(0)
     if a.mix:
@@ -182,7 +199,8 @@ def main():
             MIX[k_] = float(v_)
     dev = "cuda"
     torch.cuda.set_per_process_memory_fraction(min(1.0, a.gpu_gb / (torch.cuda.get_device_properties(0).total_memory / 2 ** 30)))
-    groups, Y = load_index(a.targets)
+    PZ = np.load(a.protos, allow_pickle=True) if a.protos else None
+    groups, Y = load_index(a.targets, PZ)
     print({k: len(v) for k, v in groups.items()}, "targets", Y.shape, flush=True)
     cfg = dict(CFG); cfg["D"] = Y.shape[1]
     m = IntentEncoder(cfg).to(dev)
@@ -205,12 +223,20 @@ def main():
             enable_qat(m); m.to(dev)
     print("weights", n_weights(m), "qat" if a.qat else "float", flush=True)
     Yt = torch.from_numpy(Y).to(dev)
+    if PZ is not None:   # fixed teacher prototypes, unit L2; reject threshold learned (a scalar, cosine units)
+        PA = F.normalize(torch.from_numpy(PZ["A"]).float().to(dev), dim=-1)          # [n_pa, K, D]
+        PR = F.normalize(torch.from_numpy(PZ["R"]).float().to(dev), dim=-1)          # [n_p, Kr, D]
+        pa_prod = torch.from_numpy(PZ["pa_prod"].astype(np.int64)).to(dev)          # [n_pa]
+        thr_p = torch.nn.Parameter(torch.tensor(float(a.thr0), device=dev))
+        print("decision prototypes", tuple(PA.shape), tuple(PR.shape), "rows with labels",
+              {k: sum(r["dk"] >= 0 for r in v) for k, v in groups.items()}, flush=True)
     dl = torch.utils.data.DataLoader(Batches(groups, a.bs, a.max_s, 1, a.ppb, MIX, a.noise_p, a.snr_hi), batch_size=None, num_workers=a.workers,
                                      prefetch_factor=4, persistent_workers=True)
     sc = [p_ for n_, p_ in m.named_parameters() if n_.endswith("log_s")]
     pw = [p_ for n_, p_ in m.named_parameters() if n_ in pre]
     rest = [p_ for n_, p_ in m.named_parameters() if not n_.endswith("log_s") and n_ not in pre]
-    groups = [{"params": rest, "lr": a.lr}] + ([{"params": pw, "lr": a.lr * a.lr_pre}] if pw else []) +              ([{"params": sc, "lr": a.lr_scale, "weight_decay": 0.0}] if sc else [])
+    groups = [{"params": rest, "lr": a.lr}] + ([{"params": pw, "lr": a.lr * a.lr_pre}] if pw else []) + \
+             ([{"params": [thr_p], "lr": 1e-3, "weight_decay": 0.0}] if PZ is not None else []) +              ([{"params": sc, "lr": a.lr_scale, "weight_decay": 0.0}] if sc else [])
     opt = torch.optim.AdamW(groups, lr=a.lr, weight_decay=0.01, betas=(0.9, 0.98))
     warm = 200 if a.qat else 1000
     t_start = time.time()
@@ -220,7 +246,7 @@ def main():
     t0 = time.time(); stats = []
     step = 0
     it = iter(dl)
-    for pcm, lens, tids, tg, tl, cmask in it:
+    for pcm, lens, tids, tg, tl, cmask, lab in it:
         pcm, lens, tids = pcm.to(dev, non_blocking=True), lens.to(dev), tids.to(dev)
         with torch.autocast("cuda", dtype=torch.bfloat16):
             q, logits, flen = m(pcm, lens)
@@ -236,7 +262,35 @@ def main():
         tl = torch.minimum(tl, flen)
         l_ctc = F.ctc_loss(lp, tg.to(dev), flen, tl, blank=0, reduction="none", zero_infinity=True) / tl.clamp_min(1)
         l_ctc = (l_ctc * cmask).sum() / cmask.sum().clamp_min(1)
-        loss = l_cos + l_kd + a.ctc_w * l_ctc
+        loss = a.aux_w * (l_cos + l_kd) + a.ctc_w * l_ctc
+        l_dec = torch.zeros((), device=dev); dacc = float("nan")
+        if PZ is not None:   # the chip's decision as a softmax: actions of the product (max over prototypes) + reject
+            lab = lab.to(dev); pa, pp, dk = lab[:, 0], lab[:, 1], lab[:, 2]
+            qn = F.normalize(q, dim=1)
+            SA = torch.einsum("bd,pkd->bpk", qn, PA).amax(-1)                       # [B, n_pa]
+            SR = torch.einsum("bd,pkd->bpk", qn, PR).amax(-1)                       # [B, n_p]
+            thr = thr_p.clamp(0.0, 0.9)
+            # pairs (sample, product): commands and TTS 'none' against their own product; LibriSpeech against every
+            # training product's actions at once (reject = the best of all reject prototypes or the threshold)
+            own = (dk >= 0) & (pp >= 0)
+            lib = (dk == 0) & (pp < 0)
+            rows_ = []
+            if own.any():
+                i = own.nonzero().squeeze(1)
+                L = SA[i].masked_fill(pa_prod[None, :] != pp[i][:, None], -4.0)
+                rj = torch.maximum(SR[i, pp[i]], thr)
+                tg_ = torch.where(dk[i] == 1, pa[i], torch.full_like(pa[i], SA.shape[1]))
+                rows_.append((torch.cat([L, rj[:, None]], 1), tg_))
+            if lib.any():
+                i = lib.nonzero().squeeze(1)
+                rj = torch.maximum(SR[i].amax(1), thr)
+                rows_.append((torch.cat([SA[i], rj[:, None]], 1), torch.full_like(i, SA.shape[1])))
+            if rows_:
+                Lg = torch.cat([r_[0] for r_ in rows_]); tg_ = torch.cat([r_[1] for r_ in rows_])
+                Lm = Lg - a.dec_m * F.one_hot(tg_, Lg.shape[1]).float()
+                l_dec = F.cross_entropy(Lm / a.dec_tau, tg_)
+                dacc = float((Lg.argmax(1) == tg_).float().mean())
+                loss = loss + a.dec_w * l_dec
         if fm is not None:
             with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
                 qf, _, _ = fm(pcm, lens)
@@ -244,13 +298,14 @@ def main():
         opt.zero_grad(set_to_none=True); loss.backward()
         torch.nn.utils.clip_grad_norm_(m.parameters(), 1.0)
         opt.step(); sched.step(); step += 1
-        stats.append([l_cos.item(), l_kd.item(), l_ctc.item(), cos.mean().item()])
+        stats.append([l_cos.item(), l_kd.item(), l_ctc.item(), cos.mean().item(), l_dec.item(), dacc])
         if step % 200 == 0:
-            s = np.mean(stats, 0); stats = []
-            print(f"step {step} cos_loss {s[0]:.4f} kd {s[1]:.4f} ctc {s[2]:.4f} cos {s[3]:.4f} lr {sched.get_last_lr()[0]:.2e} "
-                  f"{(time.time()-t0)/60:.1f} min", flush=True)
+            s = np.nanmean(stats, 0); stats = []
+            print(f"step {step} cos_loss {s[0]:.4f} kd {s[1]:.4f} ctc {s[2]:.4f} cos {s[3]:.4f} dec {s[4]:.4f} dacc {s[5]:.3f} "
+                  f"thr {float(thr_p) if PZ is not None else 0:.3f} lr {sched.get_last_lr()[0]:.2e} {(time.time()-t0)/60:.1f} min", flush=True)
         if step % 1000 == 0:
-            torch.save({"state": m.state_dict(), "cfg": cfg, "step": step, "qat": a.qat}, out)
+            torch.save({"state": m.state_dict(), "cfg": cfg, "step": step, "qat": a.qat,
+                        "thr": float(thr_p) if PZ is not None else None}, out)
         if step >= a.steps or time.time() - t0 > a.minutes * 60:
             break
     torch.save({"state": m.state_dict(), "cfg": cfg, "step": step, "qat": a.qat}, out)

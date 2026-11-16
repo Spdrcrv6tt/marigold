@@ -32,8 +32,11 @@ def main():
     ap.add_argument("--dims", type=int, default=256)
     a = ap.parse_args()
     from sentence_transformers import SentenceTransformer
-    m = SentenceTransformer(str(ROOT / a.teacher) if not Path(a.teacher).is_absolute() else a.teacher, device="cuda")
-    enc = lambda xs: m.encode(list(xs), normalize_embeddings=True, batch_size=512, show_progress_bar=False).astype(np.float32)
+    import torch
+    tp = ROOT / a.teacher if not Path(a.teacher).is_absolute() else Path(a.teacher)
+    big = sum(f.stat().st_size for f in tp.glob("*.safetensors")) > 2e9      # iteration 2: multi-GB teachers in bf16
+    m = SentenceTransformer(str(tp), device="cuda", model_kwargs={"dtype": torch.bfloat16} if big else {})
+    enc = lambda xs: m.encode(list(xs), normalize_embeddings=True, batch_size=256 if big else 512, show_progress_bar=False).astype(np.float32)
     flt = EvalFilter()
     idx = [json.loads(l) for l in open(ROOT / "data/intent/index_train.jsonl", encoding="utf8")]
     texts = sorted({r["text"] for r in idx})

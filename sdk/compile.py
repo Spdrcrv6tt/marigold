@@ -299,8 +299,12 @@ class StubEmbedder:
 
 class STEmbedder:
     def __init__(self, path):
+        import torch
         from sentence_transformers import SentenceTransformer
-        self.m = SentenceTransformer(str(path), device="cpu")
+        # iteration 2: the teacher may be a multi-GB model; GPU when present, bf16 weights for models over 2 GB
+        big = sum(f.stat().st_size for f in Path(path).glob("*.safetensors")) > 2e9
+        self.m = SentenceTransformer(str(path), device="cuda" if torch.cuda.is_available() else "cpu",
+                                     model_kwargs={"dtype": torch.bfloat16} if big else {})
         self.path = Path(path)
         self.dim = self.m.get_sentence_embedding_dimension()
 
@@ -309,10 +313,11 @@ class STEmbedder:
 
 
 def newest_embedder():
-    """The model agent's frozen teacher (data/models/teacher-v3) if present, else the newest data/gate0b/models/*."""
-    t = ROOT / "data/models/teacher-v3"
-    if (t / "modules.json").exists():
-        return t
+    """The model agent's newest frozen teacher (data/models/teacher-v4, else teacher-v3) if present, else the newest
+    data/gate0b/models/*. Model v1 (mg-v1) pairs with teacher-v3, model v2 with teacher-v4 (pass --embedder)."""
+    for t in (ROOT / "data/models/teacher-v4", ROOT / "data/models/teacher-v3"):
+        if (t / "modules.json").exists():
+            return t
     ms = sorted((p for p in (ROOT / "data/gate0b/models").glob("*") if (p / "modules.json").exists()), key=lambda p: p.stat().st_mtime)
     return ms[-1] if ms else None
 

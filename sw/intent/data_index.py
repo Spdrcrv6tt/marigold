@@ -31,7 +31,8 @@ def main():
     out = []
     # TTS training commands and non-commands
     n_tts = 0
-    mans = [ROOT / "data/tts/train/manifest.jsonl"] + ([ROOT / "data/tts/train_v3/manifest.jsonl"] if (ROOT / "data/tts/train_v3/manifest.jsonl").exists() else [])
+    mans = [ROOT / "data/tts/train/manifest.jsonl"] + [ROOT / f"data/tts/{d}/manifest.jsonl" for d in ("train_v3", "train_v4")
+                                                        if (ROOT / f"data/tts/{d}/manifest.jsonl").exists()]   # train_v4: iteration 2
     for line in (l for m_ in mans for l in open(m_, encoding="utf8")):
         r = json.loads(line)
         if r.get("split") != "train" or r.get("product") in HELD or not flt.ok(r["text"]):

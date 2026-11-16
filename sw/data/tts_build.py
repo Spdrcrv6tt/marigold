@@ -291,6 +291,69 @@ def cmd_synth(jobs, engine, i, n, device="cpu"):
     print(f"{engine} {i}/{n} done: {k} new, {fails} failed, {time.time() - t0:.0f}s", flush=True)
 
 
+def cmd_jobs2():
+    """Iteration 2 (model agent, Nov 16): jobs_eval_v2.jsonl = the blind test set eval/text_v2 (TEST-ONLY) spoken by
+    3 EVAL voices each, same picking rule as eval/text; jobs_train_v4.jsonl = lines of data/gate0b/train_text_v4.json
+    for products that train_text_v3.json lacks, 3 TRAIN voices each. Training lines identical to any eval/text,
+    eval/text_v2 or config line are dropped (sw/textfilter.py rule). Never fan or microwave text in training."""
+    sys.path.insert(0, str(R / "sw"))
+    from textfilter import EvalFilter
+    voices = json.load(open(D / "voices.json", encoding="utf-8"))["voices"]
+    ev = [v for v in voices if v["split"] == "eval"]; tr = [v for v in voices if v["split"] == "train"]
+    evk, evp = [v for v in ev if v["engine"] == "kokoro"], [v for v in ev if v["engine"] == "piper"]
+    trk, trp = [v for v in tr if v["engine"] == "kokoro"], [v for v in tr if v["engine"] == "piper"]
+
+    def job(src, v, rng, lo, hi, root, group, uid):
+        return dict(id=uid, text=src["text"], product=src["product"], action=src["action"], values=src.get("values") or {},
+                    category=src.get("category"), set=src["set"], split=src["split"], voice=v["id"], engine=v["engine"],
+                    model=v["model"], speaker=v["speaker"], locale=v["locale"], length_scale=round(rng.uniform(lo, hi), 3),
+                    noise_scale=round(rng.uniform(0.5, 0.8), 3), noise_w=round(rng.uniform(0.6, 1.0), 3),
+                    out=f"{root}/wav/{group}/{uid}.wav")
+    v2 = []
+    for f in sorted((R / "eval/text_v2").glob("*.txt")):
+        non = "noncommand" in f.name or "negative" in f.name
+        for r in parse_eval(f, 10 ** 9):
+            v2.append(dict(set="noncommands" if non else "paraphrases", product=None if non else r["block"][0],
+                           action=None if non else " ".join(r["block"][1:]), category=" ".join(r["block"]) if non else None,
+                           idx=r["idx"], text=r["text"], values=r["values"], split="v2"))
+    ej = []
+    for t in v2:
+        rng = random.Random(hashlib.sha1(f"v2|{t['set']}|{t['product']}|{t['action']}|{t['category']}|{t['idx']}".encode()).hexdigest())
+        pick = [rng.choice(evk), rng.choice(evp)]
+        pick.append(rng.choice([v for v in ev if v not in pick]))
+        group = slug(f"v2-{t['set']}-{t['product'] or t['category']}-{t['action'] or ''}")
+        for v in pick:
+            ej.append(job(t, v, rng, 0.9, 1.15, "eval_v2", group, f"{group}-{t['idx']:03d}-{vshort(v)}"))
+    jdump(D / "jobs_eval_v2.jsonl", ej)
+    flt = EvalFilter()
+    typed = {norm(e) for p in (R / "sdk/configs").glob("*.json") for a in json.load(open(p, encoding="utf-8"))["actions"] for e in a["examples"]}
+    old = set(json.load(open(R / "data/gate0b/train_text_v3.json", encoding="utf-8")))
+    d = json.load(open(R / "data/gate0b/train_text_v4.json", encoding="utf-8"))
+    tj, nd = [], 0
+    for prod, v in d.items():
+        if prod in old or re.search(r"\b(fan|fans|microwave|blower)\b", prod):
+            continue
+        items = [(act, None, lines) for act, lines in v.get("actions", {}).items()] + [(None, "none", v.get("none", []))]
+        for act, cat, lines in items:
+            for k, e in enumerate(lines):
+                if not flt.ok(e) or norm(e) in typed or re.search(r"[^\x00-\x7f\u2019]", e):
+                    nd += 1
+                    continue
+                t = dict(set="gate0b-v4", product=prod, action=act, category=cat, text=e, idx=k, split="train")
+                rng = random.Random(hashlib.sha1(f"v4|{prod}|{act}|{cat}|{k}|{e}".encode()).hexdigest())
+                pick = [rng.choice(trk)]
+                while len(pick) < 3:
+                    vv = rng.choice(trk) if rng.random() < 0.25 else rng.choice(trp)
+                    if vv not in pick:
+                        pick.append(vv)
+                group = slug(f"v4-{prod}-{act or cat}")
+                for vv in pick:
+                    tj.append(job(t, vv, rng, 0.85, 1.25, "train_v4", group, f"{group}-{k:03d}-{vshort(vv)}"))
+    assert not any(j["voice"] in {v["id"] for v in ev} for j in tj)
+    jdump(D / "jobs_train_v4.jsonl", tj)
+    print(f"eval_v2 jobs {len(ej)} from {len(v2)} lines; train_v4 jobs {len(tj)}; dropped {nd} training lines")
+
+
 # ---------------------------------------------------------------- merge
 def f0_median(x):
     import numpy as np
@@ -309,7 +372,7 @@ def f0_median(x):
     return float(np.median(f0s)) if f0s else None
 
 
-def cmd_merge():
+def cmd_merge(*names):
     import numpy as np
     import soundfile as sf
     from num2words import num2words
@@ -317,7 +380,7 @@ def cmd_merge():
     V = json.load(open(vfile, encoding="utf-8"))
     vid = {v["id"]: v for v in V["voices"]}
     f0 = {}
-    for name in ("eval", "train"):
+    for name in (names or ("eval", "train")):
         jp = D / f"jobs_{name}.jsonl"
         if not jp.exists():
             continue
@@ -365,4 +428,4 @@ def cmd_merge():
 
 if __name__ == "__main__":
     c, a = sys.argv[1], sys.argv[2:]
-    dict(voices=cmd_voices, jobs=cmd_jobs, synth=cmd_synth, merge=cmd_merge)[c](*a)
+    dict(voices=cmd_voices, jobs=cmd_jobs, jobs2=cmd_jobs2, synth=cmd_synth, merge=cmd_merge)[c](*a)
