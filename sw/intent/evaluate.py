@@ -132,7 +132,12 @@ def main():
         jobs = [j for j in jobs if (ROOT / "data/tts" / j["out"]).exists()]
         paths = ["data/tts/" + j["out"] for j in jobs]
         qe = run_golden(str(ROOT / a.golden), paths)[0] if a.golden else run_torch(m, paths)[0]
-        enr = (jobs, qe)
+        # generic non-command speech bank (LibriSpeech TRAIN utterances the encoder trained on), for reject prototypes
+        # and score normalisation of the action prototypes (SDK side; same bank for every product)
+        idx = [json.loads(l) for l in open(ROOT / "data/intent/index_train.jsonl", encoding="utf8")]
+        lib = [r["path"] for r in idx if r["src"] == "libri" and "start" not in r][::7][:1500]
+        qb = run_golden(str(ROOT / a.golden), lib)[0] if a.golden else run_torch(m, lib)[0]
+        enr = (jobs, qe, qb)
         print("enrollment clips", len(jobs), flush=True)
     emb = C.STEmbedder(ROOT / a.teacher)
     exp = json.load(open(ROOT / "data/expand/expanded_qwen25.json", encoding="utf8"))
@@ -144,13 +149,13 @@ def main():
         name2id = {x["name"]: x["id"] for x in cfg["actions"]}
         variants = {"text": b0}
         if enr is not None:
-            jobs, qe = enr
+            jobs, qe, qb = enr
             D = b0["D"]
             byact = {}
             for j, q in zip(jobs, qe):
                 if j["product"] == prod:
                     byact.setdefault(name2id.get(j["action"], 0) if j["action"] else 0, []).append(q)
-            def protos(K_audio, K_text):
+            def protos(K_audio, K_text, K_bank=0, cal=False):
                 Cs, va = [], []
                 for aid in sorted(byact):
                     if aid == 0:
@@ -161,13 +166,23 @@ def main():
                         ct = C.kmeans(C.unit(T), K_text); Cs.append(ct); va += [aid] * len(ct)
                 if 0 in byact:
                     X = C.unit(np.array(byact[0], np.float64)); cent = C.kmeans(X, 16); Cs.append(cent); va += [0] * len(cent)
+                if K_bank:
+                    cent = C.kmeans(C.unit(qb.astype(np.float64)), K_bank); Cs.append(cent); va += [0] * len(cent)
                 Cm = np.concatenate(Cs)
                 V = np.clip(np.round(C.golden_vec(Cm, 0.0, np.eye(D)) * 32.0), -127, 127).astype(np.int8)
-                bb = dict(b0); bb.update(vectors=V, vec_action=np.array(va, np.int32), vec_flags=np.zeros(len(va), int),
-                                         bias=np.zeros(len(va), np.int32), N=len(va))
+                va = np.array(va, np.int32)
+                bias = np.zeros(len(va), np.int32)
+                if cal:                       # cohort normalisation: subtract each action prototype's mean score on the bank
+                    mu = (qb.astype(np.int64) @ V.astype(np.int64).T).mean(0)
+                    act = va != 0
+                    bias[act] = np.clip(np.round(-(mu[act] - np.median(mu[act]))), -32767, 32767).astype(np.int32)
+                bb = dict(b0); bb.update(vectors=V, vec_action=va, vec_flags=np.zeros(len(va), int), bias=bias, N=len(va))
                 return bb
             variants["audio"] = protos(32, 0)
             variants["mix"] = protos(16, 16)
+            variants["mix+bank"] = protos(16, 16, 32)
+            variants["mix+bank+cal"] = protos(16, 16, 32, True)
+            variants["audio+bank+cal"] = protos(32, 0, 32, True)
         pr_all = {}
         for vname, b in variants.items():
             pr_all[vname] = one_variant(a, prod, cfg, b, name2id, rows, out, vname)
@@ -226,7 +241,7 @@ def one_variant(a, prod, cfg, b, name2id, rows, out, vname):
             per[nm] = float((pred[ii] == aid).mean()) if ii else None
         d["per_action_test"] = per
         pr["conds"][c] = d
-        print(f"{prod:<9} {vname:<5} {c:<13} unseen {d['t2_unseen_acc']:.3f} (no-rej {d['t2_unseen_acc_norej']:.3f}) typed "
+        print(f"{prod:<9} {vname:<14} {c:<13} unseen {d['t2_unseen_acc']:.3f} (no-rej {d['t2_unseen_acc_norej']:.3f}) typed "
               f"{d['t1_typed_acc'] if d['t1_typed_acc'] is None else round(d['t1_typed_acc'], 3)} reject {d['t4_reject_headline']:.3f} "
               f"other-dev {d['reject_other_device']:.2f} values {d['t3_values_given_action']} / e2e {d['t3_values_end_to_end']}", flush=True)
     # dev accuracy (for the variant choice)

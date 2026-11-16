@@ -1,9 +1,10 @@
 # Marigold integer golden model: format and arithmetic
 
-**DRAFT 0.1 (Nov 15, 2026, 5:50 PM), for the core agent to start firmware.** Owner: model agent (`sw/`). Consumer:
-`rtl/`. Dimensions, op list and quantisation scheme below are fixed for v1 unless a change-log entry says otherwise;
-the trained weights, the per-site formats (`F:<site>`) and the test vectors come with the v1 freeze (target 2 AM).
-Where this text and the reference code (`sw/golden/intent_np.py`, from the freeze) disagree, the code is right.
+**Format v1.0, frozen Nov 15, 2026, 8:25 PM** (coordinator: freeze the format now, weights later). Owner: model agent
+(`sw/`). Consumer: `rtl/`. The weights are not part of the format: a later export (new `mg-<tag>.npz`, same keys
+and shapes) swaps in as a new ROM image and new test vectors. Any change to keys, shapes or arithmetic needs a new
+format version and a change-log entry. Where this text and the reference code (`sw/golden/intent_np.py`,
+`sw/intent/values.py`, `sw/golden/chip_golden.py`) disagree, the code is right.
 
 The arithmetic is Poinsetta's (D:\poinsetta\docs\golden-format.md, format 3.6, sections 2 and 3): the same
 `rshift_round`, `sat`, `mac`, `norm`, `lut` (asinh, SiLU, GELU ROMs), band attention with the exp2 softmax, and causal
@@ -141,16 +142,26 @@ Vocabulary (id: token): 0 blank, 1-20 zero..nineteen, 21-28 twenty..ninety, 29 h
    bytes (0 = default: low = min, medium = floor((min + max) / 2), high = max; max -> max, min -> min), then clamps
    to [min, max] (`island_value` in values.py; rtl/model/mg_model.py must do the same).
 
-## 7. Files and test vectors (at the freeze)
+## 7. Files and test vectors
 
-`data/golden/mg-<tag>.npz` (every array integer; keys as section 1 plus `F:<site>`, `version` = 1), `.json` (bits per
-site, formats, calibration), `-float.npz` (dequantised weights). `data/golden/vectors-mg-<tag>-<n>.npz`: `pcm`,
-`vad_raw`, `wake`, the segment table, and traces `fe.cmvn`, `fe.asinh`, `fe.lin`, `fe.c1`, `fe.feat`, `enc<i>.out`,
-`enc.ln`, `pool.m`, `proj`, `q`, `ctc.k` (argmax per frame), `tokens`, plus a config blob and the expected event
-frames. Bit-exact means: FAST = False (int64 only) equals FAST = True (float64 BLAS) on every trace, and the
-streaming (chunked) encoder equals the whole-segment one.
+| File | Made by | Content |
+|---|---|---|
+| `data/golden/mg-<tag>.npz` | `sw/golden/intent_export.py CKPT --tag <tag>` | The integer model: every key of section 1 (`<w>.q` int8, `.M`, `.sh`, `.bi`; `<n>.G`, `.fg`, `.eps`), `lut.asinh`, `lut.silu`, `lut.gelu` [513], `sm.exp2` [256], `sm.C`, `F:<site>`, `version` = 1 |
+| `data/golden/mg-<tag>.json` | same | bits per site, weight count, weight ROM bits, formats, calibration ranges, `fe.k` |
+| `data/golden/mg-<tag>-float.npz` | same | dequantised weights (float reference only) |
+| `data/golden/vectors-mg-<tag>-<n>.npz` | `sw/golden/intent_vectors.py --tag <tag>` | per utterance: `pcm` (segment, int16), traces `tr.fe.cmvn`, `tr.fe.asinh`, `tr.fe.lin` (before SiLU), `tr.fe.c1` (before SiLU), `tr.fe.feat`, `tr.enc<i>.out`, `tr.enc.ln`, `tr.pool.m`, `tr.proj`, `tr.q`, `tr.ctc.k`; `tokens`, `raw_values` (8, the blob's slots), `blob`, the island's `match.*` and `frame`; `stream.*` = the utterance inside a stream with EXAMPLE VAD raw flags (an energy rule, not the RTL VAD), the wake sample, the segment table and the event frames from `chip_golden.run_stream` |
+
+Bit-exact means: FAST = False (int64 only) equals FAST = True (float64 BLAS) on every trace, and the encoder on every
+chunk-aligned prefix gives the whole-segment integers for every frame that is final (all but the last 4):
+`sw/golden/intent_test.py --tag <tag>` checks both. The island rules (segmenter, match, confidence, CRC-8, events)
+are rtl/model/mg_model.py's, used unchanged by `chip_golden.py`.
+
+Interim export for the core agent (Nov 15, 8:25 PM): tag `qsmoke` (a short QAT run from a mid-training float
+checkpoint; real format, placeholder weights). The final tag comes with the 2 AM freeze.
 
 ## Change log
+
+- 2026-11-15 v1.0: format frozen (draft 0.3 dimensions, D = 128, value codes); test vectors and interim export `qsmoke`.
 
 - 2026-11-15 draft 0.1: first draft for the core agent (dimensions, op list, D, quantisation, head and value rules),
   with the coordinator's rulings: pre-roll 0.3 s, conf_sh in the blob, level-word bytes in the slot entry.
