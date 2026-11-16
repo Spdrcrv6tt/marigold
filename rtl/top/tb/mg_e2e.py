@@ -105,8 +105,9 @@ if a.neg == "rom":                        # one weight bit flipped: byte 0x9000 
     i = 0x9000
     lines[i] = "%02x" % (int(lines[i], 16) ^ 0x10)
     img = str(out / "flash_neg.hex"); open(img, "w").write("\n".join(lines))
-if a.neg == "mic":
-    i = (marks[0] + 12000) * 192
+if a.neg == "mic":                       # 4,000 samples of mic bits flipped inside the first segment the core runs
+    s0, e0 = segs[0]["segment"]
+    i = (s0 + (e0 - s0) // 3) * 192
     bits[i:i + 192 * 4000] ^= 1
 if a.neg == "crc":
     b = bytearray(blob); b[-1] ^= 0x5A; blob = bytes(b)
@@ -159,9 +160,17 @@ else:
 irq = [int(l.split()[2]) for l in log if l.startswith("I ")]
 res["irq_samples"] = irq
 res["segment_ends"] = [e["segment"][1] for e in segs]
+lat = []                                 # end of speech (end of the last raw = 1 frame before the close) to irq
+for e in segs:
+    end = e["segment"][1]
+    fr = [f for f in range(min(len(raw), end // 256)) if raw[f] and 256 * (f + 1) <= end]
+    later = [i for i in irq if i >= end]
+    if fr and later:
+        lat.append(round((later[0] - 256 * (fr[-1] + 1)) / 16.0, 1))
+res["latency_ms"] = lat
 res["identical"] = res["frames_identical"] and res["q_identical"] and res["values_identical"] and res["gpio_identical"]
 json.dump(res, open(out / "result.json", "w"), indent=1)
 print(json.dumps({k: res.get(k) for k in ("neg", "segments", "events", "n_frames", "frames_identical", "q_identical",
                                           "values_identical", "gpio_identical", "frontend_identical", "status",
-                                          "irq_samples", "segment_ends")}))
+                                          "irq_samples", "segment_ends", "latency_ms")}))
 sys.exit(0 if res["identical"] == (a.neg == "") else 1)

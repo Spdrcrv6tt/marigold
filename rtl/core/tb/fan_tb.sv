@@ -2,7 +2,8 @@
 // the array is idle and plays the weight source itself.
 module fan_tb #(
     parameter LANES = 16,            // RAM word elements (the core's LANES)
-    parameter RAM_BYTES = 32768
+    parameter RAM_BYTES = 32768,
+    parameter FL = 16                // fan-out rows per group (FAN_L; Marigold 16, Poinsetta 32)
 ) (
     input  wire                 clk,
     input  wire                 rst_n,
@@ -30,7 +31,7 @@ module fan_tb #(
     wire [NB-1:0]      f_we;
     wire [31:0]        f_addr;
     wire [LANES*16-1:0] f_wdata;
-    imh_fan #(.L(32), .CMAX(8), .RWL(LANES), .WB(LANES)) u_fan (
+    imh_fan #(.L(FL), .CMAX(8), .RWL(LANES), .WB(LANES)) u_fan (
         .clk(clk), .rst_n(rst_n), .reg_we(reg_we), .reg_idx(reg_idx), .reg_wdata(reg_wdata), .go(go),
         .busy(busy), .done(done), .argidx(argidx), .argval(argval), .argidx_all(argidx_all),
         .m_en(f_en), .m_we(f_we), .m_addr(f_addr), .m_wdata(f_wdata), .m_rdata(h_rdata),
