@@ -76,7 +76,11 @@ def main():
     ap.add_argument("--data", default="data/gate0b/train_text_v4.json")
     ap.add_argument("--holdout", default="")
     ap.add_argument("--prompt", default="auto", help="'auto' = QWEN_PROMPT for Qwen models, none otherwise")
-    ap.add_argument("--grad_ckpt", action="store_true")
+    ap.add_argument("--grad_ckpt", action="store_true", help="(default now; kept for old command lines)")
+    ap.add_argument("--no_ckpt", action="store_true", help="disable gradient checkpointing")
+    ap.add_argument("--gpu_gb", type=float, default=20.0, help="hard cap on this process's GPU memory (no WDDM spill)")
+    ap.add_argument("--min_spm", type=float, default=3.0, help="abort if fewer steps per minute in the first 2 minutes")
+    ap.add_argument("--max_len", type=int, default=48)
     a = ap.parse_args()
     random.seed(a.seed); torch.manual_seed(a.seed)
     from sentence_transformers import SentenceTransformer
@@ -104,11 +108,13 @@ def main():
     opp = {p: opposites([k for k, v in data[p]["actions"].items() if len(v) >= 2]) for p in prods}
     print("products with opposite pairs", sum(bool(v) for v in opp.values()), "pairs", sum(len(v) for v in opp.values()), flush=True)
 
+    total = torch.cuda.get_device_properties(0).total_memory / 2 ** 30
+    torch.cuda.set_per_process_memory_fraction(min(1.0, a.gpu_gb / total))   # OOM instead of spilling into shared memory
     kw = {"dtype": torch.bfloat16} if a.lora else {}
     m = SentenceTransformer(a.base, device="cuda", model_kwargs=kw)
-    m.max_seq_length = 64
+    m.max_seq_length = a.max_len
     tr = m[0]
-    if a.grad_ckpt:                         # non-reentrant: gradients reach LoRA weights behind frozen embeddings
+    if not a.no_ckpt:                       # non-reentrant: gradients reach LoRA weights behind frozen embeddings
         tr.model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
     if a.lora:
         from peft import LoraConfig, get_peft_model
@@ -149,7 +155,15 @@ def main():
     warm = 100
     sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1.0, (s + 1) / warm) * 0.5 * (1 + math.cos(math.pi * min(1.0, s / a.steps))))
     lw = math.log(a.opp_w)
+    import time
+    t0, spm_done = time.time(), False
     for step in range(a.steps):
+        if not spm_done and time.time() - t0 >= 120:   # throughput sanity line (and guard) after 2 minutes
+            spm = step / ((time.time() - t0) / 60); spm_done = True
+            print(f"throughput: {step} steps in {time.time() - t0:.0f} s = {spm:.1f} steps/min; GPU max reserved "
+                  f"{torch.cuda.max_memory_reserved() / 2 ** 30:.1f} GB (cap {a.gpu_gb} GB)", flush=True)
+            if spm < a.min_spm:
+                sys.exit(f"ABORT: {spm:.1f} steps/min is below --min_spm {a.min_spm}")
         p = random.choice(prods)
         acts = [k for k, v in data[p]["actions"].items() if len(v) >= 2]
         texts, labels = [], []

@@ -26,6 +26,9 @@ Every dataset, model and voice Marigold touches, with its license and what we ma
 | thenlper/gte-small | Gate 0 candidate | MIT | Same caveat | 2026-11-15 |
 | Snowflake/snowflake-arctic-embed-s | Gate 0 candidate | Apache 2.0 | Same caveat | 2026-11-15 |
 | Qwen2.5-32B-Instruct (Ollama qwen2.5:32b-instruct-q4_K_M) | SDK phrase expansion on the PC | Apache 2.0 | Runs locally; generates SDK-side paraphrases only | 2026-11-15 |
+| Qwen/Qwen3-Embedding-0.6B, Qwen3-Embedding-4B, Qwen3-Embedding-8B | Teacher v4 candidates (SDK side, PC only); **teacher-v4 = Qwen3-Embedding-4B + LoRA** (data/models/teacher-v4) | Apache 2.0 (model card front matter `license: apache-2.0`, read at download) | Same training-data caveat as the other embedders; downloaded without an account into data/hf; 8B tried and dropped (out of memory under the 20 GB cap) | 2026-11-16 |
+| BAAI/bge-large-en-v1.5 | Teacher v4 candidate | MIT | Same caveat | 2026-11-16 |
+| Qwen2.5-14B-Instruct (Ollama qwen2.5:14b) | Training text for the 48 added training appliances (data/gate0b/train_text_v4.json) | Apache 2.0 | Runs locally; no fans or microwaves | 2026-11-16 |
 | Moonshine (Useful Sensors) | Encoder starting point | MIT | Weights in D:\poinsetta\data\hf | 2026-11-15 |
 
 ## TTS engines and tools (run locally as tools; nothing here is linked into Marigold or shipped)
