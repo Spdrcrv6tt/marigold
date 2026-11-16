@@ -100,3 +100,11 @@ do not use. Replace them with Marigold's own once mkimage_ts.py is adapted.
   mg_gpio.sv, mg_i2c.sv, mg_wake_stub.sv; rtl/model/mg_model.py (reference model of the island rules, also used by
   sw/golden/chip_golden.py); rtl/tb/mg_util.py, mg_cfg_tb.sv, test_cfg.py, test_ctl.py, test_cap.py and their
   block.mk entries (cfg, ctl, cap); rtl/top/tb/mg_main.cpp (whole-chip harness).
+- rtl/core/imh_rom.svh now holds the LUT ROM of the current model export (written by rtl/core/tools/mkimage_mg.py
+  rom; the tables are part of the hardwired ROM image); Poinsetta's original is kept as rtl/core/imh_rom_poinsetta.svh.
+  The core unit test test-mac still compiles its C reference against Poinsetta's layout.h fixtures, so its LUT
+  operations need the Poinsetta table (swap back, or point the fixtures at the export's layout.h).
+- rtl/core/imh_mem.sv: imh_wsrc_rom takes +img=<hex> in simulation (negative controls swap the ROM image without a
+  rebuild); synthesis unchanged.
+- marigold_top: the core domain's reset asserts asynchronously when core_on falls (found by the whole-chip run: with
+  the clock stopped first, the core kept its state across a power-off and the sample handshake desynchronised).

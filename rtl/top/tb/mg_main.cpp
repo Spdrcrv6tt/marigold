@@ -15,6 +15,8 @@
 //   G <step> <sample> <pins hex>       GPIO change
 //   C <step> <sample> <0|1>            core switched off / on
 //   E <tag hex> <val hex> <step>       firmware trace port
+//   W <step> <sample> <addr hex> <data hex>   a core write over the island bridge (Q, VAL, MATCH_GO)
+//   I <step> <sample>                  irq_o rose (a frame is ready)
 //   X <step> <sample>                  end of run
 #include <cstdio>
 #include <cstdlib>
@@ -49,7 +51,7 @@ static unsigned long long cyc = 0, oscstart = 2048, osc_wait = 0, maxc = 0;
 static int u_state = 0, u_cnt = 0, u_bits = 0, u_sh = 0;
 static std::vector<int> ubytes;
 static unsigned long long ustart = 0;
-static int scl = 1, msda = 1;
+static int scl = 1, msda = 1, prev_irq = 0;
 
 // one front-end clock period
 static void tick_fe() {
@@ -65,21 +67,26 @@ static void tick_fe() {
             if ((top->trace_tag >> 16) == 0xFF) { fprintf(stderr, "firmware failure code %u\n", top->trace_val); fflush(lg); exit(3); }
         }
         if (ph == 0) {
-            int pc = top->pdm_clk_o;
-            if (pc && !prev_pclk) { rises++; pk = rises - 1; }
-            prev_pclk = pc;
+            // DIV = 1: pdm_clk_o is clk_fe gated by the front-end enable, so it is high at every rising edge of
+            // clk_fe while the front end runs; the mic's bit for that PDM period is taken on the falling edge
+            if (top->pdm_clk_o) { rises++; pk = rises - 1; }
             top->pdm_dat_i = (pk < pdm.size()) ? (pdm[pk] & 1) : (pk & 1);
             if (top->fe_valid_o && !prev_fe) {
                 if (pl) { unsigned short w = top->fe_pcm_o; fwrite(&w, 2, 1, pl); }
                 if (rl && fe_n > 0 && (fe_n & 255) == 0) fputc('0' + top->fe_raw_o, rl);
                 fe_n++;
-                while (wk < wakes.size() && wakes[wk] < fe_n) wk++;          // the stand-in spotter's next wake
+                while (wk < wakes.size() && wakes[wk] + 1 < fe_n) wk++;      // the stand-in spotter's next wake
+                                                                              // (kept through the wake sample itself)
                 top->tst_wake_en = wk < wakes.size();
                 top->tst_wake_at = wk < wakes.size() ? (unsigned)wakes[wk] : 0;
             }
             prev_fe = top->fe_valid_o;
-            if (top->core_on != prev_on) { fprintf(lg, "C %llu %zu %d\n", cyc, fe_n, top->core_on); prev_on = top->core_on; }
-            if (top->gpio_o != prev_gpio) { fprintf(lg, "G %llu %zu %02x\n", cyc, fe_n, top->gpio_o); prev_gpio = top->gpio_o; }
+            if (top->dbg_br_v) { fprintf(lg, "W %llu %zu %04x %08x\n", cyc, fe_n, top->dbg_br_a, top->dbg_br_d); fflush(lg); }
+            if (top->core_on != prev_on) { fprintf(lg, "C %llu %zu %d\n", cyc, fe_n, top->core_on); prev_on = top->core_on; fflush(lg); }
+            if (top->gpio_o != prev_gpio) { fprintf(lg, "G %llu %zu %02x\n", cyc, fe_n, top->gpio_o); prev_gpio = top->gpio_o; fflush(lg); }
+            if ((cyc / ratio) % 3072000 == 0)                                 // progress, once per second of chip time
+                fprintf(stderr, "t %.1f s: samples %zu pdm %zu/%zu core %d irq %d halted %d\n", cyc / (ratio * 3.072e6),
+                        fe_n, pk, pdm.size(), (int)top->core_on, (int)top->irq_o, (int)top->halted);
             int tx = top->uart_tx_o;                                          // UART receiver, 8N1
             if (u_state == 0) { if (!tx) { u_state = 1; u_cnt = ubit + ubit / 2; u_bits = 0; u_sh = 0; } }
             else if (--u_cnt == 0) {
@@ -171,6 +178,8 @@ int main(int argc, char **argv) {
     // stream the microphone; read frames when irq_o rises (host = 1)
     while (cyc < maxc && !ctx->gotFinish()) {
         tick_fe();
+        if (top->irq_o && !prev_irq) { fprintf(lg, "I %llu %zu\n", cyc, fe_n); fflush(lg); }      // irq rises: frame ready
+        prev_irq = top->irq_o;
         if (host == 1 && top->irq_o) {
             std::vector<int> len, fr;
             if (i2c_read(dev, 0x04, 1, len) && len[0] > 0 && i2c_read(dev, 0x05, len[0], fr)) {

@@ -74,7 +74,12 @@ module imh_wsrc_rom #(
     reg [7:0] mem [0:BYTES-1];
     reg [AW-1:0] ptr;
     reg          valid;
+`ifndef SYNTHESIS
+    string img_f;                                       // simulation: +img=<hex> replaces INIT (negative controls)
+    initial if ($value$plusargs("img=%s", img_f)) $readmemh(img_f, mem); else if (INIT != "") $readmemh(INIT, mem);
+`else
     initial if (INIT != "") $readmemh(INIT, mem);
+`endif
     assign avail = valid ? WB : 6'd0;
     wire [AW-1:0] nptr = ptr + take;
     // clocked per read (power fix 5, reports/p1-power.md section 7): a seek, a fill or a take; otherwise nothing here

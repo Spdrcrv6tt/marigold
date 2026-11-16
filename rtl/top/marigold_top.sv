@@ -20,7 +20,14 @@ module marigold_top #(
     parameter [7:0]  SEG_HANG = 8'd8,
     parameter [7:0]  SEG_ONSET = 8'd3,
     parameter [31:0] SEG_LISTEN = 32'd64000,
-    parameter        MS = 3072
+    parameter        MS = 3072,
+    parameter        WAKE_STUB = 0,                     // 1: mg_wake_stub (wakes at tst_wake_at) instead of the spotter
+    parameter        WAKE_MEMDIR = "/mnt/d/marigold/rtl/wake/mem2/",   // wake spotter v2 (golden format 2)
+    parameter        WAKE_LANES = 16,
+    parameter        WAKE_C = 240,
+    parameter        WAKE_NOUT = 48,
+    parameter        WAKE_GATE = 1,
+    parameter        WAKE_PREROLL = 10
 ) (
     input  wire        clk,
     input  wire        clk_fe,
@@ -45,7 +52,10 @@ module marigold_top #(
     output wire        listening_o,
     output wire        fe_valid_o,
     output wire [15:0] fe_pcm_o,
-    output wire        fe_raw_o
+    output wire        fe_raw_o,
+    output wire        dbg_br_v,                        // a core write over the island bridge (clk_fe domain)
+    output wire [15:0] dbg_br_a,
+    output wire [31:0] dbg_br_d
 );
     // ------------------------------------------------------------------ island (clk_fe)
     reg  [1:0] rfe;                                    // reset: asynchronous assert, synchronous release
@@ -69,10 +79,18 @@ module marigold_top #(
     wire [15:0] wake_sens;
     wire        spot_req, spot_gnt, spot_rvalid, wake;
     wire [31:0] cfg_rdata;
-    mg_wake_stub u_wake (.clk(clk_fe), .rst_n(rst_fe_n), .en(listening), .in_valid(fe_valid), .in_data(fe_data),
-        .in_vad(fe_vad), .in_raw(fe_raw), .tpl_addr(wake_base), .tpl_len(wake_len), .sens(wake_sens),
-        .cfg_req(spot_req), .cfg_addr(spot_addr), .cfg_gnt(spot_gnt), .cfg_rdata(cfg_rdata), .wake(wake), .busy(),
-        .tst_en(tst_wake_en), .tst_at(tst_wake_at));
+    generate if (WAKE_STUB != 0) begin : g_stub
+        mg_wake_stub u_wake (.clk(clk_fe), .rst_n(rst_fe_n), .en(listening), .in_valid(fe_valid), .in_data(fe_data),
+            .in_vad(fe_vad), .in_raw(fe_raw), .tpl_addr(wake_base), .tpl_len(wake_len), .sens(wake_sens),
+            .cfg_req(spot_req), .cfg_addr(spot_addr), .cfg_gnt(spot_gnt), .cfg_rdata(cfg_rdata), .wake(wake), .busy(),
+            .tst_en(tst_wake_en), .tst_at(tst_wake_at));
+    end else begin : g_wake                             // the wake agent's spotter (rtl/wake/)
+        mg_wake #(.LANES(WAKE_LANES), .C(WAKE_C), .NOUT(WAKE_NOUT), .GATE(WAKE_GATE), .PREROLL(WAKE_PREROLL),
+                  .MEMDIR(WAKE_MEMDIR), .ROM_STALL(0)) u_wake (.clk(clk_fe), .rst_n(rst_fe_n), .en(listening), .in_valid(fe_valid),
+            .in_data(fe_data), .in_vad(fe_vad), .in_raw(fe_raw), .tpl_addr(wake_base), .tpl_len(wake_len),
+            .sens(wake_sens), .cfg_req(spot_req), .cfg_addr(spot_addr), .cfg_gnt(spot_gnt), .cfg_rdata(cfg_rdata),
+            .wake(wake), .busy(), .dbg_v(), .dbg_k(), .dbg_d());
+    end endgenerate
 
     wire [31:0] q_idx, q_bkl;
     wire [15:0] q_data;
@@ -98,6 +116,9 @@ module marigold_top #(
             if (i_ack) begin br_rdata <= i_rdata; br_ack_t <= ~br_ack_t; end
         end
     wire        i_req = brs[2] ^ brs[1];
+    assign dbg_br_v = i_req && br_we;
+    assign dbg_br_a = br_addr;
+    assign dbg_br_d = br_wdata;
 
     mg_ctl #(.SEG_PRE(SEG_PRE), .SEG_MIN(SEG_MIN), .SEG_CAP(SEG_CAP), .SEG_HANG(SEG_HANG), .SEG_ONSET(SEG_ONSET),
              .SEG_LISTEN(SEG_LISTEN), .MS(MS)) u_ctl (
@@ -108,9 +129,12 @@ module marigold_top #(
         .br_req(i_req), .br_we(br_we), .br_addr(br_addr), .br_wdata(br_wdata), .br_ack(i_ack), .br_rdata(i_rdata));
 
     // ------------------------------------------------------------------ core (clk), off unless core_on
+    // core reset: asserted at once when core_on falls (the domain is switched off and loses its state; the core
+    // clock may already be stopped), released two core clocks after core_on rises with the clock running
     reg  [1:0]  con_s;
-    always @(posedge clk or negedge rst_n) if (!rst_n) con_s <= 2'd0; else con_s <= {con_s[0], core_on};
-    wire        rst_c_n = rst_n & con_s[1];
+    wire        con_rst_n = rst_n & core_on;
+    always @(posedge clk or negedge con_rst_n) if (!con_rst_n) con_s <= 2'd0; else con_s <= {con_s[0], 1'b1};
+    wire        rst_c_n = con_s[1];
     reg  [2:0]  ts, wks;
     always @(posedge clk or negedge rst_c_n)
         if (!rst_c_n) begin ts <= 3'd0; wks <= 3'd0; end
