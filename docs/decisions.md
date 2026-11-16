@@ -63,3 +63,9 @@
   QAT, export mg-v11, tests, vectors and the integer eval; reports/p0/v11-decision.txt compares v1 and v1.1 on dev by
   about 5:15 AM. v1.1 replaces v1 only if it is better on dev.
 - 2026-11-16, 5 AM: the overnight v1.1 intent run does not beat v1 on dev (mean unseen 36.3% against 36.7% at 95% rejection), so **model-v1 is final for iteration 1**. The whole chip is bit-exact on it, with no rerun needed. Finding: a closer fit to the teacher (cosine 0.60 to 0.65) no longer helps. Iteration 2 targets the teacher space, rejection calibration, real speech and audio enrollment.
+- 2026-11-16, 11:50 AM (John: "Work on it. You're allotted 10% weekly usage for this project total"): iteration 2 starts with a budget of 10% of this week's usage (meter 1% → 11%; agents stop at 9%). Priorities, from the coordinator's plan John approved:
+  1. A bigger, command-tuned SDK teacher until text-only matching clears 90 / 95 (gate 0 is still open). The teacher lives on the PC, so its size is free.
+  2. Train the audio encoder for the decision (action plus reject), not only for cosine to the teacher: v1.1 showed a closer fit no longer helps.
+  3. Real speech: John's fan and microwave noise, plus real people reading commands as the new real test set.
+  4. Wake second-stage confirm in the core, if the budget allows.
+  - Test-set hygiene: eval/text v1 has been scored many times across iterations. A fresh paraphrase test set v2, written blind by a new agent from the configs alone, becomes the iteration-2 headline; v1 stays as a secondary reference.
