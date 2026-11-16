@@ -35,7 +35,7 @@ class QNet(nn.Module):
             self.register_buffer("sa", sd["sa"])
             self.calibrated = True
             return
-        m = Net(); m.load_state_dict(sd); m.eval()
+        m = Net(c=sd["l0.weight"].shape[0]); m.load_state_dict(sd); m.eval()
         L = fold(m)
         self.kinds = [k for k, _, _, _ in L]
         self.dils = [d for _, _, _, d in L]

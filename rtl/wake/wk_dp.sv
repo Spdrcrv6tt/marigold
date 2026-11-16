@@ -8,6 +8,7 @@ module wk_dp (
     input  wire               rst_n,
     input  wire               clr,
     input  wire               start,
+    input  wire               fresh,         // with start: first frame of a run (states impossible, refractory 0)
     output reg                busy,
     output reg                done,
     output reg                fire,
@@ -84,7 +85,8 @@ module wk_dp (
                 st <= S_IDLE; busy <= 0; rst_pend <= 1; rcnt <= 0; cv <= 0; cfg_req <= 0; breq <= 0; bwait <= 0;
             end else case (st)
             S_IDLE: if (start) begin
-                st <= S_HDR; busy <= 1; hp <= 1; boff <= 8'd1; cv <= 0; rst_use <= rst_pend;
+                st <= S_HDR; busy <= 1; hp <= 1; boff <= 8'd1; cv <= 0; rst_use <= rst_pend | fresh;
+                if (fresh) rcnt <= 0;
                 best <= 32'sh80000000; vi <= 0; o <= 8'd4; bs <= 0;
             end
             // header bytes 1..3: n_var, clip, refractory

@@ -100,6 +100,57 @@ def kws(z, tpl, sens):
     return fires, best
 
 
+PREROLL = 10        # format 2: frames between a frame's features and its network/DP run (the VAD look-ahead)
+
+
+def vad_at(vad, n):
+    """in_vad as seen with sample n: the flags of VAD frame floor(n / 256) - 1 (held), 0 before the first frame."""
+    f = n // 256 - 1
+    return int(vad[f]) if 0 <= f < len(vad) else 0
+
+
+def active_frames(n_frames, vad, D=PREROLL):
+    """Format 2 gating. v(t') = in_vad at sample 320 t' + 559 (the trigger of real-time frame t'). Frame t is run at
+    real-time frame t + D, and only if v(t), ..., v(t + D) has a 1. Frames whose t + D is past the stream are not run."""
+    v = np.array([vad_at(vad, 320 * tt + 559) for tt in range(n_frames)], np.int64)
+    act = np.zeros(n_frames, bool)
+    for t in range(n_frames - D):
+        act[t] = v[t:t + D + 1].any()
+    return act
+
+
+def runs_of(act):
+    out, t = [], 0
+    while t < len(act):
+        if act[t]:
+            a = t
+            while t < len(act) and act[t]:
+                t += 1
+            out.append((a, t))
+        else:
+            t += 1
+    return out
+
+
+def run2(x, vad, tpl, sens, P, D=PREROLL):
+    """Format 2 (VAD-gated). x: samples from the first sample with en = 1; vad: vad_o per 256-sample VAD frame from
+    the same start. Each run of active frames starts with zero network history, fresh DP states and refractory 0.
+    A fire for frame t raises wake at sample k = 320 (t + D) + 879."""
+    x = np.asarray(x, np.int64)
+    U = fe.features(x)
+    act = active_frames(len(U), vad, D)
+    z = np.zeros((len(U), 40), np.int64)
+    best = np.zeros(len(U), np.int64)
+    fires = []
+    for a, b in runs_of(act):
+        z[a:b] = net(P, U[a:b])
+        f, bt = kws(z[a:b], tpl, sens)
+        best[a:b] = bt
+        fires += [a + t for t in f]
+    k = [320 * (t + D) + 879 for t in fires]
+    return dict(fires=fires, wake_k=[kk for kk in k if kk < len(x)], u=U, z=z, best=best, act=act)
+
+
 def run(x, tpl, sens, P):
     """x: int16 samples from the first sample with en = 1 (index 0). Returns fires and wake sample indices
     (only those inside the stream: k < len(x))."""

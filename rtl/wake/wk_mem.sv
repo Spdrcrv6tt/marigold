@@ -24,8 +24,9 @@ module wk_ram #(
 endmodule
 
 module wk_rom #(
-    parameter WORDS = 17916,
-    parameter AW    = 15,
+    parameter W     = 16,
+    parameter WORDS = 32768,
+    parameter AW    = 17,
     parameter STALL = 0,
     parameter MEMFILE = "wake_rom.mem"
 ) (
@@ -35,9 +36,9 @@ module wk_rom #(
     input  wire [AW-1:0] rom_addr,
     output wire          rom_gnt,
     output reg           rom_rvalid,
-    output reg  [15:0]   rom_rdata
+    output reg  [W-1:0]  rom_rdata
 );
-    reg [15:0] mem [0:WORDS-1];
+    reg [W-1:0] mem [0:WORDS-1];
     initial $readmemh(MEMFILE, mem);
     reg [15:0] lfsr;
     always @(posedge clk or negedge rst_n)
@@ -47,10 +48,10 @@ module wk_rom #(
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             rom_rvalid <= 1'b0;
-            rom_rdata  <= 16'd0;
+            rom_rdata  <= {W{1'b0}};
         end else begin
             rom_rvalid <= rom_gnt;
-            if (rom_gnt) rom_rdata <= mem[rom_addr];
+            if (rom_gnt) rom_rdata <= mem[rom_addr[$clog2(WORDS)-1:0]];
         end
     end
 endmodule

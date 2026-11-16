@@ -154,6 +154,7 @@ def main():
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--resume", action="store_true")
     ap.add_argument("--aug", default=None, help="noise_p,snr_lo,snr_hi,rev_p")
+    ap.add_argument("--channels", type=int, default=96)
     a = ap.parse_args()
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
     if a.aug:
@@ -165,7 +166,7 @@ def main():
     random.Random(1).shuffle(dev_rows)
     noise = load_noise()
     if a.mode == "float":
-        model = Net().to(DEV)
+        model = Net(c=a.channels).to(DEV)
     else:
         from qat import QNet
         model = QNet(a.init).to(DEV)

@@ -30,14 +30,14 @@ def runner(spec):
         sys.path.insert(0, str(Path(__file__).resolve().parent / "golden"))
         import golden
         P = golden.load_params(spec[4:])
-        return lambda U: int_net_torch(P, U)
+        return lambda U, rs=None: int_net_torch(P, U, rs)
     sd = torch.load(spec, map_location="cpu", weights_only=False)
     if any(k.startswith("Ws.") for k in sd):
         from qat import QNet
         m = QNet(spec).to(DEV).eval()
     else:
         from model import Net
-        m = Net().to(DEV).eval(); m.load_state_dict(sd)
+        m = Net(c=sd["l0.weight"].shape[0]).to(DEV).eval(); m.load_state_dict(sd)
 
     @torch.no_grad()
     def f(U):
@@ -51,13 +51,16 @@ def runner(spec):
     return f
 
 
-def int_net_torch(P, U):
-    """golden.net in float64 on the GPU (exact: all intermediate integers < 2^53)."""
+def int_net_torch(P, U, rs=None):
+    """golden.net in float64 on the GPU (exact: all intermediate integers < 2^53). rs: run start per frame (format 2:
+    depthwise taps before the frame's run start read zero)."""
     out = []
     for i in range(0, len(U), 200000):
         lo = max(0, i - 64)
         x = torch.from_numpy(U[lo:i + 200000].astype(np.float64)).to(DEV) - 128
         T = len(x)
+        tt = torch.arange(lo, lo + T, device=DEV)
+        rr = torch.from_numpy(rs[lo:lo + T]).to(DEV) if rs is not None else None
         for l in P:
             W = torch.from_numpy(l["W"].astype(np.float64)).to(DEV)
             b = torch.from_numpy(l["b"].astype(np.float64)).to(DEV)
@@ -66,7 +69,10 @@ def int_net_torch(P, U):
                 xp = torch.cat([torch.zeros((4 * d, x.shape[1]), dtype=x.dtype, device=DEV), x])
                 acc = b[None].repeat(T, 1)
                 for k in range(5):
-                    acc = acc + W[None, :, 0, k] * xp[k * d:k * d + T]
+                    tap = xp[k * d:k * d + T]
+                    if rr is not None:
+                        tap = tap * ((tt - (4 - k) * d) >= rr).double()[:, None]
+                    acc = acc + W[None, :, 0, k] * tap
             else:
                 acc = x @ W[:, :, 0].T + b[None]
             M = torch.from_numpy(l["M"].astype(np.float64)).to(DEV)
@@ -152,6 +158,27 @@ def dp_batch(Z, lens, tpls, sens_list, clip, refr_n):
     return count.cpu().numpy(), events
 
 
+def gate_runs(off, vflags, voff, D):
+    """Format 2 runs per stream: returns (spans [(a, b) absolute frames], stream index per span, run start per frame)."""
+    spans, owner = [], []
+    rs = np.zeros(off[-1], np.int64)
+    for i, (a, b) in enumerate(zip(off[:-1], off[1:])):
+        n = b - a
+        vad = vflags[voff[i]:voff[i + 1]]
+        f = (320 * np.arange(n) + 559) // 256 - 1
+        v = np.where((f >= 0) & (f < len(vad)), vad[np.clip(f, 0, max(len(vad) - 1, 0))] if len(vad) else 0, 0).astype(np.int64)
+        c = np.concatenate([[0], np.cumsum(v)])
+        act = np.zeros(n, bool)
+        if n > D:
+            act[:n - D] = (c[D + 1:n + 1] - c[:n - D]) > 0
+        d = np.diff(np.concatenate([[0], act.astype(np.int8), [0]]))
+        for s0, s1 in zip(np.nonzero(d == 1)[0], np.nonzero(d == -1)[0]):
+            rs[a + s0:a + s1] = a + s0
+            for c0 in range(s0, s1, CHUNK):
+                spans.append((a + c0, a + min(s1, c0 + CHUNK))); owner.append(i)
+    return spans, owner, rs
+
+
 def chunks(u, off, chunk=CHUNK):
     out = []
     for a, b in zip(off[:-1], off[1:]):
@@ -182,6 +209,7 @@ def main():
     ap.add_argument("--refr", type=int, default=TPL.REFRACTORY)
     ap.add_argument("--split", default="test")
     ap.add_argument("--skip-fa", action="store_true")
+    ap.add_argument("--gate", type=int, default=-1, help="format 2 VAD gating with this pre-roll (frames); -1 = off")
     a = ap.parse_args()
     t0 = time.time()
     f = runner(a.model)
@@ -194,10 +222,16 @@ def main():
     pos_dir = E if a.split == "test" else R / "data/wake/eval_dev"
     for cond in ("clean", "noise10", "reverb", "far"):
         d = np.load(pos_dir / f"pos_{cond}.npz"); meta = json.load(open(pos_dir / f"pos_{cond}.json"))
-        z = f(d["u"]); off = d["off"]
-        spans = list(zip(off[:-1], off[1:]))
+        off = d["off"]
+        if a.gate >= 0:
+            vz = np.load(pos_dir / f"vad_pos_{cond}.npz")
+            spans, owner, rs = gate_runs(off, vz["flags"], vz["off"], a.gate)
+            z = f(d["u"], rs)
+        else:
+            z = f(d["u"]); spans = list(zip(off[:-1], off[1:])); owner = list(range(len(spans)))
         counts, events = run_streams(z, spans, tpls, SENS, a.clip, a.refr)
-        hit = np.zeros((len(SENS), len(spans), len(tpls)), bool)
+        events = [(owner[b], s, ti, t + spans[b][0] - off[owner[b]]) for b, s, ti, t in events]
+        hit = np.zeros((len(SENS), len(meta), len(tpls)), bool)
         early = np.zeros_like(hit)
         for b, s, ti, t in events:
             m = meta[b]
@@ -216,8 +250,13 @@ def main():
         print(cond, {p: out[p]["det"][SENS.index(32)] for p in PHRASES}, f"{time.time() - t0:.0f}s", flush=True)
     if not a.skip_fa:
         for name in FA_SPLIT[a.split]:
-            d = np.load(E / f"fa_{name}.npz"); z = f(d["u"]); off = d["off"]
-            spans = chunks(d["u"], off)
+            d = np.load(E / f"fa_{name}.npz"); off = d["off"]
+            if a.gate >= 0:
+                vz = np.load(E / f"vad_fa_{name}.npz")
+                spans, _, rs = gate_runs(off, vz["flags"], vz["off"], a.gate)
+                z = f(d["u"], rs)
+            else:
+                z = f(d["u"]); spans = chunks(d["u"], off)
             hours = (off[-1]) * 0.02 / 3600
             counts, _ = run_streams(z, spans, tpls, SENS, a.clip, a.refr)
             per24 = (counts.sum(1) / hours * 24).round(3)        # (n_sens, nt)

@@ -16,15 +16,25 @@ WAKE_EXPECT_FAIL ?= 0
 MEMD_plain := $(WK)/mem/
 MEMD_stall := $(WK)/mem/
 MEMD_flip  := $(abspath results)/mem_flip/
-ARGS_plain := -GROM_STALL=0 -GCFG_STALL=0
-ARGS_stall := -GROM_STALL=1 -GCFG_STALL=1
-ARGS_flip  := -GROM_STALL=0 -GCFG_STALL=0
+MEMD_v2plain := $(WK)/mem2/
+MEMD_v2stall := $(WK)/mem2/
+MEMD_v2flip  := $(abspath results)/mem2_flip/
+V1 := -GLANES=4 -GC=96 -GNOUT=40 -GGATE=0 -GPREROLL=0
+V2 := -GLANES=16 -GC=240 -GNOUT=48 -GGATE=1 -GPREROLL=10
+ARGS_plain := -GROM_STALL=0 -GCFG_STALL=0 $(V1)
+ARGS_stall := -GROM_STALL=1 -GCFG_STALL=1 $(V1)
+ARGS_flip  := -GROM_STALL=0 -GCFG_STALL=0 $(V1)
+ARGS_v2plain := -GROM_STALL=0 -GCFG_STALL=0 $(V2)
+ARGS_v2stall := -GROM_STALL=1 -GCFG_STALL=1 $(V2)
+ARGS_v2flip  := -GROM_STALL=0 -GCFG_STALL=0 $(V2)
+VECDIR := $(if $(findstring v2,$(VARIANT)),vectors2,vectors)
 ARGS_debug := -GROM_STALL=0 -GCFG_STALL=0 +define+WAKE_DEBUG
 MEMD_debug := $(WK)/mem/
 EXTRA_ARGS += -Wno-fatal -Wno-WIDTH -Wno-UNUSED -O2 -GMEMDIR='"$(MEMD_$(VARIANT))"' $(ARGS_$(VARIANT))
 TRACE := $(abspath results)/trace_$(WAKE_CASE)_$(VARIANT)_$(WAKE_CORRUPT).txt
-PLUSARGS += +TRACE=$(TRACE) +CFG=$(abspath vectors)/$(WAKE_CASE)/cfg.mem
+PLUSARGS += +TRACE=$(TRACE) +CFG=$(abspath $(VECDIR))/$(WAKE_CASE)/cfg.mem
 export WAKE_CASE WAKE_CORRUPT WAKE_EXPECT_FAIL
+export WAKE_VECDIR := $(VECDIR)
 export WAKE_TRACE := $(TRACE)
 export VARIANT
 export PYTHONPATH := $(abspath .):$(PYTHONPATH)

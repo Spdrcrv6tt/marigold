@@ -10,23 +10,27 @@ from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, RisingEdge, Timer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-VEC = os.path.join(HERE, "vectors")
+VEC = os.path.join(HERE, os.environ.get("WAKE_VECDIR", "vectors"))
 RES = os.path.join(HERE, "results")
 
 
-async def drive(dut, x, segs, sens):
+async def drive(dut, x, segs, sens, vads=None):
     dut.rst_n.value = 0
     dut.en.value = 0
     dut.in_valid.value = 0
     dut.in_data.value = 0
+    dut.in_vad.value = 0
     dut.sens.value = sens
     await Timer(100, "ns")
     dut.rst_n.value = 1
     await ClockCycles(dut.clk, 5)
-    for a, b in segs:
+    for si, (a, b) in enumerate(segs):
         dut.en.value = 1
         await ClockCycles(dut.clk, 3)
-        for v in x[a:b]:
+        vad = vads[si] if vads else []
+        for n, v in enumerate(x[a:b]):
+            f = n // 256 - 1
+            dut.in_vad.value = vad[f] if 0 <= f < len(vad) else 0
             dut.in_data.value = v & 0xFFFF
             dut.in_valid.value = 1
             await RisingEdge(dut.clk)
@@ -49,7 +53,8 @@ async def run_case(dut, name, corrupt=False):
     if corrupt:
         x[len(x) // 2] ^= 0x0400
     cocotb.start_soon(Clock(dut.clk, 326, "ns").start())
-    await drive(dut, x, c["segs"], c["sens"])
+    vp = os.path.join(d, "vad.json")
+    await drive(dut, x, c["segs"], c["sens"], json.load(open(vp)) if os.path.exists(vp) else None)
     got = read_trace(os.environ["WAKE_TRACE"])
     exp = read_trace(os.path.join(d, "expected.txt"))
     bad = [i for i, (g, e) in enumerate(zip(got, exp)) if g != e]

@@ -4,13 +4,19 @@
 module wake_tb #(
     parameter MEMDIR    = "",
     parameter ROM_STALL = 0,
-    parameter CFG_STALL = 0
+    parameter CFG_STALL = 0,
+    parameter LANES     = 4,
+    parameter C         = 96,
+    parameter NOUT      = 40,
+    parameter GATE      = 0,
+    parameter PREROLL   = 0
 ) (
     input  wire               clk,
     input  wire               rst_n,
     input  wire               en,
     input  wire               in_valid,
     input  wire signed [15:0] in_data,
+    input  wire               in_vad,
     input  wire [15:0]        sens,
     output wire               wake,
     output wire               busy
@@ -37,8 +43,8 @@ module wake_tb #(
         cfg_rdata <= cfg_gnt ? cfgm[cfg_addr[14:2]] : 32'hDEADBEEF;   // valid only on the clock after the grant
     end
     wire        dv;  wire [1:0] dk;  wire [31:0] dd;
-    mg_wake #(.MEMDIR(MEMDIR), .ROM_STALL(ROM_STALL)) dut (.clk(clk), .rst_n(rst_n), .en(en), .in_valid(in_valid), .in_data(in_data),
-        .in_vad(1'b0), .in_raw(1'b0), .tpl_addr(TPL), .tpl_len(8'd0), .sens(sens), .cfg_req(cfg_req), .cfg_addr(cfg_addr),
+    mg_wake #(.MEMDIR(MEMDIR), .ROM_STALL(ROM_STALL), .LANES(LANES), .C(C), .NOUT(NOUT), .GATE(GATE), .PREROLL(PREROLL)) dut (.clk(clk), .rst_n(rst_n), .en(en), .in_valid(in_valid), .in_data(in_data),
+        .in_vad(in_vad), .in_raw(1'b0), .tpl_addr(TPL), .tpl_len(8'd0), .sens(sens), .cfg_req(cfg_req), .cfg_addr(cfg_addr),
         .cfg_gnt(cfg_gnt), .cfg_rdata(cfg_rdata), .wake(wake), .busy(busy), .dbg_v(dv), .dbg_k(dk), .dbg_d(dd));
     longint bcyc = 0, nfr = 0;
     always @(posedge clk) begin
