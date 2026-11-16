@@ -105,6 +105,7 @@ def main():
     ap.add_argument("--teacher", default="data/models/teacher-v3")
     ap.add_argument("--tag", required=True)
     ap.add_argument("--conds", default="clean,fan10db,microwave10db")
+    ap.add_argument("--enroll", action="store_true", help="also match against audio prototypes from SDK TTS enrollment")
     a = ap.parse_args()
     rows = {c: load_rows(CONDS[c]) for c in a.conds.split(",")}
     rows = {c: [r for r in rs if r["product"] in (None, "fan", "microwave") or r["set"] == "noncommands"] for c, rs in rows.items()}
@@ -125,66 +126,114 @@ def main():
         m.load_state_dict(ck["state"]); m.cuda().eval()
         for c, rs in rows.items():
             out[c] = run_torch(m, [r["path"] for r in rs])
+    enr = None
+    if a.enroll:                          # SDK audio enrollment: TTS (train voices) of the config phrases through the chip model
+        jobs = [json.loads(l) for l in open(ROOT / "data/tts/jobs_enroll.jsonl", encoding="utf8")]
+        jobs = [j for j in jobs if (ROOT / "data/tts" / j["out"]).exists()]
+        paths = ["data/tts/" + j["out"] for j in jobs]
+        qe = run_golden(str(ROOT / a.golden), paths)[0] if a.golden else run_torch(m, paths)[0]
+        enr = (jobs, qe)
+        print("enrollment clips", len(jobs), flush=True)
     emb = C.STEmbedder(ROOT / a.teacher)
     exp = json.load(open(ROOT / "data/expand/expanded_qwen25.json", encoding="utf8"))
     res = {"model": a.model, "golden": a.golden or None, "synthetic_only": True, "products": {}}
     for prod in ("fan", "microwave"):
         cfg = json.load(open(ROOT / f"sdk/configs/{prod}.json", encoding="utf8"))
         blob, rep = C.compile_config(cfg, prod, emb, exp, proj="teacher")
-        b = C.parse(blob)
+        b0 = C.parse(blob)
         name2id = {x["name"]: x["id"] for x in cfg["actions"]}
-        # threshold on clean dev headline non-commands
-        rs = rows["clean"]; Q, _ = out["clean"]
-        dv = [i for i, r in enumerate(rs) if r["set"] == "noncommands" and r["split"] == "dev" and r["category"] in HEAD]
-        _, best = decide(b, Q[dv], -10 ** 9)
-        acts, _ = decide(b, Q[dv], -10 ** 9)
-        open_best = np.sort(best[acts != 0])
-        k = int(np.ceil(0.95 * len(dv)))                 # reject >= 95%: at most len - k may pass
-        allowed = len(dv) - k
-        thr = int(open_best[::-1][allowed]) + 1 if len(open_best) > allowed else -10 ** 9
-        b["reject_thr"] = thr
-        blob = C.pack({k_: b[k_] for k_ in ("D", "reject_thr", "margin", "wake_sens", "flags", "host", "i2c_addr", "conf_sh")},
-                      b["vec_action"], b["vec_flags"], b["bias"], b["vectors"], b["actions"], b["slots"], b["gpio"], b["wake"])
-        outdir = ROOT / f"data/sdk/eval-{a.tag}"; outdir.mkdir(parents=True, exist_ok=True)
-        (outdir / f"{prod}.mgc").write_bytes(blob)
-        pr = {"N": int(b["N"]), "D": int(b["D"]), "reject_thr": thr, "conds": {}}
-        for c, rs in rows.items():
-            Q, T = out[c]
-            pred, best = decide(b, Q, thr)
-            sel = lambda f: np.array([i for i, r in enumerate(rs) if f(r)], dtype=int)
-            para = sel(lambda r: r["set"] == "paraphrases" and r["product"] == prod and r["split"] == "test")
-            typed = sel(lambda r: r["set"] == f"config:{prod}")
-            nonc = sel(lambda r: r["set"] == "noncommands" and r["split"] == "test" and r["category"] in HEAD)
-            other = sel(lambda r: r["set"] == "noncommands" and r["split"] == "test" and r["category"] == "other_device")
-            y = lambda ix: np.array([name2id[rs[i]["action"]] for i in ix])
-            d = {}
-            d["t2_unseen_acc"] = float((pred[para] == y(para)).mean())
-            d["t2_unseen_acc_norej"] = float((decide(b, Q[para], -10 ** 9)[0] == y(para)).mean())
-            d["t1_typed_acc"] = float((pred[typed] == y(typed)).mean()) if len(typed) else None
-            d["t4_reject_headline"] = float((pred[nonc] == 0).mean())
-            d["reject_other_device"] = float((pred[other] == 0).mean())
-            d["n"] = {"para": len(para), "typed": len(typed), "nonc": len(nonc)}
-            vr = [i for i in para if rs[i]["values"]]
-            ok_given, ok_e2e = [], []
-            for i in vr:
-                got = slot_values(b, cfg, name2id[rs[i]["action"]], T[i])
-                good = all(got.get(kk) == vv for kk, vv in rs[i]["values"].items())
-                ok_given.append(good); ok_e2e.append(good and pred[i] == name2id[rs[i]["action"]])
-            d["t3_values_given_action"] = float(np.mean(ok_given)) if vr else None
-            d["t3_values_end_to_end"] = float(np.mean(ok_e2e)) if vr else None
-            d["n"]["values"] = len(vr)
-            per = {}
-            for nm, aid in name2id.items():
-                ii = [i for i in para if rs[i]["action"] == nm]
-                per[nm] = float((pred[ii] == aid).mean()) if ii else None
-            d["per_action_test"] = per
-            pr["conds"][c] = d
-            print(f"{prod:<9} {c:<13} unseen {d['t2_unseen_acc']:.3f} (no-rej {d['t2_unseen_acc_norej']:.3f}) typed "
-                  f"{d['t1_typed_acc'] if d['t1_typed_acc'] is None else round(d['t1_typed_acc'], 3)} reject {d['t4_reject_headline']:.3f} "
-                  f"other-dev {d['reject_other_device']:.2f} values {d['t3_values_given_action']} / e2e {d['t3_values_end_to_end']}", flush=True)
-        res["products"][prod] = pr
+        variants = {"text": b0}
+        if enr is not None:
+            jobs, qe = enr
+            D = b0["D"]
+            byact = {}
+            for j, q in zip(jobs, qe):
+                if j["product"] == prod:
+                    byact.setdefault(name2id.get(j["action"], 0) if j["action"] else 0, []).append(q)
+            def protos(K_audio, K_text):
+                Cs, va = [], []
+                for aid in sorted(byact):
+                    if aid == 0:
+                        continue
+                    X = C.unit(np.array(byact[aid], np.float64)); cent = C.kmeans(X, K_audio); Cs.append(cent); va += [aid] * len(cent)
+                    if K_text:
+                        T = b0["vectors"][b0["vec_action"] == aid].astype(np.float64)
+                        ct = C.kmeans(C.unit(T), K_text); Cs.append(ct); va += [aid] * len(ct)
+                if 0 in byact:
+                    X = C.unit(np.array(byact[0], np.float64)); cent = C.kmeans(X, 16); Cs.append(cent); va += [0] * len(cent)
+                Cm = np.concatenate(Cs)
+                V = np.clip(np.round(C.golden_vec(Cm, 0.0, np.eye(D)) * 32.0), -127, 127).astype(np.int8)
+                bb = dict(b0); bb.update(vectors=V, vec_action=np.array(va, np.int32), vec_flags=np.zeros(len(va), int),
+                                         bias=np.zeros(len(va), np.int32), N=len(va))
+                return bb
+            variants["audio"] = protos(32, 0)
+            variants["mix"] = protos(16, 16)
+        pr_all = {}
+        for vname, b in variants.items():
+            pr_all[vname] = one_variant(a, prod, cfg, b, name2id, rows, out, vname)
+        # choose the variant on CLEAN DEV unseen accuracy (iteration-1: tuning uses dev)
+        best = max(pr_all, key=lambda v: pr_all[v]["dev_unseen_acc"])
+        res["products"][prod] = {"chosen": best, "variants": pr_all}
+        print(f"{prod}: variant chosen on dev = {best}", flush=True)
     Path(ROOT / "reports/p0").mkdir(parents=True, exist_ok=True)
     json.dump(res, open(ROOT / f"reports/p0/eval-{a.tag}.json", "w"), indent=1)
+
+
+def one_variant(a, prod, cfg, b, name2id, rows, out, vname):
+    # threshold on clean dev headline non-commands
+    rs = rows["clean"]; Q, _ = out["clean"]
+    dv = [i for i, r in enumerate(rs) if r["set"] == "noncommands" and r["split"] == "dev" and r["category"] in HEAD]
+    _, best = decide(b, Q[dv], -10 ** 9)
+    acts, _ = decide(b, Q[dv], -10 ** 9)
+    open_best = np.sort(best[acts != 0])
+    k = int(np.ceil(0.95 * len(dv)))                 # reject >= 95%: at most len - k may pass
+    allowed = len(dv) - k
+    thr = int(open_best[::-1][allowed]) + 1 if len(open_best) > allowed else -10 ** 9
+    b["reject_thr"] = thr
+    blob = C.pack({k_: b[k_] for k_ in ("D", "reject_thr", "margin", "wake_sens", "flags", "host", "i2c_addr", "conf_sh")},
+                  b["vec_action"], b["vec_flags"], b["bias"], b["vectors"], b["actions"], b["slots"], b["gpio"], b["wake"])
+    outdir = ROOT / f"data/sdk/eval-{a.tag}"; outdir.mkdir(parents=True, exist_ok=True)
+    (outdir / f"{prod}-{vname}.mgc").write_bytes(blob)
+    pr = {"N": int(b["N"]), "D": int(b["D"]), "reject_thr": thr, "conds": {}}
+    for c, rs in rows.items():
+        Q, T = out[c]
+        pred, best = decide(b, Q, thr)
+        sel = lambda f: np.array([i for i, r in enumerate(rs) if f(r)], dtype=int)
+        para = sel(lambda r: r["set"] == "paraphrases" and r["product"] == prod and r["split"] == "test")
+        typed = sel(lambda r: r["set"] == f"config:{prod}")
+        nonc = sel(lambda r: r["set"] == "noncommands" and r["split"] == "test" and r["category"] in HEAD)
+        other = sel(lambda r: r["set"] == "noncommands" and r["split"] == "test" and r["category"] == "other_device")
+        y = lambda ix: np.array([name2id[rs[i]["action"]] for i in ix])
+        d = {}
+        d["t2_unseen_acc"] = float((pred[para] == y(para)).mean())
+        d["t2_unseen_acc_norej"] = float((decide(b, Q[para], -10 ** 9)[0] == y(para)).mean())
+        d["t1_typed_acc"] = float((pred[typed] == y(typed)).mean()) if len(typed) else None
+        d["t4_reject_headline"] = float((pred[nonc] == 0).mean())
+        d["reject_other_device"] = float((pred[other] == 0).mean())
+        d["n"] = {"para": len(para), "typed": len(typed), "nonc": len(nonc)}
+        vr = [i for i in para if rs[i]["values"]]
+        ok_given, ok_e2e = [], []
+        for i in vr:
+            got = slot_values(b, cfg, name2id[rs[i]["action"]], T[i])
+            good = all(got.get(kk) == vv for kk, vv in rs[i]["values"].items())
+            ok_given.append(good); ok_e2e.append(good and pred[i] == name2id[rs[i]["action"]])
+        d["t3_values_given_action"] = float(np.mean(ok_given)) if vr else None
+        d["t3_values_end_to_end"] = float(np.mean(ok_e2e)) if vr else None
+        d["n"]["values"] = len(vr)
+        per = {}
+        for nm, aid in name2id.items():
+            ii = [i for i in para if rs[i]["action"] == nm]
+            per[nm] = float((pred[ii] == aid).mean()) if ii else None
+        d["per_action_test"] = per
+        pr["conds"][c] = d
+        print(f"{prod:<9} {vname:<5} {c:<13} unseen {d['t2_unseen_acc']:.3f} (no-rej {d['t2_unseen_acc_norej']:.3f}) typed "
+              f"{d['t1_typed_acc'] if d['t1_typed_acc'] is None else round(d['t1_typed_acc'], 3)} reject {d['t4_reject_headline']:.3f} "
+              f"other-dev {d['reject_other_device']:.2f} values {d['t3_values_given_action']} / e2e {d['t3_values_end_to_end']}", flush=True)
+    # dev accuracy (for the variant choice)
+    rs = rows["clean"]; Q, _ = out["clean"]
+    devp = np.array([i for i, r in enumerate(rs) if r["set"] == "paraphrases" and r["product"] == prod and r["split"] == "dev"], dtype=int)
+    pr["dev_unseen_acc"] = float((decide(b, Q[devp], thr)[0] == np.array([name2id[rs[i]["action"]] for i in devp])).mean())
+    return pr
 
 
 if __name__ == "__main__":

@@ -104,18 +104,24 @@ class Aug:
 
 
 class Batches(torch.utils.data.IterableDataset):
-    def __init__(self, groups, bs, max_s, seed):
-        self.groups, self.bs, self.max_s, self.seed = groups, bs, max_s, seed
+    def __init__(self, groups, bs, max_s, seed, prods_per_batch=0):
+        self.groups, self.bs, self.max_s, self.seed, self.ppb = groups, bs, max_s, seed, prods_per_batch
 
     def __iter__(self):
         wi = torch.utils.data.get_worker_info()
         seed = self.seed * 1000 + (wi.id if wi else 0) + int(time.time()) % 1000
         rng = random.Random(seed); aug = Aug(seed)
         keys, w = list(MIX), [MIX[k] for k in MIX]
+        byp = {}
+        for r in self.groups["tts_cmd"]:
+            byp.setdefault(r.get("product"), []).append(r)
+        prods = sorted(byp, key=str)
         while True:
             xs, tids, txt, cm = [], [], [], []
+            pool = [x for p_ in rng.sample(prods, self.ppb) for x in byp[p_]] if self.ppb else None
             for g in rng.choices(keys, w, k=self.bs):
-                r = rng.choice(self.groups[g])
+                # commands of only a few products per batch: the in-batch negatives are the product's other actions
+                r = rng.choice(pool) if (g == "tts_cmd" and pool) else rng.choice(self.groups[g])
                 try:
                     if "start" in r:
                         x, _ = sf.read(str(ROOT / r["path"]), start=r["start"], stop=r["stop"], dtype="float32")
@@ -125,6 +131,8 @@ class Batches(torch.utils.data.IterableDataset):
                     continue
                 if x.ndim > 1:
                     x = x.mean(1)
+                if len(x) < 1600 or not np.isfinite(x).all():      # empty or broken clip: skip
+                    continue
                 x = aug(x)[: int(self.max_s * SR)]
                 xs.append(x); tids.append(r["tid"]); txt.append(r["text"]); cm.append(0.0 if "start" in r else 1.0)
             n = max(len(x) for x in xs)
@@ -153,10 +161,12 @@ def main():
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--gpu-gb", type=float, default=10)
     ap.add_argument("--init", default="")
+    ap.add_argument("--ppb", type=int, default=0, help="products per batch for the TTS commands (0 = any)")
     ap.add_argument("--moonshine", action="store_true", help="start the frontend and layers from Moonshine Streaming Tiny")
     ap.add_argument("--lr-pre", type=float, default=0.3, help="LR multiplier for Moonshine-initialised weights")
     ap.add_argument("--qat", action="store_true", help="4/8-bit weight QAT from --init, distilling also from the float model")
     ap.add_argument("--lr-scale", type=float, default=5e-4)
+    ap.add_argument("--float-ref", default="", help="QAT: the float model to distill from (default --init)")
     ap.add_argument("--fw", type=float, default=0.5, help="QAT: weight of 1 - cos(q, float model q)")
     a = ap.parse_args()
     torch.manual_seed(0)
@@ -171,16 +181,21 @@ def main():
     if a.moonshine and not a.init:
         pre, _ = load_moonshine(m)
         print("moonshine init:", len(pre), "tensors", flush=True)
-    if a.init:
-        m.load_state_dict(torch.load(a.init, map_location=dev)["state"])
+    ck0 = torch.load(a.init, map_location=dev) if a.init else None
+    if ck0 is not None and ck0.get("qat"):          # resuming a QAT run
+        enable_qat(m); m.to(dev); m.load_state_dict(ck0["state"])
+    elif ck0 is not None:
+        m.load_state_dict(ck0["state"])
     if a.qat:
-        fm = IntentEncoder(cfg).to(dev); fm.load_state_dict(m.state_dict()); fm.eval()
+        fm = IntentEncoder(cfg).to(dev)
+        fm.load_state_dict(torch.load(a.float_ref or a.init, map_location=dev)["state"]); fm.eval()
         for p_ in fm.parameters():
             p_.requires_grad_(False)
-        enable_qat(m); m.to(dev)
+        if not (ck0 is not None and ck0.get("qat")):
+            enable_qat(m); m.to(dev)
     print("weights", n_weights(m), "qat" if a.qat else "float", flush=True)
     Yt = torch.from_numpy(Y).to(dev)
-    dl = torch.utils.data.DataLoader(Batches(groups, a.bs, a.max_s, 1), batch_size=None, num_workers=a.workers,
+    dl = torch.utils.data.DataLoader(Batches(groups, a.bs, a.max_s, 1, a.ppb), batch_size=None, num_workers=a.workers,
                                      prefetch_factor=4, persistent_workers=True)
     sc = [p_ for n_, p_ in m.named_parameters() if n_.endswith("log_s")]
     pw = [p_ for n_, p_ in m.named_parameters() if n_ in pre]
@@ -207,6 +222,8 @@ def main():
         l_kd = F.kl_div(F.log_softmax(S, 1), F.log_softmax(Tt, 1), log_target=True, reduction="batchmean")
         lp = F.log_softmax(logits.float(), -1).transpose(0, 1)
         tl = tl.to(dev); cmask = cmask.to(dev)      # crops of long LibriSpeech utterances: no CTC (estimated words)
+        cmask = cmask * (tl <= flen).float()        # a target longer than the frames cannot be aligned
+        tl = torch.minimum(tl, flen)
         l_ctc = F.ctc_loss(lp, tg.to(dev), flen, tl, blank=0, reduction="none", zero_infinity=True) / tl.clamp_min(1)
         l_ctc = (l_ctc * cmask).sum() / cmask.sum().clamp_min(1)
         loss = l_cos + l_kd + a.ctc_w * l_ctc
@@ -222,7 +239,7 @@ def main():
             s = np.mean(stats, 0); stats = []
             print(f"step {step} cos_loss {s[0]:.4f} kd {s[1]:.4f} ctc {s[2]:.4f} cos {s[3]:.4f} lr {sched.get_last_lr()[0]:.2e} "
                   f"{(time.time()-t0)/60:.1f} min", flush=True)
-        if step % 2000 == 0:
+        if step % 1000 == 0:
             torch.save({"state": m.state_dict(), "cfg": cfg, "step": step, "qat": a.qat}, out)
         if step >= a.steps or time.time() - t0 > a.minutes * 60:
             break
