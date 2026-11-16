@@ -7,6 +7,7 @@
 // Depthwise histories live in one RAM (888 x 32b): taps before the session's first frame read as zero.
 module wk_nn (
     input  wire               clk,
+    input  wire               clk_x,         // free-running clock for the feature buffer (written by the front end)
     input  wire               rst_n,
     input  wire               clr,
     input  wire               start,
@@ -54,7 +55,7 @@ module wk_nn (
     reg         h_we, v_we, o_we;
     reg  [9:0]  h_wa;   reg [4:0] v_wa, o_wa;
     reg  [31:0] w_wd;
-    wk_ram #(.WORDS(64),  .WIDTH(8))  u_x (.clk(clk), .we(x_we), .waddr(x_addr), .wdata(x_data), .re(xr_re), .raddr(xr_a), .rdata(xr_d));
+    wk_ram #(.WORDS(64),  .WIDTH(8))  u_x (.clk(clk_x), .we(x_we), .waddr(x_addr), .wdata(x_data), .re(xr_re), .raddr(xr_a), .rdata(xr_d));
     wk_ram #(.WORDS(888), .WIDTH(32)) u_h (.clk(clk), .we(h_we), .waddr(h_wa), .wdata(w_wd), .re(hr_re), .raddr(hr_a), .rdata(hr_d));
     wk_ram #(.WORDS(24),  .WIDTH(32)) u_v (.clk(clk), .we(v_we), .waddr(v_wa), .wdata(w_wd), .re(vr_re), .raddr(vr_a), .rdata(vr_d));
     wk_ram #(.WORDS(24),  .WIDTH(32)) u_o (.clk(clk), .we(o_we), .waddr(o_wa), .wdata(w_wd), .re(or_re), .raddr(or_a), .rdata(or_d));

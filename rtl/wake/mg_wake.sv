@@ -65,26 +65,33 @@ module mg_wake #(
         end
     end
 
+    // ---- per-engine clock gates: each engine is clocked only from its start to one clock after done (and while en = 0,
+    // to hold the cleared state); the sample ring, schedule and feature buffer stay on clk
+    wire g_fe, g_nn, g_dp;
+    clk_gate u_cg_fe (.clk(clk), .en(fe_start | fe_busy | fe_done | clr), .gclk(g_fe));
+    clk_gate u_cg_nn (.clk(clk), .en(fe_done | nn_busy | nn_done | clr), .gclk(g_nn));
+    clk_gate u_cg_dp (.clk(clk), .en(nn_done | dp_busy | dp_done | clr), .gclk(g_dp));
+
     // ---- engines
     wire       x_we;  wire [5:0] x_addr;  wire [7:0] x_data;
     wire       fe_dv; wire [15:0] fe_dd;
-    wk_fe #(.MEMDIR(MEMDIR)) u_fe (.clk(clk), .rst_n(rst_n), .clr(clr), .start(fe_start), .base(fbase), .busy(fe_busy), .done(fe_done),
+    wk_fe #(.MEMDIR(MEMDIR)) u_fe (.clk(g_fe), .rst_n(rst_n), .clr(clr), .start(fe_start), .base(fbase), .busy(fe_busy), .done(fe_done),
         .sr_re(sr_re), .sr_addr(sr_addr), .sr_rdata(sr_rdata), .x_we(x_we), .x_addr(x_addr), .x_data(x_data), .dbg_v(fe_dv), .dbg_d(fe_dd));
 
     wire        rom_req, rom_gnt, rom_rvalid;
     wire [14:0] rom_addr;
     wire [15:0] rom_rdata;
-    wk_rom #(.STALL(ROM_STALL), .MEMFILE({MEMDIR, "wake_rom.mem"})) u_rom (.clk(clk), .rst_n(rst_n), .rom_req(rom_req), .rom_addr(rom_addr),
+    wk_rom #(.STALL(ROM_STALL), .MEMFILE({MEMDIR, "wake_rom.mem"})) u_rom (.clk(g_nn), .rst_n(rst_n), .rom_req(rom_req), .rom_addr(rom_addr),
         .rom_gnt(rom_gnt), .rom_rvalid(rom_rvalid), .rom_rdata(rom_rdata));
 
     wire [5:0]  z_idx;  wire signed [15:0] z_val, zmax;
     wire        nn_dv;  wire [21:0] nn_dd;
-    wk_nn u_nn (.clk(clk), .rst_n(rst_n), .clr(clr), .start(fe_done), .busy(nn_busy), .done(nn_done),
+    wk_nn u_nn (.clk(g_nn), .clk_x(clk), .rst_n(rst_n), .clr(clr), .start(fe_done), .busy(nn_busy), .done(nn_done),
         .x_we(x_we), .x_addr(x_addr), .x_data(x_data), .rom_req(rom_req), .rom_addr(rom_addr), .rom_gnt(rom_gnt),
         .rom_rvalid(rom_rvalid), .rom_rdata(rom_rdata), .z_idx(z_idx), .z_val(z_val), .zmax(zmax), .dbg_v(nn_dv), .dbg_d(nn_dd));
 
     wire        dp_dv;  wire [31:0] dp_dd;
-    wk_dp u_dp (.clk(clk), .rst_n(rst_n), .clr(clr), .start(nn_done), .busy(dp_busy), .done(dp_done), .fire(dp_fire),
+    wk_dp u_dp (.clk(g_dp), .rst_n(rst_n), .clr(clr), .start(nn_done), .busy(dp_busy), .done(dp_done), .fire(dp_fire),
         .tpl_addr(tpl_addr), .sens(sens), .cfg_req(cfg_req), .cfg_addr(cfg_addr), .cfg_gnt(cfg_gnt), .cfg_rdata(cfg_rdata),
         .z_idx(z_idx), .z_val(z_val), .zmax(zmax), .dbg_v(dp_dv), .dbg_d(dp_dd));
 

@@ -40,6 +40,12 @@ module wake_tb #(
     mg_wake #(.MEMDIR(MEMDIR), .ROM_STALL(ROM_STALL)) dut (.clk(clk), .rst_n(rst_n), .en(en), .in_valid(in_valid), .in_data(in_data),
         .in_vad(1'b0), .in_raw(1'b0), .tpl_addr(TPL), .tpl_len(8'd0), .sens(sens), .cfg_req(cfg_req), .cfg_addr(cfg_addr),
         .cfg_gnt(cfg_gnt), .cfg_rdata(cfg_rdata), .wake(wake), .busy(busy), .dbg_v(dv), .dbg_k(dk), .dbg_d(dd));
+    longint bcyc = 0, nfr = 0;
+    always @(posedge clk) begin
+        if (dut.busy) bcyc <= bcyc + 1;
+        if (dut.fe_start) nfr <= nfr + 1;
+    end
+    final $display("WAKE_STATS frames=%0d busy_clocks=%0d per_frame=%0d", nfr, bcyc, (nfr > 0) ? bcyc / nfr : 0);
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) n <= 0;
         else begin
