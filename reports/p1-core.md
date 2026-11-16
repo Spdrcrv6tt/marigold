@@ -9,7 +9,7 @@ are **estimates**, built on Poinsetta's method and densities, and are labelled a
 
 | # | Target | Result | How measured |
 |---|---|---|---|
-| 12 | Bit-exact hardware, mic pin to output pins, with negative controls | **Met on v1** (and on qsmoke): every frame, q vector, raw slot value, settled GPIO state and front-end sample identical over 5 commands; the three negative controls fail (section 9). Open: one per-element unit-test case on v1 tables (section 9) | rtl/top/tb/mg_e2e.py: Verilator whole chip against sw/golden/chip_golden.py |
+| 12 | Bit-exact hardware, mic pin to output pins, with negative controls | **Met on v1** (and on qsmoke): every frame, q vector, raw slot value, settled GPIO state and front-end sample identical over 5 commands; the three negative controls fail (section 9). Core unit tests 0 failures on v1 tables | rtl/top/tb/mg_e2e.py: Verilator whole chip against sw/golden/chip_golden.py |
 | 7 | Response time <= 300 ms median | **median 154.8 ms** (148.8 to 162.9, 5 commands, v1) from end of speech to irq in RTL: 128 ms end-of-speech hangover (rule 8.1, hang 8 frames) + up to 16 ms of frame alignment + 21 to 35 ms of core and matcher work after the segment closes | the same runs; end of speech = end of the last VAD raw-speech frame |
 | 8 | <= 5M weights at 4-bit, <= 20 Mbit ROM as built | 4,586,560 weights; ROM image **19.33 Mbit** (2,415,680 B: firmware 14,376 B, tables and weights from 0x8040) | rtl/core/tools/mkimage_mg.py image, the bytes the RTL's ROM holds |
 | 9 | Listening power <= 100 uW at 28 nm | **20 to 103 uW (estimate)**: met unless the PDM front end lands at the top of Poinsetta's range | section 6 |
@@ -145,10 +145,18 @@ Response time (target 7), across all 5 commands measured in RTL: **148.8 to 162.
 
 Core unit tests with v1's tables:
 - test-fan: 467 operations, 0 failures.
-- test-mac stopped in its first 16-lane run with 5 failing per-element operations. They are one LUT operation
-  (op 79, parameters 0x3b52, n 18) and four later operations that depend on its RAM.
-- The LUT tables in v1's layout.h (the C reference) and in imh_rom.svh (the RTL) are identical entry for entry,
-  and the same test passes 24,000 of 24,000 with qsmoke's tables.
-- The difference is therefore in how the asinh table's values meet one random parameter combination, likely an
-  index past entry 512. The firmware never hits it on the regression inputs (the whole-chip runs are bit-exact).
-- **Open finding**, not yet explained; first item for the next session.
+- test-mac, rebuilt from clean: 24,000 operations, **0 failures**, including 348 asinh LUT operations on v1's table.
+
+Closed finding (Nov 16, 0:30 AM): the first v1 run of test-mac reported 5 failing per-element operations. The cause
+was a build artifact, and neither the RTL nor the C reference is wrong.
+- The cause: test-mac reused the object directory of the qsmoke run. The make inside Verilator's object directory
+  does not track changed -I paths, so hal_host.o was not recompiled and kept qsmoke's asinh table, while the RTL
+  had v1's imh_rom.svh. The two tables differ only in the asinh table.
+- The failures: one LUT operation in asinh mode (op 79: R 4, no tails, f 2, f_out 5, with statistics) differed,
+  and its S/Q accumulators carried the difference into four later operations.
+- Evidence: rebuilt from clean, the same binary passes 4,000 of 4,000 at 16 lanes, and the whole target passes.
+  The LUT entries in v1's layout.h and imh_rom.svh match one for one.
+- No firmware or golden path was ever affected: the whole-chip runs build the image and the RTL from the same
+  export.
+- Fix: test-mac and test-fan now delete their object directories before building (rtl/top/Makefile).
+  test_mac.cpp also prints the differing elements when a RAM word differs.

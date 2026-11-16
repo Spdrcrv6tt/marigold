@@ -58,13 +58,13 @@ sim-flash:
 # unit test of the MAC array and the per-element unit against their C references (fw/hal_host.c)
 test-mac:
 	for L in 16 8 4; do \
-	  verilator --cc --exe --build -j 8 -O3 --x-assign fast --x-initial fast -Wno-fatal -Wno-WIDTH -Wno-UNUSED -Wno-PINMISSING \
+	  rm -rf $(B)/unit$$L; verilator --cc --exe --build -j 8 -O3 --x-assign fast --x-initial fast -Wno-fatal -Wno-WIDTH -Wno-UNUSED -Wno-PINMISSING \
 	    -I$(SRC) -I$(CORE) --top-module unit_tb -GLANES=$$L -CFLAGS "-O2 -DHOST -DHOST_LIB -DLANES=$$L -I$(FW) -I$(UIMG)" \
 	    --Mdir $(B)/unit$$L -o test_units $(CORE)/tb/unit_tb.sv $(CORE)/imh_mac.sv $(CORE)/imh_vec.sv $(CORE)/imh_mem.sv $(SRC)/mac_lane.sv \
 	    $(CORE)/tb/test_mac.cpp $(FW)/hal_host.c > $(B)/unit$$L.build.log 2>&1 || { grep -E "rror" -A4 $(B)/unit$$L.build.log | head -40; exit 1; }; \
 	  $(B)/unit$$L/test_units 4000 7 || exit 1; \
 	done
-	verilator --cc --exe --build -j 8 -O3 --x-assign fast --x-initial fast -Wno-fatal -Wno-WIDTH -Wno-UNUSED -Wno-PINMISSING \
+	rm -rf $(B)/unitts; verilator --cc --exe --build -j 8 -O3 --x-assign fast --x-initial fast -Wno-fatal -Wno-WIDTH -Wno-UNUSED -Wno-PINMISSING \
 	  -I$(SRC) -I$(CORE) --top-module unit_tb -GLANES=16 -CFLAGS "-O2 -DHOST -DHOST_LIB -DLANES=16 -I$(FW) -I$(UTSIMG)" \
 	  --Mdir $(B)/unitts -o test_units $(CORE)/tb/unit_tb.sv $(CORE)/imh_mac.sv $(CORE)/imh_vec.sv $(CORE)/imh_mem.sv $(SRC)/mac_lane.sv \
 	  $(CORE)/tb/test_mac.cpp $(FW)/hal_host.c > $(B)/unitts.build.log 2>&1 || { grep -E "rror" -A4 $(B)/unitts.build.log | head -40; exit 1; }
@@ -73,7 +73,7 @@ test-mac:
 # unit test of the fan-out array against its C reference (fw/hal_host.c fan_go); the second run with a full-rate
 # weight source prints the array's MAC efficiency
 test-fan:
-	verilator --cc --exe --build -j 8 -O3 --x-assign fast --x-initial fast -Wno-fatal -Wno-WIDTH -Wno-UNUSED -Wno-PINMISSING \
+	rm -rf $(B)/fan; verilator --cc --exe --build -j 8 -O3 --x-assign fast --x-initial fast -Wno-fatal -Wno-WIDTH -Wno-UNUSED -Wno-PINMISSING \
 	  -I$(SRC) -I$(CORE) --top-module fan_tb -GLANES=16 -GRAM_BYTES=131072 -CFLAGS "-O2 -DHOST -DHOST_LIB -DLANES=16 -I$(FW) -I$(UIMG)" \
 	  --Mdir $(B)/fan -o test_fan $(CORE)/tb/fan_tb.sv $(CORE)/imh_fan.sv $(CORE)/imh_mem.sv $(SRC)/mac_lane.sv \
 	  $(CORE)/tb/test_fan.cpp $(FW)/hal_host.c > $(B)/fan.build.log 2>&1 || { grep -E "rror" -A4 $(B)/fan.build.log | head -40; exit 1; }

@@ -55,7 +55,14 @@ static int ram_compare() {
     top->h_en = 1; top->h_we = 0; top->h_addr = 0; tick();
     for (u32 w = 0; w < RAMB / WBY; w++) {
         top->h_addr = w + 1;
-        if (memcmp(&top->h_rdata, mram + WBY * w, WBY)) { if (!bad) fprintf(stderr, "  RAM word %u (element %u..) differs\n", w, w * LANES); bad++; }
+        if (memcmp(&top->h_rdata, mram + WBY * w, WBY)) {
+            if (!bad) {
+                fprintf(stderr, "  RAM word %u (element %u..) differs\n", w, w * LANES);
+                const short *g = (const short *)&top->h_rdata, *e = (const short *)(mram + WBY * w);
+                for (int k = 0; k < LANES; k++) if (g[k] != e[k]) fprintf(stderr, "    element %u: rtl %d ref %d\n", w * LANES + k, g[k], e[k]);
+            }
+            bad++;
+        }
         tick();
     }
     top->h_en = 0;
