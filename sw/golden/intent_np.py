@@ -295,7 +295,7 @@ def build_int(Q, maxabs, margin=1.25):
     for n, src in norm_sites():
         g = Q.get(n + ".g", np.ones(FRAME if n == "fe.cmvn" else Q["proj.q"].shape[0] if n == "out" else W))
         fg = 14 if n in ("fe.cmvn", "out") else fmt16(np.abs(g).max())
-        G[n + ".G"] = np.rint(g * 2.0 ** fg).astype(np.int64); G[n + ".fg"] = np.int64(fg)
+        G[n + ".G"] = np.clip(np.rint(g * 2.0 ** fg), -32767, 32767).astype(np.int64); G[n + ".fg"] = np.int64(fg)  # int16 (core)
         eps = 1e-6 if n == "fe.cmvn" else 1e-5
         G[n + ".eps"] = np.int64(max(1, round(eps * 2.0 ** (2 * F[src]))))
     xs = (np.arange(513) - 256) / 32.0

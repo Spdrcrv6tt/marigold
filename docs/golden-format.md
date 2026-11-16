@@ -45,6 +45,9 @@ Weight sites (`.q` is [out, fan_in]; convolution columns are channel-major, colu
 A b-bit site holds -(2^(b-1)-1) .. 2^(b-1)-1 (symmetric, per output row). Each site carries `.M` and `.sh` per output
 row (2^14 <= M < 2^15, 1 <= sh < 62) and `.bi` (bias in accumulator units), exactly as Poinsetta.
 
+Export rule (Nov 15, core agent): every norm gain `<n>.G` is clamped to [-32767, 32767] at export (it is stored as
+int16); this is a clamp in the exporter, not a format change.
+
 Norm sites: `fe.cmvn` (per 80-sample frame, gain 1, eps 1e-6 at input format 15), `enc<i>.ln1`, `enc<i>.ln2`,
 `enc.ln` (gains learned), `out` (gain 1, no learned gain). eps 1e-5 except `fe.cmvn`.
 

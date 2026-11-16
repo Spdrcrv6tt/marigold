@@ -40,10 +40,11 @@ def main():
     total = wbits + rows + norms + luts + fmts
     D = G["proj.q"].shape[0]
     # MACs per encoder frame (50 per second)
-    fe = 4 * S.FRAME * S.W + 2 * (S.W * 5) * S.W + (S.W * 5) * S.W
-    layer = 4 * S.W * S.W + 2 * S.W * S.FF
+    sz = lambda w: int(G[w + ".q"].size)
+    fe = 4 * sz("fe.lin") + 2 * sz("fe.c1") + sz("fe.c2")           # 5 ms frames x4, c1 at 10 ms x2, c2 at 20 ms
+    layer = sum(sz(f"enc0.{c}") for c in ("q", "k", "v", "o", "fc1", "fc2"))
     att = sum(S.NH * (p + f + 1) * S.HD * 2 for p, f in S.WIN)
-    ctc = S.V * S.W
+    ctc = sz("ctc")
     per_frame = fe + S.NL * layer + att + ctc
     rate = 16 * 98e6 * 0.87
     tail_frames = 4 + 4

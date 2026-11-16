@@ -43,7 +43,7 @@ def torch_to_Q(m):
 def calib_clips(n, seed=0):
     rows = [json.loads(l) for l in open(ROOT / "data/intent/index_train.jsonl", encoding="utf8")]
     rng = random.Random(seed)
-    pick = rng.sample([r for r in rows if r["src"] in ("tts", "libri")], n)
+    pick = rng.sample([r for r in rows if r["src"] in ("tts", "libri") and "start" not in r], n)
     noise = [json.loads(l) for l in open(ROOT / "data/noise/index.jsonl")]
     noise = [r for r in noise if r["split"] == "train" and r["type"] in ("fan", "microwave", "babble", "tv")]
     out = []

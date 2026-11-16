@@ -8,12 +8,13 @@ export PYTHONIOENCODING=utf-8
 L=data/logs/final_$TAG.log
 echo "=== QAT from $FLOAT until $(date -d @$DL +%H:%M)" >> $L
 bash sw/intent/run_resume.sh q$TAG $FLOAT $DL --qat --float-ref $FLOAT --targets data/intent/targets-teacher-v3.npz \
-     --ppb 2 --lr 1e-4 --lr-scale 5e-4 --fw 0.5 --steps 400000 --workers 8 --gpu-gb 8 --bs 64
+     --ppb 2 --lr 1e-4 --lr-scale 5e-4 --fw 0.5 --ctc-w 1.0 --steps 400000 --workers 8 --gpu-gb 8 --bs 64
 echo "=== export $(date +%H:%M)" >> $L
 $PY sw/golden/intent_export.py data/intent/q$TAG.pt --tag $TAG --calib 400 >> $L 2>&1
 echo "=== tests $(date +%H:%M)" >> $L
 $PY sw/golden/intent_test.py --tag $TAG --n 6 >> $L 2>&1
 $PY sw/intent/budget.py --tag $TAG >> $L 2>&1
+$PY sw/golden/intent_vectors.py --tag $TAG >> $L 2>&1
 echo "=== golden eval $(date +%H:%M)" >> $L
 $PY sw/intent/evaluate.py --model data/intent/q$TAG.pt --golden data/golden/mg-$TAG.npz --tag golden-$TAG --enroll 2>&1 | grep -v "Warning\|Loading\|get_sentence" >> $L
 echo "=== done $(date +%H:%M)" >> $L
