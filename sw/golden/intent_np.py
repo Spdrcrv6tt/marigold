@@ -13,8 +13,8 @@ import numpy as np
 
 FORMAT_VERSION = "1.0"
 FRAME, CHUNK = 80, 1280
-W, NH, HD, NL, FF = 240, 6, 40, 6, 480
-WIN = [(16, 4)] + [(16, 0)] * 5
+W, NH, HD, NL, FF = 320, 8, 40, 2, 1280          # v1: Moonshine Streaming Tiny frontend + first 2 encoder layers
+WIN = [(16, 4), (16, 0)]
 V = 45
 F_AUDIO, F_Q = 15, 5
 I16, I8, RES_SAT = 32767, 127, (1 << 24) - 1

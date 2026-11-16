@@ -11,59 +11,63 @@ The arithmetic is Poinsetta's (D:\poinsetta\docs\golden-format.md, format 3.6, s
 
 ## 1. Model
 
+**Draft 0.3 (Nov 15, 7 PM): the encoder is now Moonshine Streaming Tiny's own frontend plus its first two encoder
+layers (MIT), fine-tuned, instead of a from-scratch W = 240 model.** The from-scratch model barely learned in 5k
+steps (cosine 0.12 to the teacher); the pretrained start reaches that in 1k. Same op set and arithmetic as before.
+
 | | Value |
 |---|---|
-| Width W | 240 (6 heads of HD = 40, so `sm.C` = 14949 as Poinsetta) |
-| Encoder layers NL | 6, pre-norm, band attention + GELU MLP (FF = 480) |
+| Width W | 320 (8 heads of HD = 40, `sm.C` = 14949, exactly Poinsetta's encoder) |
+| Frontend | Poinsetta's: fe.lin [320, 80], fe.c1 [640, 1600] + SiLU, fe.c2 [320, 3200] |
+| Encoder layers NL | 2, pre-norm, band attention + GELU MLP (FF = 1280) |
 | Frame rate | 80-sample frames (5 ms) in; 50 encoder frames per second (20 ms) |
-| Band windows | layer 0: keys t-16 .. t+4; layers 1-5: keys t-16 .. t (no look-ahead) |
+| Band windows | layer 0: keys t-16 .. t+4; layer 1: keys t-16 .. t (no look-ahead) |
 | Look-ahead | 4 frames = 80 ms = one chunk of 1,280 samples (architecture.md section 4) |
-| Output D | **128** (provisional until about 7 PM tonight; 256 is the alternative). Same D in the config blob. |
+| Output D | **128** (fixed at the teacher freeze) |
 | Value head | CTC over V = 45 tokens (section 6) |
-| Weights | 3.43M at D = 256, 3.40M at D = 128 (matrices; norm gains and biases extra, about 8k) |
+| Weights | 4,586,560 (matrices; norm gains and biases extra, about 5k) |
 
 Weight sites (`.q` is [out, fan_in]; convolution columns are channel-major, column = in_channel * 5 + tap):
 
 | Site | `.q` shape | Bits | Bias | Input format | Output |
 |---|---|---|---|---|---|
-| `fe.lin` | [240, 80] | 8 | no | `fe.asinh` | `fe.lin`, then SiLU |
-| `fe.c1` | [240, 1200] | 8 | yes | `fe.lin` (after SiLU) | `fe.c1`, then SiLU |
-| `fe.c2` | [240, 1200] | 8 | yes | `fe.c1` (after SiLU) | `enc.res` |
-| `enc<i>.q/.k/.v` | [240, 240] | 4 | no | `enc<i>.ln1` | `enc<i>.q/.k/.v` |
-| `enc<i>.o` | [240, 240] | 4 | no | `enc<i>.v` | `enc.res` |
-| `enc<i>.fc1` | [480, 240] | 4 | yes | `enc<i>.ln2` | `enc<i>.fc1`, then GELU |
-| `enc<i>.fc2` | [240, 480] | 4 | yes | `enc<i>.fc1` (after GELU) | `enc.res` |
-| `proj` | [D, 240] | 4 | no | `pool` | `proj` |
-| `ctc` | [45, 240] | 8 | yes | `enc.ln` | `ctc` (logits) |
+| `fe.lin` | [320, 80] | 8 | no | `fe.asinh` | `fe.lin`, then SiLU |
+| `fe.c1` | [640, 1600] | 4 | yes | `fe.lin` (after SiLU) | `fe.c1`, then SiLU |
+| `fe.c2` | [320, 3200] | 4 | yes | `fe.c1` (after SiLU) | `enc.res` |
+| `enc<i>.q/.k/.v` | [320, 320] | 4 | no | `enc<i>.ln1` | `enc<i>.q/.k/.v` |
+| `enc<i>.o` | [320, 320] | 4 | no | `enc<i>.v` | `enc.res` |
+| `enc<i>.fc1` | [1280, 320] | 4 | yes | `enc<i>.ln2` | `enc<i>.fc1`, then GELU |
+| `enc<i>.fc2` | [320, 1280] | 4 | yes | `enc<i>.fc1` (after GELU) | `enc.res` |
+| `proj` | [128, 320] | 4 | no | `pool` | `proj` |
+| `ctc` | [45, 320] | 8 | yes | `enc.ln` | `ctc` (logits) |
 
-Bits are the plan; QAT may move a site between 4 and 8 bits, and the freeze's `.json` lists the bits per site.
 A b-bit site holds -(2^(b-1)-1) .. 2^(b-1)-1 (symmetric, per output row). Each site carries `.M` and `.sh` per output
 row (2^14 <= M < 2^15, 1 <= sh < 62) and `.bi` (bias in accumulator units), exactly as Poinsetta.
 
 Norm sites: `fe.cmvn` (per 80-sample frame, gain 1, eps 1e-6 at input format 15), `enc<i>.ln1`, `enc<i>.ln2`,
 `enc.ln` (gains learned), `out` (gain 1, no learned gain). eps 1e-5 except `fe.cmvn`.
 
-ROM image (estimate at D = 128): 2.79M x 4 bits + 0.61M x 8 bits = 16.0 Mbit of weights, plus multipliers, shifts,
-biases, gains and the LUTs (`lut.asinh` with its own k, `lut.silu`, `lut.gelu`, `sm.exp2`): about 16.3 Mbit packed.
-Compute: 3.77M MACs per encoder frame (frontend 0.94M, layers 2.77M, attention about 0.06M), 188M MACs per second
-of audio, about 7x real time on the 16-lane array at 98 MHz.
+ROM image (estimate): 4.55M x 4 bits + 0.04M x 8 bits = 18.5 Mbit of weights, plus per-row multipliers, shifts,
+biases, gains and the LUTs: about 18.9 Mbit packed (under target 8's 20 Mbit). Compute: 5.6M MACs per encoder
+frame (frontend 3.2M, layers 2.5M), 280M MACs per second of audio, about 4.9x real time on the 16-lane array at
+98 MHz (architecture.md section 4 estimated 5.5x for 5M weights).
 
 ## 2. Graph (one segment; everything starts from zero at the segment start)
 
     frames = segment PCM (int16, format 15), zero-padded to a multiple of 80, as rows of 80        n rows
     y   = norm(frames, fe.cmvn, 15)
     a   = lut(y, F[fe.cmvn], lut.asinh, R 4, no tails, f_out F[fe.asinh])
-    h   = lut(mac(a, fe.lin), F[fe.lin], lut.silu, R 3, tails)                        [n, 240]
-    c   = lut(mac(patches(h), fe.c1), F[fe.c1], lut.silu, R 3, tails)                 [ceil(n/2), 240]
-    x   = mac(patches(c), fe.c2, sat 2^24 - 1)                                        [T = ceil(n/4), 240] at F[enc.res]
+    h   = lut(mac(a, fe.lin), F[fe.lin], lut.silu, R 3, tails)                        [n, 320]
+    c   = lut(mac(patches(h), fe.c1), F[fe.c1], lut.silu, R 3, tails)                 [ceil(n/2), 640]
+    x   = mac(patches(c), fe.c2, sat 2^24 - 1)                                        [T = ceil(n/4), 320] at F[enc.res]
 
-    encoder layer i (i = 0..5), window (16, 4) for i = 0 and (16, 0) otherwise:
-        y = norm(x, enc<i>.ln1, F[enc.res]);  q, k, v = mac(y, enc<i>.q/.k/.v)   (6 heads of 40)
+    encoder layer i (i = 0, 1), window (16, 4) for i = 0 and (16, 0) for i = 1:
+        y = norm(x, enc<i>.ln1, F[enc.res]);  q, k, v = mac(y, enc<i>.q/.k/.v)   (8 heads of 40)
         h = sat(x + mac(band_attn(q, k, v, F[enc<i>.q], F[enc<i>.k]), enc<i>.o, 2^24 - 1), 2^24 - 1)
         y = lut(mac(norm(h, enc<i>.ln2, F[enc.res]), enc<i>.fc1), F[enc<i>.fc1], lut.gelu, R 3, tails)
         x = sat(h + mac(y, enc<i>.fc2, 2^24 - 1), 2^24 - 1)
 
-    e = norm(x, enc.ln, F[enc.res])                                                   [T, 240] int16 at F[enc.ln]
+    e = norm(x, enc.ln, F[enc.res])                                                   [T, 320] int16 at F[enc.ln]
 
     intent head (at end of speech):
         s[c]  = sum over t < T of e[t][c]                                             int64
@@ -150,5 +154,7 @@ streaming (chunked) encoder equals the whole-segment one.
 
 - 2026-11-15 draft 0.1: first draft for the core agent (dimensions, op list, D, quantisation, head and value rules),
   with the coordinator's rulings: pre-roll 0.3 s, conf_sh in the blob, level-word bytes in the slot entry.
+- 2026-11-15 draft 0.3: encoder = Moonshine Streaming Tiny frontend + first 2 layers (W 320, FF 1280, C1 640),
+  4.59M weights, frontend convs 4-bit to stay under 20 Mbit; windows (16,4), (16,0).
 - 2026-11-15 draft 0.2: values are per config slot and action-independent; level words leave the core as codes
   -1..-5 and the island maps them (ruling); segment mn = 0.5 s.

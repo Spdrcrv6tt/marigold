@@ -21,7 +21,7 @@ import torch.nn.functional as F
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "sw" / "intent"))
-from model import IntentEncoder, CFG, n_weights, enable_qat  # noqa: E402
+from model import IntentEncoder, CFG, n_weights, enable_qat, load_moonshine  # noqa: E402
 import values  # noqa: E402
 
 SR = 16000
@@ -153,6 +153,8 @@ def main():
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--gpu-gb", type=float, default=10)
     ap.add_argument("--init", default="")
+    ap.add_argument("--moonshine", action="store_true", help="start the frontend and layers from Moonshine Streaming Tiny")
+    ap.add_argument("--lr-pre", type=float, default=0.3, help="LR multiplier for Moonshine-initialised weights")
     ap.add_argument("--qat", action="store_true", help="4/8-bit weight QAT from --init, distilling also from the float model")
     ap.add_argument("--lr-scale", type=float, default=5e-4)
     ap.add_argument("--fw", type=float, default=0.5, help="QAT: weight of 1 - cos(q, float model q)")
@@ -165,6 +167,10 @@ def main():
     cfg = dict(CFG); cfg["D"] = Y.shape[1]
     m = IntentEncoder(cfg).to(dev)
     fm = None
+    pre = set()
+    if a.moonshine and not a.init:
+        pre, _ = load_moonshine(m)
+        print("moonshine init:", len(pre), "tensors", flush=True)
     if a.init:
         m.load_state_dict(torch.load(a.init, map_location=dev)["state"])
     if a.qat:
@@ -177,9 +183,10 @@ def main():
     dl = torch.utils.data.DataLoader(Batches(groups, a.bs, a.max_s, 1), batch_size=None, num_workers=a.workers,
                                      prefetch_factor=4, persistent_workers=True)
     sc = [p_ for n_, p_ in m.named_parameters() if n_.endswith("log_s")]
-    rest = [p_ for n_, p_ in m.named_parameters() if not n_.endswith("log_s")]
-    opt = torch.optim.AdamW([{"params": rest, "lr": a.lr}] + ([{"params": sc, "lr": a.lr_scale, "weight_decay": 0.0}] if sc else []),
-                            lr=a.lr, weight_decay=0.01, betas=(0.9, 0.98))
+    pw = [p_ for n_, p_ in m.named_parameters() if n_ in pre]
+    rest = [p_ for n_, p_ in m.named_parameters() if not n_.endswith("log_s") and n_ not in pre]
+    groups = [{"params": rest, "lr": a.lr}] + ([{"params": pw, "lr": a.lr * a.lr_pre}] if pw else []) +              ([{"params": sc, "lr": a.lr_scale, "weight_decay": 0.0}] if sc else [])
+    opt = torch.optim.AdamW(groups, lr=a.lr, weight_decay=0.01, betas=(0.9, 0.98))
     warm = 200 if a.qat else 1000
     t_start = time.time()
     prog = lambda s: min(1.0, max(s / a.steps, (time.time() - t_start) / (a.minutes * 60)))   # step- or time-based

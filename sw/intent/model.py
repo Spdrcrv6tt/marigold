@@ -16,7 +16,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 FRAME = 80
-CFG = dict(W=240, NH=6, HD=40, NL=6, FF=480, D=256, PAST=16, FUT=(4, 0, 0, 0, 0, 0), V=45)
+# v1 (Nov 15, 7 PM): Moonshine Streaming Tiny's own frontend and its first two encoder layers (MIT, pretrained on
+# far more speech than we have), so the 4.6M-weight encoder starts from real acoustic features. The from-scratch
+# W = 240 design (CFG_SCRATCH) barely learned in 5k steps (cosine 0.12) and was dropped.
+CFG = dict(W=320, NH=8, HD=40, NL=2, FF=1280, C1=640, D=128, PAST=16, FUT=(4, 0), V=45)
+CFG_SCRATCH = dict(W=240, NH=6, HD=40, NL=6, FF=480, C1=240, D=128, PAST=16, FUT=(4, 0, 0, 0, 0, 0), V=45)
+MOONSHINE = "D:/poinsetta/data/hf/hub/models--UsefulSensors--moonshine-streaming-tiny"
 
 
 def causal_patches(x, k=5, s=2):
@@ -76,8 +81,9 @@ class IntentEncoder(nn.Module):
         W = c["W"]
         self.log_k = nn.Parameter(torch.tensor(math.log(0.6448)))
         self.fe_lin = nn.Linear(FRAME, W, bias=False)
-        self.fe_c1 = nn.Linear(W * 5, W)
-        self.fe_c2 = nn.Linear(W * 5, W)
+        C1 = c.get("C1", W)
+        self.fe_c1 = nn.Linear(W * 5, C1)
+        self.fe_c2 = nn.Linear(C1 * 5, W)
         self.layers = nn.ModuleList(Layer(W, c["NH"], c["HD"], c["FF"], c["PAST"], c["FUT"][i]) for i in range(c["NL"]))
         self.ln = Norm(W)
         self.proj = nn.Linear(W, c["D"], bias=False)
@@ -116,6 +122,31 @@ class IntentEncoder(nn.Module):
         return self.pool(e, flen), self.ctc(e), flen
 
 
+def load_moonshine(m):
+    """Copy Moonshine Streaming Tiny's frontend, first NL encoder layers and final norm into m (read-only file)."""
+    import glob
+    from safetensors import safe_open
+    f = glob.glob(MOONSHINE + "/snapshots/*/model.safetensors")[0]
+    sd = {}
+    with safe_open(f, "pt") as t:
+        g = lambda k: t.get_tensor("model.encoder." + k).float()
+        sd["log_k"] = g("embedder.comp.log_k")
+        sd["fe_lin.weight"] = g("embedder.linear.weight")
+        sd["fe_c1.weight"] = g("embedder.conv1.weight").reshape(m.fe_c1.weight.shape); sd["fe_c1.bias"] = g("embedder.conv1.bias")
+        sd["fe_c2.weight"] = g("embedder.conv2.weight").reshape(m.fe_c2.weight.shape); sd["fe_c2.bias"] = g("embedder.conv2.bias")
+        for i in range(len(m.layers)):
+            L = f"layers.{i}."
+            for c in "qkvo":
+                sd[L + c + ".weight"] = g(L + f"self_attn.{c}_proj.weight")
+            for c in ("fc1", "fc2"):
+                sd[L + c + ".weight"] = g(L + f"mlp.{c}.weight"); sd[L + c + ".bias"] = g(L + f"mlp.{c}.bias")
+            sd[L + "ln1.g"] = g(L + "input_layernorm.gamma") + 1.0
+            sd[L + "ln2.g"] = g(L + "post_attention_layernorm.gamma") + 1.0
+        sd["ln.g"] = g("final_norm.gamma") + 1.0
+    missing = m.load_state_dict(sd, strict=False)
+    return sorted(sd), missing
+
+
 def n_weights(m):
     return sum(p.numel() for n, p in m.named_parameters() if p.dim() == 2)
 
@@ -129,7 +160,7 @@ if __name__ == "__main__":
 
 
 # ---------------------------------------------------------------------------------------------- QAT (weights only)
-BITS8 = ("fe_lin", "fe_c1", "fe_c2", "ctc")     # 8-bit sites (Poinsetta's w4c8 split); every other matrix 4-bit
+BITS8 = ("fe_lin", "ctc")     # 8-bit sites (small); every other matrix 4-bit so the ROM stays under 20 Mbit
 
 
 def mse_scale(w, bits, grid=48):
