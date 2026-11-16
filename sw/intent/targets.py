@@ -39,15 +39,20 @@ def main():
     texts = sorted({r["text"] for r in idx})
     tt = json.load(open(ROOT / "data/gate0b/train_text_v3.json", encoding="utf8"))
     fit = sorted({t for r in tt.values() for v in list(r["actions"].values()) + [r["none"]] for t in v if flt.ok(t)} | set(texts))
-    rng = np.random.default_rng(0)
-    fit = [fit[i] for i in rng.permutation(len(fit))[:60000]]
-    Tf = enc(fit)
-    mu = Tf.mean(0)
-    _, sv, vt = np.linalg.svd(Tf - mu, full_matrices=False)
-    P = vt[:a.dims]
-    ev = (sv[:a.dims] ** 2).sum() / (sv ** 2).sum()
-    np.savez(Path(ROOT / a.teacher) / "marigold_proj.npz", mu=mu, P=P)
-    print(f"projection {P.shape}, variance kept {ev:.3f} (fit on {len(fit)} training texts)", flush=True)
+    pj = Path(ROOT / a.teacher) / "marigold_proj.npz"
+    if pj.exists():                     # frozen with the teacher: never refit (the SDK's config vectors use it)
+        z = np.load(pj); mu, P = z["mu"], z["P"]
+        print(f"projection {P.shape} reused from {pj}", flush=True)
+    else:
+        rng = np.random.default_rng(0)
+        fit = [fit[i] for i in rng.permutation(len(fit))[:60000]]
+        Tf = enc(fit)
+        mu = Tf.mean(0)
+        _, sv, vt = np.linalg.svd(Tf - mu, full_matrices=False)
+        P = vt[:a.dims]
+        ev = (sv[:a.dims] ** 2).sum() / (sv ** 2).sum()
+        np.savez(pj, mu=mu, P=P)
+        print(f"projection {P.shape}, variance kept {ev:.3f} (fit on {len(fit)} training texts)", flush=True)
     Y = project(enc(texts), mu, P).astype(np.float16)
     name = Path(a.teacher).name
     np.savez(ROOT / f"data/intent/targets-{name}.npz", texts=np.array(texts, dtype=object), Y=Y)

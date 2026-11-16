@@ -1,7 +1,8 @@
 """Training-audio index for the intent encoder (Marigold model agent).
 
 Writes data/intent/index_train.jsonl, one row per clip: {"path", "text", "src", "dur", "kind"} with
-  src  = "tts"   data/tts/train/manifest.jsonl (train voices, training products only; never fan or microwave)
+  src  = "tts"   data/tts/train/manifest.jsonl and data/tts/train_v3/manifest.jsonl when present (train voices,
+                 training products only; never fan or microwave)
          "libri" LibriSpeech train-clean-100 and train-other-500 utterances of at most --max-s seconds, plus one
                  1.5-5 s crop from --crop-frac of the longer ones (words estimated by position) (never dev or test)
          "sc"    Speech Commands words outside validation_list.txt and testing_list.txt
@@ -30,7 +31,8 @@ def main():
     out = []
     # TTS training commands and non-commands
     n_tts = 0
-    for line in open(ROOT / "data/tts/train/manifest.jsonl", encoding="utf8"):
+    mans = [ROOT / "data/tts/train/manifest.jsonl"] + ([ROOT / "data/tts/train_v3/manifest.jsonl"] if (ROOT / "data/tts/train_v3/manifest.jsonl").exists() else [])
+    for line in (l for m_ in mans for l in open(m_, encoding="utf8")):
         r = json.loads(line)
         if r.get("split") != "train" or r.get("product") in HELD or not flt.ok(r["text"]):
             continue

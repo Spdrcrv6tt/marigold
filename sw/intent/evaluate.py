@@ -114,7 +114,10 @@ def main():
         for c, rs in rows.items():
             out[c] = run_golden(str(ROOT / a.golden), [r["path"] for r in rs])
     else:
-        from model import IntentEncoder, enable_qat
+        import importlib.util          # by path: sdk/compile.py puts sw/wake (which has its own model.py) on sys.path
+        spec = importlib.util.spec_from_file_location("intent_model", ROOT / "sw/intent/model.py")
+        im = importlib.util.module_from_spec(spec); spec.loader.exec_module(im)
+        IntentEncoder, enable_qat = im.IntentEncoder, im.enable_qat
         ck = torch.load(ROOT / a.model, map_location="cuda")
         m = IntentEncoder(ck["cfg"])
         if a.qat or ck.get("qat"):
