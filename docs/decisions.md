@@ -69,3 +69,10 @@
   3. Real speech: John's fan and microwave noise, plus real people reading commands as the new real test set.
   4. Wake second-stage confirm in the core, if the budget allows.
   - Test-set hygiene: eval/text v1 has been scored many times across iterations. A fresh paraphrase test set v2, written blind by a new agent from the configs alone, becomes the iteration-2 headline; v1 stays as a secondary reference.
+
+## Teacher-v4 and gate 0 on blind v2 (Nov 16, 2026, 3 PM)
+
+- Selection on 10 held-out training products, chip128: Qwen3-Embedding-4B + LoRA 16 (q4) 94.4 / 94.3, Qwen3-0.6B 93.6 / 94.2, bge-large 92.5 / 92.6, v3 92.3 / 94.9. The 8B ran out of memory under the 20 GB cap and was not retried. q4 retrained on all 120 training appliances as teacher-v4 (Apache 2.0).
+- Gate 0, scored once with the real blob and integer scores. eval/text test: fan 91.7 / 93.8, microwave 94.7 / 93.2. Blind v2: fan 71.9 / 93.8, microwave 75.0 / 93.3 (85.3 / 89.2 with rejection off). Gate missed on v2.
+- Cause: mostly the reject rule, not confusion between actions. Long, chatty or indirect commands are rejected; short fillers are accepted; other-device rejection is only 55 to 70%.
+- Decision: teacher-v4 is the teacher, and Task B runs on it. If the budget allows, the next step is reject prototypes plus calibration on a new dev set (dev2), scored once on a new blind set v3. v2 now counts as seen.
