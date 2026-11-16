@@ -92,3 +92,24 @@ image-ts:
 	$(LLVM)/llvm-size $(B)/fw_ts.elf
 	python3 $(ROOT)/rtl/core/tools/catimage.py $(B)/fw.bin $(TSIMG)/data.bin $(B)/flash.bin
 	od -An -v -tx1 -w1 $(B)/flash.bin > $(B)/flash.hex
+
+# ---- Marigold intent firmware (rtl/core/fw/marigold.c) with the mg image (rtl/core/tools/mkimage_mg.py data)
+#   make TAG=randtest host-mg   PC build (fan-out array, MAC array, per-element unit as C functions)  -> $(B)/fw_host_mg
+#       $(B)/fw_host_mg data.bin seg.raw events.txt [trace] [ram_bytes] [blob] [end flags]; check: rtl/core/tools/check_mg.py
+#   make TAG=randtest image-mg  RV32IM build (32 KB PMEM, link_mg.ld) + ROM image                   -> $(B)/flash.hex
+MGIMG := $(ROOT)/data/core/mg-$(TAG)
+.PHONY: host-mg image-mg mg-data
+mg-data: $(MGIMG)/layout.h
+$(MGIMG)/layout.h: $(ROOT)/data/golden/mg-$(TAG).npz $(ROOT)/rtl/core/tools/mkimage_mg.py
+	python3 $(ROOT)/rtl/core/tools/mkimage_mg.py data --tag $(TAG)
+host-mg: $(MGIMG)/layout.h
+	gcc -O2 -DHOST -DLANES=$(LANES) $(FWDEFS) -Wall -Wno-unused -I$(MGIMG) -I$(FW) -o $(B)/fw_host_mg $(FW)/marigold.c $(FW)/hal_host.c
+image-mg: $(MGIMG)/layout.h
+	$(LLVM)/clang -I$(MGIMG) $(RVFLAGS) -ffunction-sections -fdata-sections -fuse-ld=lld -Wl,--gc-sections \
+	  -Wl,-T,$(FW)/link_mg.ld -o $(B)/fw_mg.elf $(FW)/start.S $(FW)/hal_rv.c $(FW)/marigold.c
+	$(LLVM)/llvm-objcopy -O binary $(B)/fw_mg.elf $(B)/fw_mg.bin
+	$(LLVM)/llvm-objdump -d $(B)/fw_mg.elf > $(B)/fw_mg.lst
+	$(LLVM)/llvm-size -A $(B)/fw_mg.elf | grep -E "^\.(text|bss|data) "
+	python3 $(ROOT)/rtl/core/tools/catimage.py $(B)/fw_mg.bin $(MGIMG)/data.bin $(B)/flash.bin \
+	  $$(sed -n 's/^#define DATA_BASE \([0-9]*\)u$$/\1/p' $(MGIMG)/layout.h)
+	od -An -v -tx1 -w1 $(B)/flash.bin > $(B)/flash.hex

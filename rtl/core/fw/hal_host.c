@@ -2,7 +2,7 @@
 // are C functions here; model.c is the same file the chip runs. Used to check the program against the golden
 // model and as the functional reference for imh_mac.sv (mac_go) and imh_vec.sv (vec_go).
 //
-//   fw_host <data.bin> <pcm.raw int16> <events.txt> [trace=1] [ram_bytes]
+//   fw_host <data.bin> <pcm.raw int16> <events.txt> [trace=1] [ram_bytes] [config blob] [end marker flags]
 //
 // events.txt: one "tag value" pair per line (hex), the same stream the chip puts on its trace port.
 // stdout: the UART text. stderr: counters.
@@ -11,7 +11,11 @@
 #include <string.h>
 #include "hal.h"
 #include "layout.h"
+#ifdef DATA_BASE
+#define DATA_BASE_H DATA_BASE        // the image's own data offset (Imhotep and Poinsetta: 0x10000)
+#else
 #define DATA_BASE_H 0x10000u
+#endif
 
 u8 *ram;
 static mac_regs_t regs;
@@ -282,6 +286,24 @@ u32 hal_capture(i16 *dst, u32 max, u32 *start) {
     u32 n = pcm_n < max ? pcm_n : max; memcpy(dst, pcm_in, 2 * n); *start = 0; return n;
 }
 void hal_fail(u32 code) { fprintf(stderr, "hal_fail %u\n", code); exit(3); }
+// Marigold (marigold.c): the segment is the PCM file, then an end marker with the flags of argv[7]; the config SRAM
+// holds the blob of argv[6]; island register writes and the power-off request go to the event file as
+// "7f00xxxx value" (xxxx = register offset; fffc = power off). MATCH_GO reads done once it was written.
+static u8 cfg_mem[32768];
+static u32 mg_pos, mg_endf, mg_go;
+int mg_sample(i16 *v) { if (mg_pos >= pcm_n) return 0; *v = pcm_in[mg_pos++]; return 1; }
+u32 mg_seg_end(void) { return mg_endf; }
+u32 mg_cfg32(u32 off) {
+    if ((off & 3) || off + 4 > sizeof cfg_mem) { fprintf(stderr, "config read at %u\n", off); exit(2); }
+    return cfg_mem[off] | (cfg_mem[off + 1] << 8) | (cfg_mem[off + 2] << 16) | ((u32)cfg_mem[off + 3] << 24);
+}
+u32 mg_isl_rd(u32 off) { return off == ISL_MATCH_GO ? (mg_go ? 2u : 0u) : 0u; }
+void mg_isl_wr(u32 off, u32 v) {
+    if ((off & 3) || off >= 0x1000) { fprintf(stderr, "island write at %u\n", off); exit(2); }
+    if (ev) fprintf(ev, "%08x %08x\n", 0x7F000000u | off, v);
+    if (off == ISL_MATCH_GO) mg_go = 1;
+}
+void mg_power_off(void) { if (ev) fprintf(ev, "%08x %08x\n", 0x7F00FFFCu, 8u); }
 
 // library use (unit tests): the C references on caller-provided memories
 void host_lib_init(u8 *r, u32 rbytes, u8 *f, u32 flen) { ram = r; ram_bytes = rbytes; flash = f; flash_len = flen; }
@@ -301,6 +323,9 @@ int main(int argc, char **argv) {
     ev = fopen(argv[3], "w");
     if (argc > 4) trace_on = atoi(argv[4]);
     if (argc > 5) ram_bytes = (u32)strtoul(argv[5], 0, 0);
+    if (argc > 6) { u32 cn; u8 *c = slurp(argv[6], &cn); if (cn > sizeof cfg_mem) { fprintf(stderr, "blob over 32 KB\n"); return 1; }
+                    memcpy(cfg_mem, c, cn); free(c); }
+    if (argc > 7) mg_endf = (u32)strtoul(argv[7], 0, 0);
     ram = malloc(ram_bytes); memset(ram, 0xA5, ram_bytes);
     while (model_main()) ;
     fclose(ev);

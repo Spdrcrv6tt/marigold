@@ -103,6 +103,24 @@ int hal_sample(i16 *v) {
     *v = (i16)d; return 1;
 }
 u32 hal_backlog(void) { return REG(REG_PCM_BKL); }
+// Marigold (marigold.c): the island delivers one segment per power-up (samples with the segment flag, then an end
+// marker whose data bits are PCM_END_*); deep sleep asks the island to switch the core off.
+static u32 seg_end_d;
+int mg_sample(i16 *v) {
+    u32 d;
+    for (;;) {
+        d = REG(REG_PCM_DATA);
+        if (d & PCM_VALID) break;
+        SLEEP(1);
+    }
+    if (!(d & PCM_SEG)) { seg_end_d = d & 0xFFFFu; return 0; }
+    *v = (i16)d; return 1;
+}
+u32 mg_seg_end(void) { return seg_end_d; }
+u32 mg_cfg32(u32 off) { return *(volatile u32 *)(ISL_CFG + off); }
+u32 mg_isl_rd(u32 off) { return *(volatile u32 *)(ISL_REG + off); }
+void mg_isl_wr(u32 off, u32 v) { *(volatile u32 *)(ISL_REG + off) = v; }
+void mg_power_off(void) { for (;;) SLEEP(8); }
 void hal_fail(u32 code) { trace(0x00FF0000, code); for (;;) __asm__ volatile("ebreak"); }
 
 void *memcpy(void *d, const void *s, unsigned n) { u8 *a = d; const u8 *b = s; while (n--) *a++ = *b++; return d; }

@@ -117,8 +117,11 @@ typedef struct {
 #define REG_VEC       0x200
 #define REG_FAN       0x300
 
-// ---- fan-out array (Poinsetta, rtl/core/imh_fan.sv): FAN_L output rows per group, up to FAN_CMAX frames per weight
-#define FAN_L        32
+// ---- fan-out array (Poinsetta, rtl/core/imh_fan.sv): FAN_L output rows per group, up to FAN_CMAX frames per weight.
+// Marigold has 16 rows per group (mg_core.sv); Poinsetta's images (groups of 32) need -DFAN_L=32.
+#ifndef FAN_L
+#define FAN_L        16
+#endif
 #define FAN_CMAX     8
 typedef struct {
     u32 faddr;     // 0  weight-source byte address of the site (group-interleaved layout, imh_fan.sv)
@@ -179,6 +182,22 @@ i32  hal_seg_begin(void);            // streaming: wait for the next segment; it
 int  hal_sample(i16 *v);             // the next sample of the segment (1), or 0 at its end (then hal_cap_info())
 u32  hal_backlog(void);              // capture backlog (samples) when the last sample hal_sample returned was presented
 void hal_fail(u32 code);
+
+// ---- Marigold (marigold.c; docs/architecture.md section 5): island bridge, 32-bit accesses only
+#define ISL_CFG        0x30000000u   // config SRAM (the blob, docs/config-blob.md), read only, aligned loads
+#define ISL_REG        0x30008000u   // island registers
+#define ISL_MATCH_GO   0x08          // w: 1 = run the matcher on Q and VAL; r: [0] busy, [1] done, [2] rejected
+#define ISL_MATCH_BEST 0x0c          // r: [15:0] best vector index, [23:16] its action id
+#define ISL_VAL        0x40          // VAL[k] at +4k, k < 8: raw slot values (int32)
+#define ISL_Q          0x100         // q[d] int8, four per word, little endian
+#define PCM_END_OVR    1u            // end marker data bits: capture overrun
+#define PCM_END_TMO    2u            //                       TIMEOUT (no speech in the listen window: run no model)
+u32  mg_cfg32(u32 off);              // config SRAM word at byte offset off (a multiple of 4)
+u32  mg_isl_rd(u32 off);             // island register ISL_REG + off
+void mg_isl_wr(u32 off, u32 v);
+int  mg_sample(i16 *v);              // next sample of this power-up's segment (1), or 0 at its end marker
+u32  mg_seg_end(void);               // the end marker's data bits (PCM_END_*)
+void mg_power_off(void);             // deep sleep: the island switches the core off (returns only on the PC)
 
 int  model_main(void);               // one utterance; 0 when there is no more audio
 
