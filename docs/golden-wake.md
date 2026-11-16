@@ -1,5 +1,7 @@
 # Golden wake model, format 1 (wake agent, Nov 15-16, 2026)
 
+**Frozen Nov 15, 2026, 7 PM.** Parameters: sw/wake/golden/wake_int.npz, identical word for word to the RTL ROM image rtl/wake/mem/wake_rom.mem (checked by sw/wake/golden/vectors.py); trained checkpoint data/wake/q1/best.pt. Results: reports/p1-wake.md.
+
 The exact integer rules of Marigold's wake spotter. The reference is sw/wake/golden/golden.py with the front end in sw/wake/fe.py; rtl/wake/ must match it bit for bit (rtl/wake/tb). Changing anything here means a new format number, new vectors and a dated entry in docs/decisions.md.
 
 ## 1. What it is
@@ -19,7 +21,7 @@ No retraining per product: the OEM's wake phrase is data (the template bytes and
 - A fire for frame t raises `wake` for one clock together with the `in_valid` of sample **k = 320t + 879** (one frame later). The golden model reports only k inside the stream.
 - `in_vad` and `in_raw` are unused in format 1: the spotter runs every frame while `en` (no VAD gating, no VAD qualifier).
 - Config port: the spotter re-reads the template from config SRAM every frame, word by word (cfg_rdata = mem[a >> 2], valid on the clock after cfg_gnt; request and address held until the grant). `tpl_len` is not needed.
-- Work per frame: about 45k of the 61,440 clk_fe clocks (FE about 21k, NN about 18.5k, DP under 1k).
+- Work per frame, measured in simulation: 40.3k of the 61,440 clk_fe clocks (45.8k with ROM and config-port stalls): FE about 22k, NN about 18k, DP under 1k. Each engine has its own clock gate (on from its start to one clock after done).
 
 ## 3. Front end (fe.py)
 
@@ -79,9 +81,9 @@ At the start of a session every A is −32768 and the refractory count is 0.
 ## 6. SDK side (sw/wake/template.py, called by sdk/compile.py)
 
 - G2P: CMUdict (BSD-2-Clause style, docs/licenses.md), up to 4 variants from words with several pronunciations. Unknown words: a split into two dictionary words, else crude letter rules, and the SDK report warns and suggests giving phones (config "wake": {"phones": ["HH EY ..."]}).
-- clip and refractory: fixed SDK constants (CLIP, REFRACTORY in template.py).
-- Sensitivity s in [0, 1] from the config maps linearly to wake_sens between SENS_LO (s = 0) and SENS_HI (s = 1); values in template.py, calibrated in reports/p1-wake.md.
+- clip = 96 (6 nat) and refractory = 50 frames (1 s): fixed SDK constants (CLIP, REFRACTORY in template.py). Clip 160 gave the same dev curve; 48 was worse.
+- Sensitivity s in [0, 1] from the config maps linearly to wake_sens = round(6 + 12 s): 0.5 gives 12, the dev operating point (at most 1 false wake per 24 h on 58 h of dev audio); 1.0 gives 18. Curves in reports/p1-wake.md.
 
 ## 7. Test vectors
 
-sw/wake/golden/vectors.py writes rtl/wake/tb/vectors/<case>/: x.txt (samples), case.json (en segments, sens, template), cfg.mem (config SRAM with the template at byte 0x123) and expected.txt (per frame: 64 feature lines, 40 logit lines, the best score; plus "W k" per wake). rtl/wake/tb/run.sh runs them through Verilator and cocotb, with ROM and config-port stalls, and two negative controls (a corrupted input sample and a flipped ROM bit) that must fail.
+sw/wake/golden/vectors.py writes three cases (breeze: one wake at a forced sensitivity and refractory 10; lumen_segments: two pronunciation variants, 11 wakes, an en drop between two segments; carrier_op: the SDK's own template at sensitivity 0.5 on "Hey Breeze, turn the fan up a little.", one wake) into rtl/wake/tb/vectors/<case>/: x.txt (samples), case.json (en segments, sens, template), cfg.mem (config SRAM with the template at byte 0x123) and expected.txt (per frame: 64 feature lines, 40 logit lines, the best score; plus "W k" per wake). rtl/wake/tb/run.sh runs them through Verilator and cocotb, with ROM and config-port stalls, and two negative controls (a corrupted input sample and a flipped ROM bit) that must fail.

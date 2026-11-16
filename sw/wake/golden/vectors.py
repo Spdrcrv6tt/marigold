@@ -49,6 +49,10 @@ def expected(x, segs, tpl, sens, P):
 
 def main(params, out):
     P = golden.load_params(params)
+    from export import rom_words                      # the RTL ROM image must hold exactly these parameters
+    rom = [int(l, 16) for l in open(R / "rtl/wake/mem/wake_rom.mem")]
+    assert rom == rom_words(P), "rtl/wake/mem/wake_rom.mem does not match the golden parameters"
+    print("ROM image matches the golden parameters:", len(rom), "words")
     out = Path(out); out.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(11)
     clip = lambda p: sf.read(str(R / p), dtype="int16")[0].astype(np.int64)
@@ -80,6 +84,11 @@ def main(params, out):
     add("breeze", x1, [[0, len(x1)]], "hey breeze", max(need, 1), 10)
     x2 = stream(hl, 4000, 6000)
     add("lumen_segments", x2, [[0, 20000], [20500, len(x2)]], "hello lumen", 400, 5)
+    # the SDK's own template and sensitivity 0.5 (the operating point) on a wake phrase followed by a command
+    hc = [m for m in man if m["phrase"] == "hey breeze" and m["kind"] == "carrier"][0]
+    x3 = stream(hc, 8000, 12000)
+    t3, s3, _ = TPL.build("hey breeze", 0.5)
+    add("carrier_op", x3, [[0, len(x3)]], "hey breeze", s3, t3[3])
     json.dump(cases, open(out / "cases.json", "w"))
 
 

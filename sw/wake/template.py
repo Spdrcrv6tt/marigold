@@ -14,7 +14,7 @@ from lexicon import phrase_prons, PHONES, PID
 
 FORMAT, MAX_VAR, MAX_K, MAX_PHONES = 1, 4, 30, 60
 CLIP, REFRACTORY = 96, 50          # calibrated values, see docs/golden-wake.md
-SENS_LO, SENS_HI = 8, 40           # wake_sens at sensitivity 0 and 1 (1/16 nat per phone)
+SENS_LO, SENS_HI = 6, 18           # wake_sens at sensitivity 0 and 1 (1/16 nat per phone); 0.5 -> 12 = dev operating point (reports/p1-wake.md)
 
 
 def sens_to_u16(s):
