@@ -76,3 +76,12 @@
 - Gate 0, scored once with the real blob and integer scores. eval/text test: fan 91.7 / 93.8, microwave 94.7 / 93.2. Blind v2: fan 71.9 / 93.8, microwave 75.0 / 93.3 (85.3 / 89.2 with rejection off). Gate missed on v2.
 - Cause: mostly the reject rule, not confusion between actions. Long, chatty or indirect commands are rejected; short fillers are accepted; other-device rejection is only 55 to 70%.
 - Decision: teacher-v4 is the teacher, and Task B runs on it. If the budget allows, the next step is reject prototypes plus calibration on a new dev set (dev2), scored once on a new blind set v3. v2 now counts as seen.
+
+## Audio f6 and the next lever (Nov 16, 2026, 5:45 PM)
+
+- f6 (float, from f5 on teacher-v4 targets, decision loss plus distillation and CTC, 150 min): mean dev unseen at the 95% point 48.7% against v1's 36.7%.
+  - Test: fan 40.0% (v1 32.5), microwave 43.9% (v1 30.4).
+  - Blind v2: fan 24.1% (v1 24.1), microwave 30.0% (v1 24.7).
+  - Typed phrases enrolled as audio reach only 53 / 63%, while the student fits its training products at 96%. So the limit is the student mapping new voices to meaning, not the text teacher (text bound 72 to 95%).
+- model-v2 = QAT of f6. It ships only if the integer model beats v1 on dev.
+- Next (coordinator approved, ~1 to 1.5 usage points, 7 to 9 GPU-h): fine-tune the full 6-layer Moonshine encoder into teacher-v4's space as an audio teacher on the PC, then distil the unchanged 2-layer chip student from it on LibriSpeech 960 h plus TTS. Chip format and ROM size unchanged. The reject fix (dev2, reject prototypes, blind text_v3) runs alongside.
