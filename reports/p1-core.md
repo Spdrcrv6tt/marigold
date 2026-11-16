@@ -126,6 +126,29 @@ rtl/pd), so their figures are activity and leakage estimates, not measurements; 
   --gaps 0.6,1.5,1.5 --blob <blob with host I2C> --wakes golden --out ... [--neg rom|mic|crc]`.
 - Area: `bash rtl/syn/area.sh`.
 
-## 9. v1 rerun
+## 9. v1 rerun (model v1 frozen, tag model-v1, Nov 16 about 0:10 AM)
 
-To be filled when the frozen v1 export lands.
+Image: 2,415,680 B (19.33 Mbit), firmware 14,404 B. rtl/core/imh_rom.svh holds v1's LUT ROM (it differs from
+qsmoke's only in the asinh table). Blobs: the current data/sdk/fan.mgc (wake_sens 13), with host set to I2C and
+event flags 0xF in a copy (the SDK blob is GPIO-only), plus a random blob for the LibriSpeech run.
+
+| Run | Result |
+|---|---|
+| LibriSpeech, stand-in wakes, 3 segments | 6 frames, q, raw values, GPIO, front end **identical**; end of speech to irq 148.8, 153.9, 154.8 ms |
+| "Hey Breeze, turn the fan up a little" x2, wake spotter v2 | 4 frames (2 WAKE + 2 decisions), q, values, GPIO, front end **identical**; 155.9, 162.9 ms |
+| Negative: ROM weight bit flipped (image byte 0x9000) | **fails** (q differs). The frames stay equal: that bit moved no decision on these two utterances |
+| Negative: mic bits flipped for 4,000 samples inside a segment | **fails** (q and frames differ) |
+| Negative: config CRC corrupted | **fails** (STATUS 0x50: CRC error, not listening, no frames) |
+
+Response time (target 7), across all 5 commands measured in RTL: **148.8 to 162.9 ms, median 154.8 ms**, against
+300 ms.
+
+Core unit tests with v1's tables:
+- test-fan: 467 operations, 0 failures.
+- test-mac stopped in its first 16-lane run with 5 failing per-element operations. They are one LUT operation
+  (op 79, parameters 0x3b52, n 18) and four later operations that depend on its RAM.
+- The LUT tables in v1's layout.h (the C reference) and in imh_rom.svh (the RTL) are identical entry for entry,
+  and the same test passes 24,000 of 24,000 with qsmoke's tables.
+- The difference is therefore in how the asinh table's values meet one random parameter combination, likely an
+  index past entry 512. The firmware never hits it on the regression inputs (the whole-chip runs are bit-exact).
+- **Open finding**, not yet explained; first item for the next session.
