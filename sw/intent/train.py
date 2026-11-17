@@ -273,6 +273,9 @@ def main():
         PR = F.normalize(torch.from_numpy(PZ["R"]).float().to(dev), dim=-1)          # [n_p, Kr, D]
         pa_prod = torch.from_numpy(PZ["pa_prod"].astype(np.int64)).to(dev)          # [n_pa]
         thr_p = torch.nn.Parameter(torch.tensor(thr_init(ck0, a.thr0), device=dev))   # review S1: restored from --init
+        with torch.no_grad():      # in range from the start too, e.g. a --thr0 outside [0, 0.9] (Mythos's check, Nov 17)
+            thr_p.clamp_(0.0, 0.9)
+        print("reject threshold starts at", round(float(thr_p), 4), flush=True)
         print("decision prototypes", tuple(PA.shape), tuple(PR.shape), "rows with labels",
               {k: sum(r["dk"] >= 0 for r in v) for k, v in groups.items()}, flush=True)
     dl = torch.utils.data.DataLoader(Batches(groups, a.bs, a.max_s, 1, a.ppb, MIX, a.noise_p, a.snr_hi), batch_size=None, num_workers=a.workers,
