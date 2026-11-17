@@ -14,10 +14,13 @@ RATIO   ?= 16
 FWDEFS  ?=
 ROOT    := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
 IMG     := $(ROOT)/data/core/$(TAG)
-# unit tests (test-mac, test-fan) compile against layout.h of the shipped model (v2), whose LUT tables are the
-# committed rtl/core/imh_rom.svh; another export: UIMG=UTSIMG=$(ROOT)/data/core/mg-<tag>
-UIMG    ?= $(ROOT)/rtl/core/tb/img/mg-v2
-UTSIMG  ?= $(ROOT)/rtl/core/tb/img/mg-v2
+# unit tests (test-mac, test-fan) compile against layout.h of the model whose LUT tables the committed
+# rtl/core/imh_rom.svh holds (tag read from its first line; layout.h made from weights/ if missing);
+# another export: UIMG=UTSIMG=$(ROOT)/data/core/mg-<tag>
+ROMTAG  := $(shell sed -n '1s/.*from mg-\([A-Za-z0-9_]*\)\.npz.*/\1/p' $(ROOT)/rtl/core/imh_rom.svh)
+UIMG    ?= $(ROOT)/data/core/mg-$(ROMTAG)
+UTSIMG  ?= $(UIMG)
+UFIX     = test -f $(UIMG)/layout.h || python3 $(ROOT)/rtl/core/tools/mkimage_mg.py data --tag $(ROMTAG) --golden-dir $(ROOT)/weights
 B       := $(CORE_BUILD)
 FW      := $(ROOT)/rtl/core/fw
 CORE    := $(ROOT)/rtl/core
@@ -29,6 +32,7 @@ RVFLAGS := --target=riscv32-unknown-elf -march=rv32im -mabi=ilp32 -O2 -ffreestan
 .PHONY: test-mac test-fan
 # unit test of the MAC array and the per-element unit against their C references (fw/hal_host.c)
 test-mac:
+	$(UFIX)
 	for L in 16 8 4; do \
 	  rm -rf $(B)/unit$$L; verilator --cc --exe --build -j 8 -O3 --x-assign fast --x-initial fast -Wno-fatal -Wno-WIDTH -Wno-UNUSED -Wno-PINMISSING \
 	    -I$(SRC) -I$(CORE) --top-module unit_tb -GLANES=$$L -CFLAGS "-O2 -DHOST -DHOST_LIB -DLANES=$$L -I$(FW) -I$(UIMG)" \
@@ -45,6 +49,7 @@ test-mac:
 # unit test of the fan-out array against its C reference (fw/hal_host.c fan_go); the second run with a full-rate
 # weight source prints the array's MAC efficiency
 test-fan:
+	$(UFIX)
 	rm -rf $(B)/fan; verilator --cc --exe --build -j 8 -O3 --x-assign fast --x-initial fast -Wno-fatal -Wno-WIDTH -Wno-UNUSED -Wno-PINMISSING \
 	  -I$(SRC) -I$(CORE) --top-module fan_tb -GLANES=16 -GRAM_BYTES=131072 -CFLAGS "-O2 -DHOST -DHOST_LIB -DLANES=16 -I$(FW) -I$(UIMG)" \
 	  --Mdir $(B)/fan -o test_fan $(CORE)/tb/fan_tb.sv $(CORE)/imh_fan.sv $(CORE)/imh_mem.sv $(SRC)/mac_lane.sv \
