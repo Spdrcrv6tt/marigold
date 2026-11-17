@@ -1,3 +1,4 @@
+import os
 """Config loader (CRC and checks) and matcher against rtl/model/mg_model.py, with a higher-priority reader
 stealing config-SRAM cycles at random."""
 import random
@@ -11,7 +12,7 @@ from mg_util import rand_cfg, tune_thresholds
 
 async def setup(dut):
     cocotb.start_soon(Clock(dut.clk, 326, unit="ns").start())
-    for s in ("begin_i", "commit_i", "in_valid", "in_data", "noise_req", "go", "emit", "q_we", "q_waddr", "q_wdata",
+    for s in ("begin_i", "commit_i", "in_valid", "in_data", "noise_req", "go", "q_we", "q_waddr", "q_wdata",
               "v_we", "v_waddr", "v_wdata"):
         getattr(dut, s).value = 0
     dut.rst_n.value = 0
@@ -107,8 +108,6 @@ async def match_random(dut):
         lim = 3 * len(cfg["vectors"]) * (cfg["D"] + 1) + 2000
         for _ in range(lim):
             await RisingEdge(dut.clk)
-            if int(dut.waiting.value):
-                await pulse(dut, "emit")
             if int(dut.done.value):
                 break
         else:
@@ -140,3 +139,81 @@ async def match_random(dut):
             stats["reject"] += 1
         await RisingEdge(dut.clk)
     dut._log.info("150 matches identical: %s", stats)
+
+
+@cocotb.test()
+async def model_d_check(dut):
+    """Review R4: with MODEL_D = 128 (variant d128) a blob whose D is not the model's is refused (error 6); without
+    it (MODEL_D = 0, unit tests of other D) any D in 1..256 loads."""
+    md = int(os.environ.get("MODEL_D", "0"))
+    await setup(dut)
+    rng = random.Random(21)
+    for D in (128, 256, 64, 1):
+        cfg = rand_cfg(rng, D=D, N=3, n_gpio=2)
+        blob = M.build_blob(cfg)
+        v, e = await load(dut, blob)
+        ee, _ = M.parse_blob(blob, model_d=md or None)
+        assert e == ee and v == (ee == 0), "D %d: rtl err %d valid %d, model err %d (MODEL_D %d)" % (D, e, v, ee, md)
+    dut._log.info("D check with MODEL_D %d matches the model", md)
+
+
+@cocotb.test()
+async def reload_during_match(dut):
+    """Review R6: CTRL begin (a config reload) while the matcher runs stops it at once with no result; the next
+    load and match are correct."""
+    await setup(dut)
+    rng = random.Random(33)
+    for t in range(3):
+        cfg = rand_cfg(rng, D=256, N=60, n_actions=4, n_slots=2, n_gpio=2)
+        q = [rng.randint(-128, 127) for _ in range(256)]
+        tune_thresholds(rng, cfg, q)
+        vals = [rng.randint(-100, 100) for _ in range(8)]
+        assert (await load(dut, M.build_blob(cfg)))[0] == 1
+        for w in range(64):
+            dut.q_we.value = 1; dut.q_waddr.value = w
+            dut.q_wdata.value = int.from_bytes(struct.pack("<4b", *q[4 * w:4 * w + 4]), "little")
+            await RisingEdge(dut.clk)
+        dut.q_we.value = 0
+        for k in range(8):
+            dut.v_we.value = 1; dut.v_waddr.value = k; dut.v_wdata.value = vals[k] & 0xFFFFFFFF
+            await RisingEdge(dut.clk)
+        dut.v_we.value = 0
+        await pulse(dut, "go")
+        for _ in range(200 + 500 * t):
+            await RisingEdge(dut.clk)
+        assert int(dut.busy.value), "matcher finished too early for the test"
+        await pulse(dut, "begin_i")                      # a reload starts while the matcher runs
+        for i in range(40):
+            await RisingEdge(dut.clk)
+            if not int(dut.busy.value):
+                break
+        else:
+            raise AssertionError("matcher still busy 40 clocks after CTRL begin (review R6)")
+        assert not int(dut.done.value), "an aborted match reported a result"
+        # a new config and a full match afterwards are right
+        cfg2 = rand_cfg(rng, D=32, N=8, n_actions=3, n_slots=2, n_gpio=2)
+        q2 = [rng.randint(-128, 127) for _ in range(32)]
+        tune_thresholds(rng, cfg2, q2)
+        blob2 = M.build_blob(cfg2)
+        assert (await load(dut, blob2))[0] == 1
+        qq = q2 + [0] * 224
+        for w in range(64):
+            dut.q_we.value = 1; dut.q_waddr.value = w
+            dut.q_wdata.value = int.from_bytes(struct.pack("<4b", *qq[4 * w:4 * w + 4]), "little")
+            await RisingEdge(dut.clk)
+        dut.q_we.value = 0
+        for k in range(8):
+            dut.v_we.value = 1; dut.v_waddr.value = k; dut.v_wdata.value = vals[k] & 0xFFFFFFFF
+            await RisingEdge(dut.clk)
+        dut.v_we.value = 0
+        await pulse(dut, "go")
+        for _ in range(20000):
+            await RisingEdge(dut.clk)
+            if int(dut.done.value):
+                break
+        await ReadOnly()
+        _, pc = M.parse_blob(blob2)
+        want = M.match(pc, q2, vals)
+        assert int(dut.accept.value) == (want["ev"] == M.EV_COMMAND) and dut.sb.value.to_signed() == want["sb"], (t, want)
+        await RisingEdge(dut.clk)
+    dut._log.info("3 reloads during a match: matcher stopped, next match identical")

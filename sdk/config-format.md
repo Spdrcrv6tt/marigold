@@ -55,7 +55,7 @@ The reference configs use it: the GPIO-only fan pulses pin 4 on NOMATCH; the I2C
 
 ## Host message (v0)
 
-Defined in docs/config-blob.md: `0xA5, type u8 (0 COMMAND, 1 WAKE, 2 NOMATCH, 3 TIMEOUT), action id u8 (0 for events), n_values u8, then for each value: slot u8 + int32 LE, confidence u8, crc8`. Durations travel in seconds, levels as integers. A rejected command is a NOMATCH event, sent only when `events.nomatch.host` is true. The host always makes the final call: a microwave's controller checks the door before it starts.
+Defined in docs/config-blob.md: `0xA5, type u8 (0 COMMAND, 1 WAKE, 2 NOMATCH, 3 TIMEOUT), action id u8 (0 for events), n_values u8, then for each value: slot u8 + int32 LE, confidence u8, crc8`. Durations travel in seconds, levels as integers. A rejected command is a NOMATCH event, sent only when `events.nomatch.host` is true. Every WAKE is followed by exactly one decision (COMMAND, NOMATCH or TIMEOUT) and decisions come in segment order, but the next WAKE may arrive before the previous decision: pair them first-in, first-out (docs/config-blob.md). The host always makes the final call: a microwave's controller checks the door before it starts.
 
 ## Compiling
 

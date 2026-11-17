@@ -29,6 +29,7 @@ module mg_capture #(
     input  wire signed [15:0] in_data,
     input  wire               in_raw,      // raw flag bundled with this sample (frame wp/256 - 1)
     input  wire               in_wake,     // the wake spotter fired with this sample
+    input  wire               en,          // listening; dropping it closes an open segment (review R5)
     input  wire [31:0]        pre,
     input  wire [31:0]        mn,
     input  wire [31:0]        cap,
@@ -133,7 +134,8 @@ module mg_capture #(
         assign bank_pe[gb] = full || (bd <= nbw);
     end endgenerate
 
-    wire gen = in_valid || ack || (!rd_act && !qempty) || rwork || ev_wake || ev_tmo || rsync;
+    wire abt = on && !en;                                      // listening stopped inside a segment
+    wire gen = abt || in_valid || ack || (!rd_act && !qempty) || rwork || ev_wake || ev_tmo || rsync;
     wire gclk;
     clk_gate u_cg (.clk(clk), .en(gen), .gclk(gclk));
 
@@ -156,6 +158,12 @@ module mg_capture #(
             // the core is off: its toggles are at their reset value, so are ours; a sample or end marker that was
             // presented but not taken is presented again after power-up (rp and the queue are unchanged)
             if (!osc_en) begin q_tog <= 1'b0; ack_seen <= 1'b0; outst <= 1'b0; rpend <= 1'b0; mark <= 1'b0; end
+            // listening stopped with a segment open: it ends here as a TIMEOUT (the core runs no model; no event,
+            // the island ignores events while not listening)
+            if (abt && !in_valid) begin
+                if (oq) begin qe[tl] <= wp; qc[tl] <= 1'b1; qto[tl] <= 1'b1; end
+                last_end <= wp; le_v <= 1'b1; on <= 1'b0;
+            end
             // ---- write side
             if (in_valid) begin
 `ifdef SYNTHESIS

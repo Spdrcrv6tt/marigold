@@ -105,6 +105,7 @@ import chip_golden as CG
 ev = CG.run_stream(G, blob, ref, raw, wakes)
 want = [e["frame"].hex() for e in ev if e["to_host"]]
 segs = [e for e in ev if "q" in e]
+seg_all = [e for e in ev if e["ev"] == M.EV_WAKE]                    # every segment opens with a WAKE
 want_q = [[int(v) for v in e["q"]] for e in segs]
 want_v = [[int(v) for v in e["raw_values"]] for e in segs]
 
@@ -144,14 +145,25 @@ for l in log:
             qs.append(cq[:D]); vs.append(cv[:])
 fe = np.fromfile(out / "fe.pcm", dtype="<i2").astype(np.int64)
 n = min(len(fe), len(ref))
-# Frames are compared per stream: island frames (WAKE, TIMEOUT: raised at a sample, as the golden model says) and
-# decision frames (COMMAND, NOMATCH: the golden model dates them at the segment end; the chip sends them after the
-# core's work, so a WAKE of the next segment may come first). Each stream must be identical, in order.
-isl = lambda fs: [f for f in fs if int(f[2:4], 16) in (1, 3)]
-dec = lambda fs: [f for f in fs if int(f[2:4], 16) in (0, 2)]
+# Frames are compared as two streams (docs/config-blob.md, pairing rule): WAKE frames, and decision frames
+# (COMMAND, NOMATCH, TIMEOUT: one per WAKE, in segment order). The golden model dates a decision at its segment's
+# end; the chip sends COMMAND / NOMATCH after the core's work, so the next segment's WAKE may come first. Each stream
+# must be identical, in order, and pairing first-in first-out must hold: never more decisions than WAKEs so far,
+# none outstanding at the end, as many decisions as segments (checked when every event goes to the host).
+isl = lambda fs: [f for f in fs if int(f[2:4], 16) == 1]
+dec = lambda fs: [f for f in fs if int(f[2:4], 16) in (0, 2, 3)]
+
+
+def pairing(fs):
+    out = 0
+    for f in fs:
+        out += 1 if int(f[2:4], 16) == 1 else -1
+        if out < 0:
+            return False
+    return out == 0
 res = dict(neg=a.neg, golden=a.golden, segments=[e["segment"] for e in segs], events=len(ev),
            frames_identical=(isl(got) == isl(want) and dec(got) == dec(want) and len(got) == len(want)),
-           frame_order_identical=(got == want), q_identical=(qs == want_q), values_identical=(vs == want_v),
+           frame_order_identical=(got == want), pairing_ok=None, q_identical=(qs == want_q), values_identical=(vs == want_v),
            n_frames=len(want), n_segments_run=len(segs),
            frontend_identical=bool(np.array_equal(fe[:n], ref[:n])) and n >= len(ref) - 2,
            status=[l for l in log if l.startswith("S ")], frames_expected=want, frames_chip=got,
@@ -183,9 +195,13 @@ for e in segs:
     if fr and later:
         lat.append(round((later[0] - 256 * (fr[-1] + 1)) / 16.0, 1))
 res["latency_ms"] = lat
-res["identical"] = res["frames_identical"] and res["q_identical"] and res["values_identical"] and res["gpio_identical"]
+_, pcf = M.parse_blob(open(out / "cfg.blob", "rb").read())
+if pcf is not None and pcf["host"] and (pcf["flags"] & 0xE) == 0xE:     # WAKE, NOMATCH, TIMEOUT all reach the host
+    res["pairing_ok"] = pairing(got) and len(dec(got)) == len(seg_all) == len(isl(got))
+res["identical"] = (res["frames_identical"] and res["q_identical"] and res["values_identical"] and res["gpio_identical"]
+                    and res["pairing_ok"] is not False)
 json.dump(res, open(out / "result.json", "w"), indent=1)
 print(json.dumps({k: res.get(k) for k in ("neg", "segments", "events", "n_frames", "frames_identical", "q_identical",
-                                          "values_identical", "gpio_identical", "frontend_identical", "status",
+                                          "values_identical", "gpio_identical", "pairing_ok", "frontend_identical", "status",
                                           "irq_samples", "segment_ends", "latency_ms")}))
 sys.exit(0 if res["identical"] == (a.neg == "") else 1)

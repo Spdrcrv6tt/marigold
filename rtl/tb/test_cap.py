@@ -83,6 +83,7 @@ async def segments_random(dut):
     cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
     for s in ("in_valid", "in_data", "in_raw", "in_wake", "ack_t", "dq_t"):
         getattr(dut, s).value = 0
+    dut.en.value = 1
     dut.pre.value, dut.mn.value, dut.cap.value = P["pre"], P["mn"], P["cap"]
     dut.hang.value, dut.onset.value, dut.listen.value = P["hang"], P["onset"], P["listen"]
     dut.rst_n.value = 1                       # a real falling edge: Verilator starts rst_n at 0, so 1 -> 0 -> 1

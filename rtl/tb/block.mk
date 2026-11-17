@@ -48,7 +48,8 @@ ARGS_ram_flop  := -GWORDS=48 -GWIDTH=12 -GFLOPS=1
 # Marigold island blocks (rtl/top/mg_*.sv), checked against rtl/model/mg_model.py
 TOP_cfg    := mg_cfg_tb
 SRCS_cfg   := ../top/mg_cfg_load.sv ../top/mg_cfg_ram.sv ../top/mg_match.sv latch_ram.sv clk_gate.sv ../tb/mg_cfg_tb.sv
-VARS_cfg   := default
+VARS_cfg   := default d128
+ARGS_cfg_d128 := -GMODEL_D=128
 
 TOP_ctl    := mg_ctl
 SRCS_ctl   := ../top/mg_ctl.sv ../top/mg_cfg_load.sv ../top/mg_cfg_ram.sv ../top/mg_match.sv ../top/mg_msg.sv               ../top/mg_gpio.sv ../top/mg_i2c.sv uart_tx.sv latch_ram.sv clk_gate.sv
@@ -83,6 +84,10 @@ SIM_BUILD           := $(or $(MARIGOLD_BUILD),.)/sim_build/$(BLOCK)_$(VARIANT)
 COCOTB_RESULTS_FILE := results/$(BLOCK)_$(VARIANT).xml
 EXTRA_ARGS          += -I$(SRC) -Wno-fatal -Wno-WIDTH -Wno-UNUSED -O2 $(ARGS_$(BLOCK)_$(VARIANT))
 export VARIANT
+ifeq ($(VARIANT),d128)
+export MODEL_D := 128
+export COCOTB_TEST_FILTER := model_d_check
+endif
 ifeq ($(VARIANT),cov)
 export COCOTB_TEST_FILTER := activity_stimulus
 endif

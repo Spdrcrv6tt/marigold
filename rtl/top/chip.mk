@@ -14,9 +14,10 @@ RTL   := $(TOP)/marigold_top.sv $(TOP)/mg_ctl.sv $(TOP)/mg_capture.sv $(TOP)/mg_
          $(SRC)/pdm_frontend.sv $(SRC)/pdm_clkgen.sv $(SRC)/cic_decim.sv $(SRC)/fir_decim2.sv $(SRC)/dc_block.sv \
          $(SRC)/vad.sv $(SRC)/clk_gate.sv $(SRC)/latch_ram.sv $(SRC)/mac_lane.sv $(SRC)/uart_tx.sv          $(ROOT)/rtl/wake/mg_wake.sv $(ROOT)/rtl/wake/wk_fe.sv $(ROOT)/rtl/wake/wk_nn.sv $(ROOT)/rtl/wake/wk_dp.sv          $(ROOT)/rtl/wake/wk_mem.sv
 STUB  ?= 0
+MODEL_D ?= 128
 VFLAGS := --cc --exe --build -j 8 -O3 --x-assign fast --x-initial fast -Wno-fatal -Wno-WIDTH -Wno-UNUSED -Wno-PINMISSING \
           -Wno-TIMESCALEMOD -I$(SRC) -I$(CORE) --top-module marigold_top -CFLAGS -O3 -MAKEFLAGS OPT_FAST=-O3 \
-          -GROM_BYTES=$(ROMB) -GWAKE_STUB=$(STUB) -GWAKE_MEMDIR=\"$(ROOT)/rtl/wake/mem2/\"
+          -GROM_BYTES=$(ROMB) -GWAKE_STUB=$(STUB) -GMODEL_D=$(MODEL_D) -GWAKE_MEMDIR=\"$(ROOT)/rtl/wake/mem2/\"
 RVFLAGS := --target=riscv32-unknown-elf -march=rv32im -mabi=ilp32 -O2 -ffreestanding -fno-builtin -nostdlib -mno-relax \
            -msmall-data-limit=0 -Wall
 

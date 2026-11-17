@@ -11,7 +11,8 @@ module mg_ctl #(
     parameter [7:0]  SEG_ONSET = 8'd3,
     parameter [31:0] SEG_LISTEN = 32'd64000,
     parameter        UDIV = 26,
-    parameter        MS = 3072
+    parameter        MS = 3072,
+    parameter [15:0] MODEL_D = 16'd0     // the ROM model's D (review R4); 0 = no check
 ) (
     input  wire        clk,
     input  wire        rst_n,
@@ -55,7 +56,7 @@ module mg_ctl #(
     wire [14:0] cfg_waddr, vec_base, act_base, slot_base, gpio_base;
     wire [7:0]  cfg_wdata, n_actions, n_slots, n_gpio, host, i2c_addr;
     wire [31:0] reject_thr, margin;
-    mg_cfg_load u_ld (.clk(clk), .rst_n(rst_n), .begin_i(ld_begin), .commit_i(ld_commit), .in_valid(ld_in),
+    mg_cfg_load #(.MODEL_D(MODEL_D)) u_ld (.clk(clk), .rst_n(rst_n), .begin_i(ld_begin), .commit_i(ld_commit), .in_valid(ld_in),
         .in_data(ld_byte), .we(cfg_we), .waddr(cfg_waddr), .wdata(cfg_wdata), .valid(ld_valid), .err(ld_err),
         .cnt(ld_cnt), .D(D), .N(N), .n_actions(n_actions), .n_slots(n_slots), .n_gpio(n_gpio), .wake_len(wake_len),
         .host(host), .i2c_addr(i2c_addr), .reject_thr(reject_thr), .margin(margin), .wake_sens(wake_sens),
@@ -74,21 +75,20 @@ module mg_ctl #(
     assign spot_rvalid = rvalid[0];
 
     // ---------------------------------------------------------------- matcher
-    wire        m_go, m_emit, m_busy, m_wait, m_done, m_acc, m_has;
+    wire        m_go, m_busy, m_done, m_acc, m_has;
     wire [7:0]  m_action, m_conf, m_mask, m_a1;
     wire [15:0] m_best;
     wire [31:0] m_sb, m_s2;
     wire [255:0] m_vals;
     wire        q_we = br_req && br_we && (br_addr[15:8] == 8'h81);
     wire        v_we = br_req && br_we && (br_addr[15:5] == 11'b1000_0000_010);     // 0x8040 .. 0x805C
-    mg_match u_m (.clk(clk), .rst_n(rst_n), .go(m_go), .emit(m_emit), .D(D), .N(N), .n_actions(n_actions), .n_slots(n_slots),
+    mg_match u_m (.clk(clk), .rst_n(rst_n), .go(m_go), .abort(ld_begin), .D(D), .N(N), .n_actions(n_actions), .n_slots(n_slots),
         .vec_base(vec_base), .act_base(act_base), .slot_base(slot_base), .reject_thr(reject_thr), .margin(margin),
         .conf_sh(conf_sh), .q_we(q_we), .q_waddr(br_addr[7:2]), .q_wdata(br_wdata), .v_we(v_we), .v_waddr(br_addr[4:2]),
         .v_wdata(br_wdata), .req(m_req), .addr(m_addr), .gnt(gnt[2]), .rvalid(rvalid[2]), .rdata(cfg_rdata),
-        .busy(m_busy), .waiting(m_wait), .done(m_done), .accept(m_acc), .action(m_action), .best(m_best), .best_action(m_a1), .sb(m_sb), .s2(m_s2),
+        .busy(m_busy), .done(m_done), .accept(m_acc), .action(m_action), .best(m_best), .best_action(m_a1), .sb(m_sb), .s2(m_s2),
         .has_s2(m_has), .conf(m_conf), .slot_mask(m_mask), .vals(m_vals));
     assign m_go   = br_req && br_we && (br_addr == 16'h8008) && br_wdata[0] && ld_valid && !m_busy;
-    assign m_emit = br_req && br_we && (br_addr == 16'h8008) && br_wdata[1] && !br_wdata[0] && m_wait;
 
     // ---------------------------------------------------------------- events
     reg         pw, pt, pm, m_done_q;
@@ -114,7 +114,7 @@ module mg_ctl #(
         .slot_mask(m_mask), .vals(m_vals), .conf(m_conf), .busy(msg_busy), .host(host), .irq_en(ld_valid && flags[0]),
         .head_len(head_len), .head_byte(head_byte), .pop(pop), .drop_all(drop_all), .dropped(dropped),
         .clr_dropped(clr_dropped), .tx_o(uart_tx_o), .irq_o(irq_o));
-    mg_gpio #(.MS(MS)) u_gpio (.clk(clk), .rst_n(rst_n), .go(e_go), .id(e_id), .slot_mask(e_ev == 2'd0 ? m_mask : 8'd0),
+    mg_gpio #(.MS(MS)) u_gpio (.clk(clk), .rst_n(rst_n), .go(e_go && !ld_begin), .abort(ld_begin), .id(e_id), .slot_mask(e_ev == 2'd0 ? m_mask : 8'd0),
         .vals(m_vals), .n_actions(n_actions), .n_gpio(n_gpio), .act_base(act_base), .gpio_base(gpio_base),
         .req(g_req), .addr(g_addr), .gnt(gnt[1]), .rvalid(rvalid[1]), .rdata(cfg_rdata), .busy(gpio_busy),
         .gpio_o(gpio_o));
@@ -156,7 +156,7 @@ module mg_ctl #(
     always @(*) case (br_addr[7:0])
         8'h00: reg_rd = 32'h4D474931;
         8'h04: reg_rd = st_reg;
-        8'h08: reg_rd = {28'd0, m_wait, m_done && !m_acc, m_done, m_busy};
+        8'h08: reg_rd = {29'd0, m_done && !m_acc, m_done, m_busy};
         8'h0C: reg_rd = {m_mask, m_a1, m_best};
         8'h10: reg_rd = m_sb;
         8'h14: reg_rd = m_has ? m_s2 : 32'h80000000;

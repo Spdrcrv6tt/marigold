@@ -7,7 +7,7 @@ import zlib
 MAGIC = b"MGC0"
 EV_COMMAND, EV_WAKE, EV_NOMATCH, EV_TIMEOUT = 0, 1, 2, 3
 EV_ID = {EV_WAKE: 0xF0, EV_NOMATCH: 0xF1, EV_TIMEOUT: 0xF2}
-ERR_NONE, ERR_MAGIC, ERR_VERSION, ERR_RANGE, ERR_LENGTH, ERR_CRC = 0, 1, 2, 3, 4, 5
+ERR_NONE, ERR_MAGIC, ERR_VERSION, ERR_RANGE, ERR_LENGTH, ERR_CRC, ERR_MODEL_D = 0, 1, 2, 3, 4, 5, 6
 
 
 def crc32(b):
@@ -53,8 +53,9 @@ def build_blob(cfg):
     return bytes(b)
 
 
-def parse_blob(b):
-    """Returns (err, cfg) with the checks of docs/architecture.md section 8.6, in that order."""
+def parse_blob(b, model_d=None):
+    """Returns (err, cfg) with the checks of docs/architecture.md section 8.6, in that order; with model_d, a blob whose D
+    is not the model's is refused last (ERR_MODEL_D, review R4), as the chip does with its ROM model's D."""
     b = bytes(b)
     if len(b) < 0x20 or b[:4] != MAGIC:
         return ERR_MAGIC, None
@@ -68,6 +69,8 @@ def parse_blob(b):
         return ERR_LENGTH, None
     if crc32(b[:-4]) != struct.unpack_from("<I", b, L - 4)[0]:
         return ERR_CRC, None
+    if model_d is not None and D != model_d:
+        return ERR_MODEL_D, None
     o = 0x20
     vt = [struct.unpack_from("<BBh", b, o + 4 * i) for i in range(N)]
     o += 4 * N
@@ -223,8 +226,18 @@ class Segmenter:
         if p["cap"] and w - self.start == p["cap"]:
             close = True
         if close:
-            self.segs.append((self.start, w, tmo))
-            if tmo:
-                self.events.append((w, EV_TIMEOUT))
+            self._close(w, tmo)
+
+    def abort(self, w):
+        """Listening stopped at sample w (review R5): an open segment ends there as a TIMEOUT, with no event."""
+        if self.on:
+            self.segs.append((self.start, w, True))
             self.last_end = w
             self.on = False
+
+    def _close(self, w, tmo):
+        self.segs.append((self.start, w, tmo))
+        if tmo:
+            self.events.append((w, EV_TIMEOUT))
+        self.last_end = w
+        self.on = False

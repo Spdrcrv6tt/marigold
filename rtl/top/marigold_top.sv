@@ -27,7 +27,8 @@ module marigold_top #(
     parameter        WAKE_C = 240,
     parameter        WAKE_NOUT = 48,
     parameter        WAKE_GATE = 1,
-    parameter        WAKE_PREROLL = 10
+    parameter        WAKE_PREROLL = 10,
+    parameter [15:0] MODEL_D = 16'd128   // the ROM model's D: a blob with another D is refused (review R4)
 ) (
     input  wire        clk,
     input  wire        clk_fe,
@@ -97,7 +98,7 @@ module marigold_top #(
     wire        q_seg, q_tog, wk_tog, ack_tog, dq_tog, ev_wake, ev_tmo;
     mg_capture #(.AW(CAP_AW)) u_cap (
         .clk(clk_fe), .rst_n(rst_fe_n), .in_valid(fe_valid), .in_data(fe_data), .in_raw(fe_raw),
-        .in_wake(wake && listening), .pre(SEG_PRE), .mn(SEG_MIN), .cap(SEG_CAP), .hang(SEG_HANG), .onset(SEG_ONSET),
+        .in_wake(wake && listening), .en(listening), .pre(SEG_PRE), .mn(SEG_MIN), .cap(SEG_CAP), .hang(SEG_HANG), .onset(SEG_ONSET),
         .listen(SEG_LISTEN), .ack_t(ack_tog), .dq_t(dq_tog), .q_idx(q_idx), .q_data(q_data), .q_seg(q_seg),
         .q_bkl(q_bkl), .q_tog(q_tog), .wk_t(wk_tog), .osc_en(core_on), .ev_wake(ev_wake), .ev_tmo(ev_tmo), .bank_pe());
 
@@ -121,7 +122,7 @@ module marigold_top #(
     assign dbg_br_d = br_wdata;
 
     mg_ctl #(.SEG_PRE(SEG_PRE), .SEG_MIN(SEG_MIN), .SEG_CAP(SEG_CAP), .SEG_HANG(SEG_HANG), .SEG_ONSET(SEG_ONSET),
-             .SEG_LISTEN(SEG_LISTEN), .MS(MS)) u_ctl (
+             .SEG_LISTEN(SEG_LISTEN), .MS(MS), .MODEL_D(MODEL_D)) u_ctl (
         .clk(clk_fe), .rst_n(rst_fe_n), .scl_i(scl_i), .sda_i(sda_i), .sda_oe(sda_oe), .uart_tx_o(uart_tx_o),
         .irq_o(irq_o), .gpio_o(gpio_o), .ev_wake(ev_wake), .ev_tmo(ev_tmo), .cfg_valid(), .listening(listening),
         .wake_base(wake_base), .wake_len(wake_len), .wake_sens(wake_sens), .spot_req(spot_req), .spot_addr(spot_addr),

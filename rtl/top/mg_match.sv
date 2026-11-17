@@ -14,7 +14,7 @@ module mg_match (
     input  wire        clk,
     input  wire        rst_n,
     input  wire        go,
-    input  wire        emit,              // accepted: the values are written, clamp them and finish
+    input  wire        abort,             // CTRL begin (config reload): stop at once, no result (review R6)
     input  wire [15:0] D,
     input  wire [15:0] N,
     input  wire [7:0]  n_actions,
@@ -37,7 +37,6 @@ module mg_match (
     input  wire        rvalid,
     input  wire [31:0] rdata,
     output wire        busy,
-    output wire        waiting,           // accepted, waiting for the values and emit
     output reg         done,              // the result below is valid (until the next go)
     output reg         accept,            // 1 COMMAND, 0 NOMATCH
     output reg  [7:0]  action,            // action[b] when accepted, else 0
@@ -50,10 +49,9 @@ module mg_match (
     output reg  [7:0]  slot_mask,         // the accepted action's slots, else 0
     output wire [255:0] vals              // clamped values, slot k at bits 32k
 );
-    localparam S_IDLE = 3'd0, S_SCORE = 3'd1, S_DEC = 3'd2, S_ACT = 3'd3, S_SLOT = 3'd4, S_WAIT = 3'd5;
+    localparam S_IDLE = 3'd0, S_SCORE = 3'd1, S_DEC = 3'd2, S_ACT = 3'd3, S_SLOT = 3'd4;
     reg  [2:0]  st;
-    assign busy = (st != S_IDLE) && (st != S_WAIT);
-    assign waiting = (st == S_WAIT);
+    assign busy = (st != S_IDLE);
     assign best_action = a1;
 
     reg  [31:0] val [0:7];
@@ -95,10 +93,9 @@ module mg_match (
     reg  [2:0]  ph;            // step within the entry or slot
     reg  signed [31:0] smin;
     reg  [23:0] slv;                       // level bytes {high, medium, low} of the slot entry
-    // byte fetch: fn bytes (1..4) little endian from byte address fa into fv; the tables after the vectors need not
+    // byte fetch: fn bytes (1..4) little endian from byte address addr into fv; the tables after the vectors need not
     // be word aligned (N x D bytes of vectors), so they are read a byte at a time
     reg         fbusy;
-    reg  [14:0] fa;
     reg  [2:0]  fn, fk;
     reg  [1:0]  fl;
     reg  [31:0] fv;
@@ -116,7 +113,7 @@ module mg_match (
     wire signed [31:0] csh = $signed(sb) >>> conf_sh;
     assign conf = (csh < 0) ? 8'd0 : (csh > 255) ? 8'd255 : csh[7:0];
 
-    wire gen = go || busy || v_we || emit;
+    wire gen = go || busy || v_we || abort;
     wire gclk;
     clk_gate u_cg (.clk(clk), .en(gen), .gclk(gclk));
 
@@ -127,111 +124,109 @@ module mg_match (
             sb <= 32'd0; s2 <= 32'd0; has_s2 <= 1'b0; slot_mask <= 8'd0; ii <= 16'd0; di <= 9'd0; vrow <= 15'd0;
             iss_done <= 1'b0; t_ent <= 1'b0; t_last <= 1'b0; t_lane <= 2'd0; t_ql <= 2'd0; t_idx <= 16'd0; ca <= 8'd0; acc <= 32'd0;
             a1 <= 8'd0; ri <= 16'd0; j <= 8'd0; ph <= 3'd0; smin <= 32'd0;
-            slv <= 24'd0; fbusy <= 1'b0; fa <= 15'd0; fn <= 3'd0; fk <= 3'd0; fl <= 2'd0; fv <= 32'd0;
+            slv <= 24'd0; fbusy <= 1'b0; fn <= 3'd0; fk <= 3'd0; fl <= 2'd0; fv <= 32'd0;
             for (k = 0; k < 8; k = k + 1) val[k] <= 32'd0;
         end else begin
             if (v_we && !busy) val[v_waddr] <= v_wdata;
-            // byte fetch engine (S_ACT, S_SLOT); before the state machine so a new fetch started there wins
-            if (fbusy && st != S_SCORE) begin
-                if (gnt) begin req <= 1'b0; fl <= addr[1:0]; end
-                if (rvalid) begin
-                    fv <= fv_n; fk <= fk + 3'd1;
-                    if (fk + 3'd1 == fn) fbusy <= 1'b0;
-                    else begin req <= 1'b1; addr <= addr + 15'd1; end
-                end
-            end
-            case (st)
-            S_WAIT: if (go) begin
-                st <= S_SCORE; done <= 1'b0; ii <= 16'd0; di <= 9'd0; vrow <= vec_base; iss_done <= 1'b0;
-                has_s2 <= 1'b0; ri <= 16'd0;
-                req <= 1'b1; addr <= 15'h20;
-            end else if (emit) begin st <= S_SLOT; j <= 8'd0; ph <= 3'd0; end
-            S_IDLE: if (go) begin
-                st <= S_SCORE; done <= 1'b0; ii <= 16'd0; di <= 9'd0; vrow <= vec_base; iss_done <= 1'b0;
-                has_s2 <= 1'b0; ri <= 16'd0;
-                req <= 1'b1; addr <= 15'h20;
-            end
-            S_SCORE: begin
-                // issue
-                if (gnt) begin
-                    t_ent <= (di == 9'd0); t_lane <= addr[1:0]; t_ql <= dsel[1:0]; t_idx <= ii; t_last <= (di == D[8:0]);
-                    if (di == D[8:0]) begin
-                        di <= 9'd0; vrow <= vrow + D[14:0];
-                        if (ii == N - 16'd1) begin iss_done <= 1'b1; req <= 1'b0; end
-                        else begin ii <= ii + 16'd1; addr <= ent_a + 15'd4; end
-                    end else begin
-                        di <= di + 9'd1;
-                        addr <= vrow + {6'd0, di[7:0]};      // byte di of the row (next issue: byte index di)
+            if (abort) begin st <= S_IDLE; req <= 1'b0; fbusy <= 1'b0; done <= 1'b0; end
+            else begin
+                // byte fetch engine (S_ACT, S_SLOT); before the state machine so a new fetch started there wins
+                if (fbusy && st != S_SCORE) begin
+                    if (gnt) begin req <= 1'b0; fl <= addr[1:0]; end
+                    if (rvalid) begin
+                        fv <= fv_n; fk <= fk + 3'd1;
+                        if (fk + 3'd1 == fn) fbusy <= 1'b0;
+                        else begin req <= 1'b1; addr <= addr + 15'd1; end
                     end
                 end
-                // return
-                if (rvalid) begin
-                    if (t_ent) begin
-                        ca <= rdata[7:0];
-                        acc <= {{16{rdata[31]}}, rdata[31:16]};
-                    end else begin
-                        acc <= acc_n;
-                        if (t_last) begin
-                            if (lead) begin
-                                if (t_idx != 16'd0 && ca != a1) begin s2 <= sb; has_s2 <= 1'b1; end
-                                sb <= acc_n; a1 <= ca; best <= t_idx;
-                            end else if (ca != a1 && (!has_s2 || acc_n > $signed(s2))) begin
-                                s2 <= acc_n; has_s2 <= 1'b1;
+                case (st)
+                S_IDLE: if (go) begin
+                    st <= S_SCORE; done <= 1'b0; ii <= 16'd0; di <= 9'd0; vrow <= vec_base; iss_done <= 1'b0;
+                    has_s2 <= 1'b0; ri <= 16'd0;
+                    req <= 1'b1; addr <= 15'h20;
+                end
+                S_SCORE: begin
+                    // issue
+                    if (gnt) begin
+                        t_ent <= (di == 9'd0); t_lane <= addr[1:0]; t_ql <= dsel[1:0]; t_idx <= ii; t_last <= (di == D[8:0]);
+                        if (di == D[8:0]) begin
+                            di <= 9'd0; vrow <= vrow + D[14:0];
+                            if (ii == N - 16'd1) begin iss_done <= 1'b1; req <= 1'b0; end
+                            else begin ii <= ii + 16'd1; addr <= ent_a + 15'd4; end
+                        end else begin
+                            di <= di + 9'd1;
+                            addr <= vrow + {6'd0, di[7:0]};      // byte di of the row (next issue: byte index di)
+                        end
+                    end
+                    // return
+                    if (rvalid) begin
+                        if (t_ent) begin
+                            ca <= rdata[7:0];
+                            acc <= {{16{rdata[31]}}, rdata[31:16]};
+                        end else begin
+                            acc <= acc_n;
+                            if (t_last) begin
+                                if (lead) begin
+                                    if (t_idx != 16'd0 && ca != a1) begin s2 <= sb; has_s2 <= 1'b1; end
+                                    sb <= acc_n; a1 <= ca; best <= t_idx;
+                                end else if (ca != a1 && (!has_s2 || acc_n > $signed(s2))) begin
+                                    s2 <= acc_n; has_s2 <= 1'b1;
+                                end
+                                if (t_idx == N - 16'd1) st <= S_DEC;
                             end
-                            if (t_idx == N - 16'd1) st <= S_DEC;
                         end
                     end
                 end
-            end
-            S_DEC: begin
-                if (rej) begin
-                    st <= S_IDLE; done <= 1'b1; accept <= 1'b0; action <= 8'd0; slot_mask <= 8'd0;
-                end else begin
-                    st <= S_ACT; j <= 8'd0; ph <= 3'd0;
-                end
-            end
-            S_ACT: begin                                            // find the entry with id == a1
-                if (ph == 3'd0) begin
-                    if (j == n_actions) begin                       // none: NOMATCH
+                S_DEC: begin
+                    if (rej) begin
                         st <= S_IDLE; done <= 1'b1; accept <= 1'b0; action <= 8'd0; slot_mask <= 8'd0;
                     end else begin
-                        fbusy <= 1'b1; fa <= act_base + {5'd0, j, 2'b00}; fn <= 3'd2; fk <= 3'd0; fv <= 32'd0;
-                        req <= 1'b1; addr <= act_base + {5'd0, j, 2'b00}; ph <= 3'd1;
+                        st <= S_ACT; j <= 8'd0; ph <= 3'd0;
                     end
-                end else if (fdone) begin
-                    if (fv_n[7:0] == a1) begin slot_mask <= fv_n[15:8]; st <= S_SLOT; j <= 8'd0; end
-                    else j <= j + 8'd1;
-                    ph <= 3'd0;
                 end
-            end
-            S_SLOT: begin                                           // clamp each slot of the action
-                if (j == 8'd8) begin
-                    st <= S_IDLE; done <= 1'b1; accept <= 1'b1; action <= a1;
-                end else if (!slot_mask[j[2:0]] || j >= n_slots) begin
-                    val[j[2:0]] <= 32'd0; j <= j + 8'd1; ph <= 3'd0;
-                end else case (ph)
-                    3'd0: begin                                     // level bytes 1..3
-                        fbusy <= 1'b1; fa <= slot_base + j * 12 + 15'd1; fn <= 3'd3; fk <= 3'd0; fv <= 32'd0;
-                        req <= 1'b1; addr <= slot_base + j * 12 + 15'd1; ph <= 3'd1;
+                S_ACT: begin                                            // find the entry with id == a1
+                    if (ph == 3'd0) begin
+                        if (j == n_actions) begin                       // none: NOMATCH
+                            st <= S_IDLE; done <= 1'b1; accept <= 1'b0; action <= 8'd0; slot_mask <= 8'd0;
+                        end else begin
+                            fbusy <= 1'b1; fn <= 3'd2; fk <= 3'd0; fv <= 32'd0;
+                            req <= 1'b1; addr <= act_base + {5'd0, j, 2'b00}; ph <= 3'd1;
+                        end
+                    end else if (fdone) begin
+                        if (fv_n[7:0] == a1) begin slot_mask <= fv_n[15:8]; st <= S_SLOT; j <= 8'd0; end
+                        else j <= j + 8'd1;
+                        ph <= 3'd0;
                     end
-                    3'd1: if (fdone) begin                          // min
-                        slv <= fv_n[23:0];
-                        fbusy <= 1'b1; fa <= slot_base + j * 12 + 15'd4; fn <= 3'd4; fk <= 3'd0; fv <= 32'd0;
-                        req <= 1'b1; addr <= slot_base + j * 12 + 15'd4; ph <= 3'd2;
-                    end
-                    3'd2: if (fdone) begin                          // max
-                        smin <= $signed(fv_n);
-                        fbusy <= 1'b1; fa <= slot_base + j * 12 + 15'd8; fn <= 3'd4; fk <= 3'd0; fv <= 32'd0;
-                        req <= 1'b1; addr <= slot_base + j * 12 + 15'd8; ph <= 3'd3;
-                    end
-                    default: if (fdone) begin
-                        val[j[2:0]] <= (vlo > $signed(fv_n)) ? fv_n : vlo;
-                        j <= j + 8'd1; ph <= 3'd0;
-                    end
+                end
+                S_SLOT: begin                                           // clamp each slot of the action
+                    if (j == 8'd8) begin
+                        st <= S_IDLE; done <= 1'b1; accept <= 1'b1; action <= a1;
+                    end else if (!slot_mask[j[2:0]] || j >= n_slots) begin
+                        val[j[2:0]] <= 32'd0; j <= j + 8'd1; ph <= 3'd0;
+                    end else case (ph)
+                        3'd0: begin                                     // level bytes 1..3
+                            fbusy <= 1'b1; fn <= 3'd3; fk <= 3'd0; fv <= 32'd0;
+                            req <= 1'b1; addr <= slot_base + j * 12 + 15'd1; ph <= 3'd1;
+                        end
+                        3'd1: if (fdone) begin                          // min
+                            slv <= fv_n[23:0];
+                            fbusy <= 1'b1; fn <= 3'd4; fk <= 3'd0; fv <= 32'd0;
+                            req <= 1'b1; addr <= slot_base + j * 12 + 15'd4; ph <= 3'd2;
+                        end
+                        3'd2: if (fdone) begin                          // max
+                            smin <= $signed(fv_n);
+                            fbusy <= 1'b1; fn <= 3'd4; fk <= 3'd0; fv <= 32'd0;
+                            req <= 1'b1; addr <= slot_base + j * 12 + 15'd8; ph <= 3'd3;
+                        end
+                        default: if (fdone) begin
+                            val[j[2:0]] <= (vlo > $signed(fv_n)) ? fv_n : vlo;
+                            j <= j + 8'd1; ph <= 3'd0;
+                        end
+                    endcase
+                end
+                default: st <= S_IDLE;
                 endcase
             end
-            default: st <= S_IDLE;
-            endcase
         end
     end
 endmodule
