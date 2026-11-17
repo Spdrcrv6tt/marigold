@@ -1,12 +1,15 @@
 // Marigold value head: raw slot values from the CTC tokens, a line-for-line port of sw/intent/values.py raw_values
 // (with items and _number_run), integer only. Level words become codes (-1 low, -2 medium, -3 high, -4 max, -5 min);
-// the island maps the codes through the slot table and clamps to [min, max] (docs/decisions.md, Nov 15).
+// the island maps the codes through the slot table and clamps to [min, max] (docs/decisions.md, Nov 15). A slot with
+// nothing heard gets MG_NO_VALUE (INT32_MIN), which the island leaves out of the frame (R16, John's ruling of Nov 17).
 // Python's integers are unbounded: every quantity here is >= 0 and only grows, so values are held in i64 and clamped
 // at VSAT = 2^40 (any value that large ends at the slot's max after the island's clamp, as Python's would); the
 // value written to VAL is clamped to the int32 range. No 64-bit division (no libgcc on the chip): udivmod64.
 #ifndef MG_VALUES_H
 #define MG_VALUES_H
 #include "hal.h"
+
+#define MG_NO_VALUE (-2147483647 - 1)          // raw value "no value heard" (sw/intent/values.py NO_VALUE)
 
 enum { TK_BLANK = 0, TK_ZERO = 1, TK_TWENTY = 21, TK_HUNDRED = 29, TK_THOUSAND = 30, TK_A = 31, TK_HALF = 32,
        TK_QUARTER = 33, TK_SECOND = 34, TK_MINUTE = 35, TK_HOUR = 36, TK_DEGREE = 37, TK_PERCENT = 38, TK_LEVEL = 39,
@@ -172,7 +175,7 @@ static void mg_raw_values(const u8 *tok, u32 nt, const u8 *types, u32 nslot, i32
             if (x < 0) x = first_it(it_k, n, IT_LVL, IT_LVL);
             if (x >= 0) { have = 1; v = it_v[x]; }
         }
-        if (!have) v = 0;
+        if (!have) v = MG_NO_VALUE;
         raw[s] = v > 2147483647 ? 2147483647 : (i32)v;
     }
 }

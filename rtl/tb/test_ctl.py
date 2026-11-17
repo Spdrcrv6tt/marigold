@@ -328,3 +328,54 @@ async def i2c_timing(dut):
         dut._log.info("%s mode, rise %d ns: data valid max %d ns (limit %d), setup min %d ns (limit %d)",
                       mode, rise, i2c.tvd_max, tvd, i2c.tsu_min, tsu)
     assert res["standard"][0] <= 3450 and res["standard"][1] >= 250, res
+
+
+NO_VALUE = -(1 << 31)          # R16: the core's raw code for "no value heard" (docs/golden-format.md section 6)
+
+
+@cocotb.test()
+async def value_not_said_frame(dut):
+    """R16 (John, Nov 17, 2026), the review's case end to end in the island: the microwave's power_level with the
+    number missed is a COMMAND frame with n_values 0 (it was power = 1), "start" with no time carries no time, and a
+    GPIO binary rule on an unsaid slot leaves its pins as they were (it showed the minimum)."""
+    i2c = await setup(dut)
+    # slot 0 time (duration 1..5999 s), slot 1 power (level 1..10); start (id 1) carries both, power_level (id 4)
+    # carries power and shows it in binary on pins 4 to 7 (GPIO mode 3)
+    cfg = dict(D=2, vectors=[(1, 0, 0, [1, 0]), (4, 0, 0, [0, 1])], actions=[(1, 0b11, 0, 0), (4, 0b10, 0, 1)],
+               slots=[(1, 1, 5999), (2, 1, 10, (3, 5, 10))], gpio=[(0xF0, 3, 1, 1, 0)], wake=b"", host=1,
+               i2c_addr=0x2A, reject_thr=-(1 << 31), margin=0, wake_sens=0, flags=0, conf_sh=0)
+    blob = M.build_blob(cfg)
+    st = await load(i2c, blob, 0x2A)
+    assert st & 1, hex(st)
+    _, pc = M.parse_blob(blob)
+
+    async def command(q, vals):
+        for w in range(64):
+            await bridge(dut, 0x8100 + 4 * w, int.from_bytes(struct.pack("<4b", *(q + [0, 0])[4 * w:4 * w + 4]), "little")
+                         if w == 0 else 0)
+        for k in range(8):
+            await bridge(dut, 0x8040 + 4 * k, vals[k])
+        await bridge(dut, 0x8008, 1)
+        for _ in range(500):
+            s = await bridge(dut, 0x8008)
+            if s & 8:
+                await bridge(dut, 0x8008, 2)
+            if s & 2:
+                break
+        await settle(dut)
+        return await read_frames(i2c, 0x2A)
+
+    start, power, rest = [1, 0], [0, 1], [0] * 6
+    for q, vals, want_values, pins in (
+            (power, [NO_VALUE, 7] + rest, [(1, 7)], 7 << 4),            # "power level seven"
+            (power, [NO_VALUE, NO_VALUE] + rest, [], 7 << 4),           # "power level <missed>": pins keep 7
+            (start, [NO_VALUE, NO_VALUE] + rest, [], 7 << 4),           # "start", no time
+            (start, [120, NO_VALUE] + rest, [(0, 120)], 7 << 4)):       # "start for two minutes"
+        got = await command(q, vals)
+        act = 4 if q == power else 1
+        want = M.frame(M.EV_COMMAND, act, want_values, 1)
+        assert got == [want], "action %d raw %s: frames %s, want %s" % (act, vals[:2], [g.hex() for g in got], want.hex())
+        assert int(dut.gpio_o.value) == pins, "action %d raw %s: gpio %02x, want %02x" % (act, vals[:2], int(dut.gpio_o.value), pins)
+        r = M.match(pc, q, vals)
+        assert M.frame(r["ev"], r["action"], r["values"], r["conf"]) == want      # the model agrees
+    dut._log.info("unsaid values: no value in the frame, GPIO binary pins unchanged")

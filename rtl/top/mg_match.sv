@@ -9,7 +9,9 @@
 // (written by the core before go, one per config slot): level codes -1 low, -2 medium, -3 high, -4 max, -5 min are
 // mapped with the slot entry's level bytes 1..3 (0 = default: low = min, medium = floor((min + max) / 2), high = max;
 // max and min map to the slot's max and min), then clamped as min(max(v, min), max); a slot at or above n_slots gets
-// 0; the other slots are zeroed. confidence = clamp(s_b >>> conf_sh, 0, 255), conf_sh from the blob.
+// 0; the other slots are zeroed. A raw value of 0x80000000 (INT32_MIN: nothing heard) is never clamped: the slot
+// leaves slot_mask and reads 0, so the frame and the GPIO binary rules leave it out (R16, John's ruling of Nov 17,
+// 2026). confidence = clamp(s_b >>> conf_sh, 0, 255), conf_sh from the blob.
 module mg_match (
     input  wire        clk,
     input  wire        rst_n,
@@ -46,10 +48,11 @@ module mg_match (
     output reg  [31:0] s2,
     output reg         has_s2,
     output wire [7:0]  conf,
-    output reg  [7:0]  slot_mask,         // the accepted action's slots, else 0
+    output reg  [7:0]  slot_mask,         // the accepted action's slots that carry a value, else 0
     output wire [255:0] vals              // clamped values, slot k at bits 32k
 );
     localparam S_IDLE = 3'd0, S_SCORE = 3'd1, S_DEC = 3'd2, S_ACT = 3'd3, S_SLOT = 3'd4;
+    localparam [31:0] NO_VALUE = 32'h80000000;                     // raw value: nothing heard for this slot (R16)
     reg  [2:0]  st;
     assign busy = (st != S_IDLE);
     assign best_action = a1;
@@ -203,6 +206,8 @@ module mg_match (
                         st <= S_IDLE; done <= 1'b1; accept <= 1'b1; action <= a1;
                     end else if (!slot_mask[j[2:0]] || j >= n_slots) begin
                         val[j[2:0]] <= 32'd0; j <= j + 8'd1; ph <= 3'd0;
+                    end else if (val[j[2:0]] == NO_VALUE) begin          // not said: out of the mask, not clamped
+                        slot_mask[j[2:0]] <= 1'b0; val[j[2:0]] <= 32'd0; j <= j + 8'd1; ph <= 3'd0;
                     end else case (ph)
                         3'd0: begin                                     // level bytes 1..3
                             fbusy <= 1'b1; fn <= 3'd3; fk <= 3'd0; fv <= 32'd0;

@@ -12,7 +12,9 @@ module mg_ctl #(
     parameter [31:0] SEG_LISTEN = 32'd64000,
     parameter        UDIV = 26,
     parameter        MS = 3072,
-    parameter [15:0] MODEL_D = 16'd0     // the ROM model's D (review R4); 0 = no check
+    parameter [15:0] MODEL_D = 16'd0,    // the ROM model's D (review R4); 0 = no check
+    parameter [7:0]  MODEL_ID = 8'd0,    // the ROM model's id and its teacher's (K1); 0 = no check
+    parameter [7:0]  TEACHER_ID = 8'd0
 ) (
     input  wire        clk,
     input  wire        rst_n,
@@ -56,7 +58,7 @@ module mg_ctl #(
     wire [14:0] cfg_waddr, vec_base, act_base, slot_base, gpio_base;
     wire [7:0]  cfg_wdata, n_actions, n_slots, n_gpio, host, i2c_addr;
     wire [31:0] reject_thr, margin;
-    mg_cfg_load #(.MODEL_D(MODEL_D)) u_ld (.clk(clk), .rst_n(rst_n), .begin_i(ld_begin), .commit_i(ld_commit), .in_valid(ld_in),
+    mg_cfg_load #(.MODEL_D(MODEL_D), .MODEL_ID(MODEL_ID), .TEACHER_ID(TEACHER_ID)) u_ld (.clk(clk), .rst_n(rst_n), .begin_i(ld_begin), .commit_i(ld_commit), .in_valid(ld_in),
         .in_data(ld_byte), .we(cfg_we), .waddr(cfg_waddr), .wdata(cfg_wdata), .valid(ld_valid), .err(ld_err),
         .cnt(ld_cnt), .D(D), .N(N), .n_actions(n_actions), .n_slots(n_slots), .n_gpio(n_gpio), .wake_len(wake_len),
         .host(host), .i2c_addr(i2c_addr), .reject_thr(reject_thr), .margin(margin), .wake_sens(wake_sens),

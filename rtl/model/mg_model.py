@@ -5,9 +5,11 @@ import struct
 import zlib
 
 MAGIC = b"MGC0"
+VERSION = 1                    # blob version 1 records the model and teacher (K1, John's ruling of Nov 17, 2026)
+NO_VALUE = -(1 << 31)          # raw slot value "no value heard" (R16, same ruling): the slot is left out of the frame
 EV_COMMAND, EV_WAKE, EV_NOMATCH, EV_TIMEOUT = 0, 1, 2, 3
 EV_ID = {EV_WAKE: 0xF0, EV_NOMATCH: 0xF1, EV_TIMEOUT: 0xF2}
-ERR_NONE, ERR_MAGIC, ERR_VERSION, ERR_RANGE, ERR_LENGTH, ERR_CRC, ERR_MODEL_D = 0, 1, 2, 3, 4, 5, 6
+ERR_NONE, ERR_MAGIC, ERR_VERSION, ERR_RANGE, ERR_LENGTH, ERR_CRC, ERR_MODEL_D, ERR_MODEL = 0, 1, 2, 3, 4, 5, 6, 7
 
 
 def crc32(b):
@@ -30,11 +32,13 @@ def blob_len(D, N, n_actions, n_slots, n_gpio, wake_len):
 def build_blob(cfg):
     """cfg: dict with D, vectors [(action, flags, bias, [D int8])], actions [(id, slot_mask, gpio_first, gpio_count)],
     slots [(type, min, max)], gpio [(pin_mask, mode, level, slot, pulse_ms)], wake (bytes), host, i2c_addr,
-    reject_thr, margin, wake_sens, flags. Returns the blob bytes with its CRC."""
+    reject_thr, margin, wake_sens, flags, and optionally conf_sh, model_id, teacher_id (default 0: built for no model).
+    Returns the blob bytes (version 1) with its CRC."""
     D, vec = cfg["D"], cfg["vectors"]
-    h = MAGIC + struct.pack("<HHHBBBBBBiiHHB3x", 0, D, len(vec), len(cfg["actions"]), len(cfg["slots"]),
+    h = MAGIC + struct.pack("<HHHBBBBBBiiHHBBBx", VERSION, D, len(vec), len(cfg["actions"]), len(cfg["slots"]),
                             len(cfg["gpio"]), len(cfg["wake"]), cfg["host"], cfg["i2c_addr"], cfg["reject_thr"],
-                            cfg["margin"], cfg["wake_sens"], cfg["flags"], cfg.get("conf_sh", 8))
+                            cfg["margin"], cfg["wake_sens"], cfg["flags"], cfg.get("conf_sh", 8), cfg.get("model_id", 0),
+                            cfg.get("teacher_id", 0))
     b = bytearray(h)
     for a, f, bias, _ in vec:
         b += struct.pack("<BBh", a, f, bias)
@@ -53,14 +57,15 @@ def build_blob(cfg):
     return bytes(b)
 
 
-def parse_blob(b, model_d=None):
-    """Returns (err, cfg) with the checks of docs/architecture.md section 8.6, in that order; with model_d, a blob whose D
-    is not the model's is refused last (ERR_MODEL_D, review R4), as the chip does with its ROM model's D."""
+def parse_blob(b, model_d=None, model_id=None, teacher_id=None):
+    """Returns (err, cfg) with the checks of docs/architecture.md section 8.6, in that order; then, as the chip does with
+    its ROM model, with model_d a blob whose D is not the model's is refused (ERR_MODEL_D, review R4), and with
+    model_id / teacher_id (0 or None: no check) a blob built for another model or teacher (ERR_MODEL, K1)."""
     b = bytes(b)
     if len(b) < 0x20 or b[:4] != MAGIC:
         return ERR_MAGIC, None
-    ver, D, N, na, ns, ng, wl, host, i2c, rthr, mrg, sens, flags, csh = struct.unpack_from("<HHHBBBBBBiiHHB", b, 4)
-    if ver != 0:
+    ver, D, N, na, ns, ng, wl, host, i2c, rthr, mrg, sens, flags, csh, mid, tid = struct.unpack_from("<HHHBBBBBBiiHHBBB", b, 4)
+    if ver != VERSION:
         return ERR_VERSION, None
     if not (1 <= na <= 64 and ns <= 8 and ng <= 32 and host <= 2 and 1 <= D <= 256 and N >= 1):
         return ERR_RANGE, None
@@ -71,6 +76,8 @@ def parse_blob(b, model_d=None):
         return ERR_CRC, None
     if model_d is not None and D != model_d:
         return ERR_MODEL_D, None
+    if (model_id and mid != model_id) or (teacher_id and tid != teacher_id):
+        return ERR_MODEL, None
     o = 0x20
     vt = [struct.unpack_from("<BBh", b, o + 4 * i) for i in range(N)]
     o += 4 * N
@@ -86,7 +93,8 @@ def parse_blob(b, model_d=None):
     gp = [struct.unpack_from("<BBBBH", b, o + 8 * r) for r in range(ng)]
     o += 8 * ng
     cfg = dict(D=D, N=N, vt=vt, vec=vec, actions=acts, slots=slots, gpio=gp, wake=b[o:o + wl], host=host,
-               i2c_addr=i2c, reject_thr=rthr, margin=mrg, wake_sens=sens, flags=flags, conf_sh=csh)
+               i2c_addr=i2c, reject_thr=rthr, margin=mrg, wake_sens=sens, flags=flags, conf_sh=csh, model_id=mid,
+               teacher_id=tid)
     return ERR_NONE, cfg
 
 
@@ -100,7 +108,10 @@ def find_action(cfg, aid):
 def island_value(raw, slot):
     """A raw slot value as the island emits it (ruling of Nov 15): level codes -1 low, -2 medium, -3 high, -4 max,
     -5 min mapped with the slot's level bytes (0 = default: low = min, medium = floor((min + max) / 2), high = max),
-    then clamped as min(max(v, min), max). Same as sw/intent/values.py island_value."""
+    then clamped as min(max(v, min), max). NO_VALUE (nothing heard, R16) gives None: the slot is left out of the frame,
+    never clamped. Same as sw/intent/values.py island_value."""
+    if raw == NO_VALUE:
+        return None
     _, lo, hi, (l, m, h) = slot
     if -5 <= raw <= -1:
         raw = {-1: l or lo, -2: m or (lo + hi) // 2, -3: h or hi, -4: hi, -5: lo}[raw]
@@ -108,7 +119,9 @@ def island_value(raw, slot):
 
 
 def match(cfg, q, raw_vals):
-    """The matching rule. Returns dict(ev, action, b, sb, s2, conf, values [(slot, clamped)], slot_mask, vals8)."""
+    """The matching rule. Returns dict(ev, action, b, sb, s2, conf, values [(slot, clamped)], slot_mask, vals8).
+    slot_mask is the accepted action's slots that carry a value: a slot whose raw value is NO_VALUE (R16) is left out
+    of it and of values, and reads 0 in vals8."""
     D = cfg["D"]
     s = [sum(q[d] * v[d] for d in range(D)) + vt[2] for vt, v in zip(cfg["vt"], cfg["vec"])]
     b = max(range(len(s)), key=lambda i: (s[i], -i))
@@ -123,12 +136,16 @@ def match(cfg, q, raw_vals):
         return r
     vals8 = [0] * 8
     values = []
+    mask = act[1]
     for k in range(8):
         if act[1] >> k & 1:
             v = island_value(raw_vals[k], cfg["slots"][k]) if k < len(cfg["slots"]) else 0
+            if v is None:
+                mask &= ~(1 << k)
+                continue
             vals8[k] = v
             values.append((k, v))
-    r.update(ev=EV_COMMAND, action=ab, values=values, slot_mask=act[1], vals8=vals8)
+    r.update(ev=EV_COMMAND, action=ab, values=values, slot_mask=mask, vals8=vals8)
     return r
 
 

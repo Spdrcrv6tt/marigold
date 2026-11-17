@@ -1,9 +1,13 @@
 // Config loader (docs/architecture.md sections 3 and 8.6): takes the blob as a byte stream, writes it to config
 // SRAM, keeps the 32-byte header, and on commit checks magic, version, field ranges, length and CRC-32 (IEEE,
-// zlib.crc32) in that order, then (review R4) that D is the ROM model's output size (MODEL_D). The CRC runs on the fly four bytes behind the stream, so at commit it covers every
-// byte but the last four, which are still in the delay line and are the stored CRC. cfg_valid only after a pass.
+// zlib.crc32) in that order, then (review R4) that D is the ROM model's output size (MODEL_D), then (K1, John's ruling
+// of Nov 17, 2026) that the blob was built for the ROM's model and its teacher (bytes 0x1D and 0x1E against MODEL_ID and
+// TEACHER_ID). The CRC runs on the fly four bytes behind the stream, so at commit it covers every byte but the last
+// four, which are still in the delay line and are the stored CRC. cfg_valid only after a pass.
 module mg_cfg_load #(
-    parameter [15:0] MODEL_D = 16'd0     // the ROM model's output size; a blob with another D is refused (0 = no check)
+    parameter [15:0] MODEL_D = 16'd0,    // the ROM model's output size; a blob with another D is refused (0 = no check)
+    parameter [7:0]  MODEL_ID = 8'd0,    // the ROM model's id (its tag number, sdk/chip_models.py; 0 = no check)
+    parameter [7:0]  TEACHER_ID = 8'd0   // the id of the teacher that model was distilled from (0 = no check)
 ) (
     input  wire        clk,
     input  wire        rst_n,
@@ -15,7 +19,8 @@ module mg_cfg_load #(
     output wire [14:0] waddr,
     output wire [7:0]  wdata,
     output reg         valid,
-    output reg  [3:0]  err,               // 0 none, 1 magic, 2 version, 3 field range, 4 length, 5 CRC, 6 D is not the model's
+    output reg  [3:0]  err,               // 0 none, 1 magic, 2 version, 3 field range, 4 length, 5 CRC, 6 D is not the model's,
+                                          // 7 built for another model or teacher
     output reg  [15:0] cnt,               // bytes received (saturates at 0xFFFF)
     // header fields and table bases, stable while valid
     output wire [15:0] D,
@@ -63,7 +68,8 @@ module mg_cfg_load #(
     assign wake_sens  = {hdr[25], hdr[24]};
     assign flags      = {hdr[27], hdr[26]};
     assign conf_sh    = hdr[28];
-    wire [15:0] ver   = {hdr[5], hdr[4]};
+    wire [15:0] ver   = {hdr[5], hdr[4]};             // blob version 1 (K1)
+    wire        other = ((MODEL_ID != 8'd0) && (hdr[29] != MODEL_ID)) || ((TEACHER_ID != 8'd0) && (hdr[30] != TEACHER_ID));
 
     assign we    = in_valid && (cnt < 16'd32768) && !begin_i;
     assign waddr = cnt[14:0];
@@ -80,8 +86,9 @@ module mg_cfg_load #(
     wire        magic = (cnt >= 16'd32) && hdr[0] == "M" && hdr[1] == "G" && hdr[2] == "C" && hdr[3] == "0";
     wire        range = (n_actions >= 8'd1) && (n_actions <= 8'd64) && (n_slots <= 8'd8) && (n_gpio <= 8'd32) &&
                         (host <= 8'd2) && (D >= 16'd1) && (D <= 16'd256) && (N >= 16'd1);
-    wire [3:0]  chk   = !magic ? 4'd1 : (ver != 16'd0) ? 4'd2 : !range ? 4'd3 :
-                        ((len > 32'd32768) || (len != {16'd0, cnt})) ? 4'd4 : ((~crc) != dl) ? 4'd5 : ((MODEL_D != 16'd0) && (D != MODEL_D)) ? 4'd6 : 4'd0;
+    wire [3:0]  chk   = !magic ? 4'd1 : (ver != 16'd1) ? 4'd2 : !range ? 4'd3 :
+                        ((len > 32'd32768) || (len != {16'd0, cnt})) ? 4'd4 : ((~crc) != dl) ? 4'd5 :
+                        ((MODEL_D != 16'd0) && (D != MODEL_D)) ? 4'd6 : other ? 4'd7 : 4'd0;
 
     wire gen = begin_i | commit_i | in_valid;
     wire gclk;

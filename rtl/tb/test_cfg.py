@@ -3,6 +3,7 @@ import os
 stealing config-SRAM cycles at random."""
 import random
 import struct
+import zlib
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, ReadOnly, Timer
@@ -56,7 +57,7 @@ async def loader_checks(dut):
         blob = M.build_blob(cfg)
         cases = [("good", blob)]
         b = bytearray(blob); b[1] ^= 0x10; cases.append(("magic", bytes(b)))
-        b = bytearray(blob); b[4] = 1; cases.append(("version", bytes(b)))
+        b = bytearray(blob); b[4] = 0; cases.append(("version 0", bytes(b)))      # K1: the blob is version 1
         b = bytearray(blob); b[10] = 65; cases.append(("n_actions", bytes(b)))
         b = bytearray(blob); b[11] = 9; cases.append(("n_slots", bytes(b)))
         b = bytearray(blob); b[6:8] = struct.pack("<H", 257); cases.append(("D", bytes(b)))
@@ -217,3 +218,107 @@ async def reload_during_match(dut):
         assert int(dut.accept.value) == (want["ev"] == M.EV_COMMAND) and dut.sb.value.to_signed() == want["sb"], (t, want)
         await RisingEdge(dut.clk)
     dut._log.info("3 reloads during a match: matcher stopped, next match identical")
+
+
+NO_VALUE = -(1 << 31)          # R16: the core's raw code for "no value heard" (docs/golden-format.md section 6)
+
+
+async def run_match(dut, q, vals, lim=20000):
+    qq = q + [0] * (256 - len(q))
+    for w in range(64):
+        dut.q_we.value = 1; dut.q_waddr.value = w
+        dut.q_wdata.value = int.from_bytes(struct.pack("<4b", *qq[4 * w:4 * w + 4]), "little")
+        await RisingEdge(dut.clk)
+    dut.q_we.value = 0
+    for k in range(8):
+        dut.v_we.value = 1; dut.v_waddr.value = k; dut.v_wdata.value = vals[k] & 0xFFFFFFFF
+        await RisingEdge(dut.clk)
+    dut.v_we.value = 0
+    await pulse(dut, "go")
+    for _ in range(lim):
+        await RisingEdge(dut.clk)
+        if int(dut.done.value):
+            break
+    else:
+        raise AssertionError("matcher did not finish")
+    await ReadOnly()
+    vv = int(dut.vals.value)
+    vals8 = [(vv >> (32 * k)) & 0xFFFFFFFF for k in range(8)]
+    r = dict(accept=int(dut.accept.value), action=int(dut.action.value), mask=int(dut.slot_mask.value),
+             vals8=[x - (1 << 32) if x >> 31 else x for x in vals8])
+    await RisingEdge(dut.clk)
+    return r
+
+
+@cocotb.test()
+async def value_not_said(dut):
+    """R16 (John, Nov 17, 2026): a slot whose raw value is the no-value code (INT32_MIN) leaves the accepted action's
+    slot mask and reads 0; it is never clamped to the slot's minimum. The review's case first (the microwave's
+    power_level with the number missed, start with no time), then random configs against the model."""
+    await setup(dut)
+    # microwave tables (sdk/configs/microwave.json): slot 0 time (duration 1..5999 s), slot 1 power (level 1..10,
+    # words low 3, medium 5, high 10); start (id 1) carries both, power_level (id 4) carries power
+    cfg = dict(D=2, vectors=[(1, 0, 0, [1, 0]), (4, 0, 0, [0, 1])], actions=[(1, 0b11, 0, 0), (4, 0b10, 0, 0)],
+               slots=[(1, 1, 5999), (2, 1, 10, (3, 5, 10))], gpio=[], wake=b"", host=1, i2c_addr=0x2A,
+               reject_thr=-(1 << 31), margin=0, wake_sens=0, flags=0, conf_sh=0)
+    v, e = await load(dut, M.build_blob(cfg))
+    assert v == 1 and e == 0
+    start, power = [1, 0], [0, 1]
+    rest = [0] * 6
+    for q, vals, act, mask, want in (
+            (power, [NO_VALUE, NO_VALUE] + rest, 4, 0b00, [0, 0]),     # "power level <missed>": no value
+            (start, [NO_VALUE, NO_VALUE] + rest, 1, 0b00, [0, 0]),     # "start", no time
+            (start, [90, NO_VALUE] + rest, 1, 0b01, [90, 0]),         # "start for 90 seconds"
+            (power, [NO_VALUE, -3] + rest, 4, 0b10, [0, 10]),          # "power high"
+            (power, [NO_VALUE, 0] + rest, 4, 0b10, [0, 1]),            # a said value below min is still clamped
+            (start, [0, 99] + rest, 1, 0b11, [1, 10])):
+        r = await run_match(dut, q, vals)
+        assert r["accept"] and r["action"] == act, r
+        assert r["mask"] == mask and r["vals8"][:2] == want, (
+            "action %d raw %s: rtl slot mask %s values %s, want mask %s values %s (an unsaid value must not look like "
+            "the minimum)" % (act, vals[:2], bin(r["mask"]), r["vals8"][:2], bin(mask), want))
+    # random configs: unsaid values mixed with said ones and level codes, against the model
+    rng = random.Random(16)
+    n = 0
+    for t in range(40):
+        cfg = rand_cfg(rng, D=rng.choice([2, 4, 8]), n_slots=rng.randint(1, 8))
+        q = [rng.randint(-128, 127) for _ in range(cfg["D"])]
+        cfg["reject_thr"], cfg["margin"] = -(1 << 31), 0
+        blob = M.build_blob(cfg)
+        assert (await load(dut, blob))[0] == 1
+        vals = [rng.choice([NO_VALUE, NO_VALUE, rng.randint(-3000, 3000), -rng.randint(1, 5)]) for _ in range(8)]
+        r = await run_match(dut, q, vals)
+        _, pc = M.parse_blob(blob)
+        want = M.match(pc, q, vals)
+        if not r["accept"]:
+            continue
+        n += 1
+        assert r["mask"] == want["slot_mask"] and r["vals8"] == want["vals8"], (t, r, want)
+        for k in range(min(8, len(cfg["slots"]))):
+            assert not (vals[k] == NO_VALUE and r["mask"] >> k & 1), (t, k, r)
+    dut._log.info("review case and %d random accepts: unsaid values left out", n)
+
+
+@cocotb.test()
+async def model_id_check(dut):
+    """K1 (John, Nov 17, 2026): blob version 1 records the model and teacher it was built for (bytes 0x1D, 0x1E). With
+    MODEL_ID 3 and TEACHER_ID 4 (variant id34, MODEL_D 128) a blob for another model or teacher is refused with error
+    7, after the D check (error 6). A version 0 blob is refused (error 2). With MODEL_ID and TEACHER_ID 0 (the other
+    variants) any ids load."""
+    md, mid, tid = (int(os.environ.get(k, "0")) for k in ("MODEL_D", "MODEL_ID", "TEACHER_ID"))
+    await setup(dut)
+    rng = random.Random(17)
+    for D, m, t, ver in ((128, 3, 4, 1), (128, 2, 4, 1), (128, 3, 3, 1), (128, 0, 0, 1), (128, 1, 3, 1),
+                         (64, 2, 4, 1), (128, 3, 4, 0), (32, 3, 4, 1)):
+        cfg = rand_cfg(rng, D=D, N=3, n_gpio=2)
+        cfg.update(model_id=m, teacher_id=t)
+        b = bytearray(M.build_blob(cfg))
+        if ver == 0:
+            b[4:6] = b"\x00\x00"
+            b[-4:] = struct.pack("<I", zlib.crc32(bytes(b[:-4])) & 0xFFFFFFFF)
+        want = (2 if ver != 1 else 6 if md and D != md else 7 if (mid and m != mid) or (tid and t != tid) else 0)
+        v, e = await load(dut, bytes(b))
+        assert e == want and v == (want == 0), "blob D %d model %d teacher %d version %d: rtl err %d valid %d, want %d" % (
+            D, m, t, ver, e, v, want)
+        assert M.parse_blob(bytes(b), model_d=md or None, model_id=mid or None, teacher_id=tid or None)[0] == want
+    dut._log.info("model and teacher check with MODEL_D %d MODEL_ID %d TEACHER_ID %d matches", md, mid, tid)
