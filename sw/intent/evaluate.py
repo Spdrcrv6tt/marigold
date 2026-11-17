@@ -28,7 +28,9 @@ import compile as C  # noqa: E402
 HEAD = ("chat", "near", "tv")
 CONDS = {"clean": "data/tts/eval/manifest.jsonl", "fan10db": "data/tts/eval_noisy/fan10db/manifest.jsonl",
          "microwave10db": "data/tts/eval_noisy/microwave10db/manifest.jsonl",
-         "v2": "data/tts/eval_v2/manifest.jsonl"}   # iteration 2: blind test set eval/text_v2 (TEST-ONLY, eval voices)
+         "v2": "data/tts/eval_v2/manifest.jsonl",
+         "dev2": "data/tts/eval_dev2/manifest.jsonl",   # iteration-2 calibration DEV set (eval/text_dev2, eval voices)
+         "v3": "data/tts/eval_v3/manifest.jsonl"}       # iteration-2 blind TEST set (eval/text_v3, eval voices)   # iteration 2: blind test set eval/text_v2 (TEST-ONLY, eval voices)
 
 
 def load_rows(path):
@@ -130,6 +132,11 @@ def main():
     ap.add_argument("--tag", required=True)
     ap.add_argument("--conds", default="clean,fan10db,microwave10db")
     ap.add_argument("--enroll", action="store_true", help="also match against audio prototypes from SDK TTS enrollment")
+    ap.add_argument("--cal", default="v1", choices=["v1", "dev2"], help="calibration set: eval/text clean dev split, or eval/text_dev2")
+    ap.add_argument("--bank", default="", help="generic reject bank npz (reject fix): action-0 prototypes in every variant")
+    ap.add_argument("--bank-protos", type=int, default=0)
+    ap.add_argument("--bank-keep", type=float, default=0.8)
+    ap.add_argument("--bank-cfg", default="", help="per-product bank settings chosen on dev2 by sw/teacher4/text_gate.py (its JSON)")
     a = ap.parse_args()
     rows = {c: load_rows(CONDS[c]) for c in a.conds.split(",")}
     rows = {c: [r for r in rs if r["product"] in (None, "fan", "microwave") or r["set"] == "noncommands"] for c, rs in rows.items()}
@@ -168,7 +175,12 @@ def main():
     res = {"model": a.model, "golden": a.golden or None, "synthetic_only": True, "products": {}}
     for prod in ("fan", "microwave"):
         cfg = json.load(open(ROOT / f"sdk/configs/{prod}.json", encoding="utf8"))
-        blob, rep = C.compile_config(cfg, prod, emb, exp, proj="teacher")
+        bk, bt = a.bank_protos, a.bank_keep
+        if a.bank_cfg:
+            ch = json.load(open(ROOT / a.bank_cfg, encoding="utf8"))["products"][prod]["chosen"]
+            bk, bt = int(ch["bank_protos"]), float(ch["bank_keep"])
+        bank = np.load(ROOT / a.bank) if (a.bank and bk) else None
+        blob, rep = C.compile_config(cfg, prod, emb, exp, proj="teacher", reject_bank=bank, bank_protos=bk, bank_keep=bt)
         b0 = C.parse(blob)
         name2id = {x["name"]: x["id"] for x in cfg["actions"]}
         variants = {"text": b0}
@@ -179,29 +191,7 @@ def main():
             for j, q in zip(jobs, qe):
                 if j["product"] == prod:
                     byact.setdefault(name2id.get(j["action"], 0) if j["action"] else 0, []).append(q)
-            def protos(K_audio, K_text, K_bank=0, cal=False):
-                Cs, va = [], []
-                for aid in sorted(byact):
-                    if aid == 0:
-                        continue
-                    X = C.unit(np.array(byact[aid], np.float64)); cent = C.kmeans(X, K_audio); Cs.append(cent); va += [aid] * len(cent)
-                    if K_text:
-                        T = b0["vectors"][b0["vec_action"] == aid].astype(np.float64)
-                        ct = C.kmeans(C.unit(T), K_text); Cs.append(ct); va += [aid] * len(ct)
-                if 0 in byact:
-                    X = C.unit(np.array(byact[0], np.float64)); cent = C.kmeans(X, 16); Cs.append(cent); va += [0] * len(cent)
-                if K_bank:
-                    cent = C.kmeans(C.unit(qb.astype(np.float64)), K_bank); Cs.append(cent); va += [0] * len(cent)
-                Cm = np.concatenate(Cs)
-                V = np.clip(np.round(C.golden_vec(Cm, 0.0, np.eye(D)) * 32.0), -127, 127).astype(np.int8)
-                va = np.array(va, np.int32)
-                bias = np.zeros(len(va), np.int32)
-                if cal:                       # cohort normalisation: subtract each action prototype's mean score on the bank
-                    mu = (qb.astype(np.int64) @ V.astype(np.int64).T).mean(0)
-                    act = va != 0
-                    bias[act] = np.clip(np.round(-(mu[act] - np.median(mu[act]))), -32767, 32767).astype(np.int32)
-                bb = dict(b0); bb.update(vectors=V, vec_action=va, vec_flags=np.zeros(len(va), int), bias=bias, N=len(va))
-                return bb
+            protos = lambda K_audio, K_text, K_bank=0, cal=False: C.enroll_protos(b0, byact, qb, K_audio, K_text, K_bank, cal, text_reject=bank is not None)
             variants["audio"] = protos(32, 0)
             variants["mix"] = protos(16, 16)
             variants["mix+bank"] = protos(16, 16, 32)
@@ -219,10 +209,11 @@ def main():
 
 
 def one_variant(a, prod, cfg, b, name2id, rows, out, vname):
-    # threshold on clean dev headline non-commands
-    rs = rows["clean"]; Q, _ = out["clean"]
-    dv = [i for i, r in enumerate(rs) if r["set"] == "noncommands" and r["split"] == "dev" and r["category"] in HEAD]
-    dp = [i for i, r in enumerate(rs) if r["set"] == "paraphrases" and r["product"] == prod and r["split"] == "dev"]
+    # threshold and margin on the calibration DEV set's headline non-commands (clean v1 dev split, or eval/text_dev2)
+    cc, csp = ("dev2", "dev2") if getattr(a, "cal", "v1") == "dev2" else ("clean", "dev")
+    rs = rows[cc]; Q, _ = out[cc]
+    dv = [i for i, r in enumerate(rs) if r["set"] == "noncommands" and r["split"] == csp and r["category"] in HEAD]
+    dp = [i for i, r in enumerate(rs) if r["set"] == "paraphrases" and r["product"] == prod and r["split"] == csp]
     thr, mg, _ = pick_thr_margin(b, Q[dv], Q[dp], np.array([name2id[rs[i]["action"]] for i in dp]))
     b["reject_thr"] = thr; b["margin"] = mg
     blob = C.pack({k_: b[k_] for k_ in ("D", "reject_thr", "margin", "wake_sens", "flags", "host", "i2c_addr", "conf_sh")},
@@ -234,7 +225,7 @@ def one_variant(a, prod, cfg, b, name2id, rows, out, vname):
         Q, T = out[c]
         pred, best = decide(b, Q, thr)
         sel = lambda f: np.array([i for i, r in enumerate(rs) if f(r)], dtype=int)
-        sp = "v2" if c.startswith("v2") else "test"      # v2 rows are all test rows; threshold and margin from v1 dev
+        sp = c if c in ("v2", "v3", "dev2") else "test"   # whole-set conditions; threshold and margin from the calibration set
         para = sel(lambda r: r["set"] == "paraphrases" and r["product"] == prod and r["split"] == sp)
         typed = sel(lambda r: r["set"] == f"config:{prod}")
         nonc = sel(lambda r: r["set"] == "noncommands" and r["split"] == sp and r["category"] in HEAD)
@@ -266,8 +257,8 @@ def one_variant(a, prod, cfg, b, name2id, rows, out, vname):
               f"{d['t1_typed_acc'] if d['t1_typed_acc'] is None else round(d['t1_typed_acc'], 3)} reject {d['t4_reject_headline']:.3f} "
               f"other-dev {d['reject_other_device']:.2f} values {d['t3_values_given_action']} / e2e {d['t3_values_end_to_end']}", flush=True)
     # dev accuracy (for the variant choice)
-    rs = rows["clean"]; Q, _ = out["clean"]
-    devp = np.array([i for i, r in enumerate(rs) if r["set"] == "paraphrases" and r["product"] == prod and r["split"] == "dev"], dtype=int)
+    rs = rows[cc]; Q, _ = out[cc]
+    devp = np.array([i for i, r in enumerate(rs) if r["set"] == "paraphrases" and r["product"] == prod and r["split"] == csp], dtype=int)
     pr["dev_unseen_acc"] = float((decide(b, Q[devp], thr)[0] == np.array([name2id[rs[i]["action"]] for i in devp])).mean())
     return pr
 

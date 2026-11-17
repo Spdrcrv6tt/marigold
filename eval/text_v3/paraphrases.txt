@@ -1,0 +1,554 @@
+# marigold v3: written blind, TEST-ONLY: never train, tune or set thresholds on it
+# generated 2026-11-16 by local gemma4:12b (seed 2026111603) from sdk/configs/fan.json and microwave.json only (sw/teacher4/gen_evalsets.py)
+# lines identical to eval/text, eval/text_v2, the other new set, config examples or training text were dropped
+# format: '## <product> <action>' blocks; ' | slot=value' (time in seconds, speed 1-5, power 1-10)
+## fan on
+could you turn it on now
+it's way too hot so turn it on
+please turn on the fan right now
+turn it on you know
+make it turn on now
+i want it turned on
+turn it on for a bit
+i'd like it on
+it should be on
+it's hot so turn it on
+please turn it on for me
+it's hot turn it on
+switch it on for me
+just turn it on please
+i want you to turn it on
+just turn it on now
+i need some air
+get the fan to start
+it's hot in here so turn it on
+turn on the fan for me
+so turn it on
+i need the fan on
+switch it on please
+turn it on today
+could you turn on the fan
+hey turn it on now
+i want it on
+turn it on for me now
+it is hot in here so turn it on
+i need you to turn it on
+can you please turn the fan on
+please turn on the fan
+just turn it on
+it is boiling so turn it on
+hey turn it on please
+make it turn on
+set it to on
+it's stuffy in here turn it on
+i'd like you to turn it on
+you turn it on
+turn it on if you can
+switch it on now
+please turn the fan on
+## fan off
+disable
+i am done with the fan so turn it off
+it is time to turn the fan off
+shut the fan off please
+could you turn it off for me
+could you please turn the fan off for me
+okay turn off
+it is too loud so turn it off
+switch it off please
+i am going to sleep so turn it off
+i want you to turn it off
+it is getting a bit chilly so turn it off
+turn it away
+i want the fan to stop
+i want you to shut the fan off right away
+if you could turn the fan off that would be great
+switch it off now
+could you maybe turn the fan off for me now
+just stop it
+i think i have enough air so turn it off
+turn it out
+shut the fan off now
+i need the fan to stop spinning
+hey turn it off
+switch it to off
+power off the fan
+cut the power off
+turn the fan off for me
+could you please turn off the fan
+stop the fan now
+please turn off the fan
+please turn the fan off
+the fan should be off
+just turn it off
+please shut it off
+turn off please now
+it is getting a bit warm so turn it off
+i would like you to turn the fan off
+turn the fan off now
+i am about to go to sleep so turn it off
+stop the motor
+## fan faster
+just speed it up
+can you crank it up a bit
+speed up now
+make it a bit more powerful
+turn the speed up one level
+i need it faster
+increase it a bit
+it is not moving enough air
+it needs to be faster now
+could you make it a bit faster
+put more power to it
+make it a little bit faster
+make it go faster for me
+make it faster for me now
+please make it go faster
+just a bit faster
+a little bit faster
+make it go faster for me now
+can you make it go faster please
+speed it up now
+could you turn the speed up
+go faster please
+it is too slow in this room
+increase the speed slightly
+make it go faster now
+go a bit faster for me
+could you make it go faster
+turn it up just a bit
+make it faster for me
+i need some more wind
+just a bit more speed
+can you make the fan faster
+give it some more speed
+speed
+give me more speed
+can you make it go faster
+a bit more speed
+it feels slow right now
+i would like it to be faster
+make it a bit faster
+it needs to be faster
+i'd like it faster
+make it faster now
+make it speedier for me
+please make it a bit faster
+make it faster for me please
+i want it to go faster
+i need it to be faster
+turn it up now
+speed up a notch
+it is too slow
+increase the speed one level
+please turn the speed up
+can you turn it up now
+it is a bit slow in here
+i want more air
+make it speedier
+i want it faster
+make it slightly faster
+turn it up some
+## fan slower
+make it a little slower
+could you make it go slower
+diminish the speed
+i would like it to be slower
+slow it
+would you mind slowing it down
+can you slow it down just a little
+it is a bit too fast for me
+can you slow it down a little
+it is way too fast right now
+the air is blowing too hard
+make the fan go slower
+a bit of a slower speed
+lesser power
+make it go slower
+it is way too fast
+could you make it less fast for me
+the speed is a bit high right now
+just a bit slower please
+it is getting too windy in here
+it's blowing really fast
+slow it down a tiny bit
+it's way too fast
+a little bit slower
+it is way too fast in here
+could you slow it down
+it is a bit too much for me
+could you turn it down just a bit
+make it go a bit slower please
+the wind is too strong
+i want it slower
+slow it down a little
+it is a bit too fast now
+could you slow it down slightly
+lower the speed slightly
+it is too fast
+ease up on it
+it is too powerful
+it is blowing too hard
+lesser speed
+the speed is too high
+slow it down for me
+i'm feeling a bit much of a breeze
+it is blowing too much air
+too much wind
+i need you to slow it down
+slow it down a bit
+please slow it down
+i want it to be slower
+it is going too fast
+could you lower the speed just a bit
+it is moving too fast
+just a little slower
+can you slow it down for me
+could you make it move slower
+it is just a bit too fast
+make it go a bit slower
+soften it
+i would like it slower
+i want the fan to be slower
+## fan set_level
+make it one | speed=1
+put it on one | speed=1
+put it on level one | speed=1
+set the speed to level two | speed=2
+can you set the speed to five | speed=5
+put it to level one | speed=1
+set it to level three | speed=3
+make the speed level one | speed=1
+set it to two | speed=2
+set the fan to one | speed=1
+just level one | speed=1
+put it on level five | speed=5
+put it to level three | speed=3
+put it to level five | speed=5
+go to one | speed=1
+can you set it to level two | speed=2
+i want it on level one | speed=1
+make it level four | speed=4
+put it at level two | speed=2
+level one | speed=1
+i want it on level two | speed=2
+switch to level two | speed=2
+put the fan on level one | speed=1
+turn it up to level five | speed=5
+put the fan on level two | speed=2
+change to one | speed=1
+one | speed=1
+i need the fan on level five | speed=5
+set the speed to one | speed=1
+i need it on level one | speed=1
+please put it on level one | speed=1
+set to level four | speed=4
+please put it on level five | speed=5
+please make it level three | speed=3
+turn it to one | speed=1
+set to one | speed=1
+put it to level two | speed=2
+set the fan to level five | speed=5
+it is way too hot so set it to three | speed=3
+can you set the speed to three | speed=3
+set to level two | speed=2
+put it at level one | speed=1
+put the fan on level five | speed=5
+switch it to level one | speed=1
+please set it to level two | speed=2
+it is boiling in here so put it to five | speed=5
+level four | speed=4
+set the fan to three | speed=3
+it is a bit warm so set it to two | speed=2
+it should be level one | speed=1
+set the speed to level one | speed=1
+set the speed to five | speed=5
+put it to level four | speed=4
+set it to level one | speed=1
+set to level one | speed=1
+can you set it to one | speed=1
+make it level two | speed=2
+## fan oscillate
+just make it move
+i want it to move side to side
+make it swing side to side now
+hey can you make it swing
+start the swing motion
+can you make it rotate for me
+please start it moving side to side
+i want it to swing side to side
+just start the oscillation
+can you make it oscillate
+please make the fan rotate
+make it oscillate now
+should it rotate side to side
+make it oscillate please
+i need it to oscillate
+should it start rotating
+swing side to side
+i want it to swing
+can you start the oscillation
+turn off rotation
+turn on oscillation now
+i want it to swing for a bit
+just let it rotate
+turn oscillation off
+i need it to move around a bit
+i'd like it to start oscillating
+oscillate mode
+deactivate oscillation
+could you start the oscillation
+could you rotate it
+just make it swing
+turn on rotation
+start swinging side to side
+could you make it move side to side now
+swinging on
+please make it move side to side
+it should swing
+turn on the oscillation now
+make it go back and forth
+swing side to side please
+swinging off
+can you turn on oscillation
+you know what make it oscillate
+it should be moving side to side
+make the fan head move side to side
+please start the oscillation
+can you make the fan rotate
+rotate it
+don't swing anymore
+stop swinging side to side
+i want it to move around
+turn the rotation on
+turn off the oscillation now
+turn rotation on
+it's getting hot so turn on oscillation
+i want it to move side to side now
+can it move
+please start rotation now
+it's hot so make it oscillate
+can you start it oscillating
+## microwave start
+go for 60 seconds | time=60
+set it for 120 seconds at power 9 | time=120;power=9
+cook it
+start it for 45 | time=45
+start it for 60 | time=60
+i need this for 300 seconds | time=300
+get it going for 90 | time=90
+start for 180 | time=180
+just start for 120 | time=120
+i'm ready, just start it
+you know what, just do 60 | time=60
+please start it for 300 | time=300
+start it for 300 | time=300
+fire it up for 2 minutes | time=120
+let's do 300 seconds | time=300
+fire it up for 300 seconds | time=300
+please cook it for 120 seconds | time=120
+it's getting cold so start it for 120 seconds | time=120
+start it for 120 seconds | time=120
+set for 180 seconds | time=180
+set for 60 at level 10 | time=60;power=10
+okay, just start it for 120 | time=120
+cook for two minutes | time=120
+i'm really hungry so start it for 300 | time=300
+begin for 120 | time=120
+turn it on for 180 | time=180
+start for 10 minutes | time=600
+just start it for 60 seconds | time=60
+start it at power 10 for 60 | time=60;power=10
+can you just start it for 120 seconds | time=120
+please start for 60 seconds | time=60
+hey, can you do 120 seconds | time=120
+cook for 300 | time=300
+put it on for 60 seconds | time=60
+can you start it for 60 | time=60
+i need to heat this up for 120 seconds | time=120
+heat for 60 | time=60
+go for 200 | time=200
+go for 120 seconds at level 4 | time=120;power=4
+power level 7 for 60 seconds | time=60;power=7
+cook for 2 minutes | time=120
+can you cook it for 180 | time=180
+start it for 60 seconds at level 6 | time=60;power=6
+okay start it for 180 seconds | time=180
+could you please start it for 180 seconds | time=180
+cook for 5 minutes | time=300
+can you like uh start it for 120 seconds | time=120
+just cook it for 120 | time=120
+hey start it for 120 | time=120
+cook it for 60 seconds | time=60
+can you just start it for 90 | time=90
+just turn it on for 90 | time=90
+cook it for 60 | time=60
+um, let's do 120 seconds | time=120
+heat it for 2 minutes at power level 7 | time=120;power=7
+please start it for 60 | time=60
+cook this for 120 seconds | time=120
+start for 300 | time=300
+put it on for 120 | time=120
+cook at power 8 for 120 | time=120;power=8
+## microwave add_30s
+give me thirty more
+it needs a little more time so add thirty seconds
+just add thirty seconds to the timer please
+could you add thirty seconds to it
+it's not done yet so add thirty seconds
+it's still cold so please add thirty seconds
+put on thirty more seconds
+thirty seconds more
+just add thirty seconds now
+just put on thirty more seconds
+add thirty sec
+add thirty seconds for me
+you know what just add thirty seconds
+add thirty seconds to the current timer
+just add thirty seconds to it please
+give it another thirty seconds
+could you add thirty seconds please
+can you please add thirty seconds to the timer
+i need thirty seconds more
+just a little more time
+oh just add thirty seconds
+give me another thirty seconds
+okay just add thirty seconds
+i'll take thirty more seconds
+please give me thirty more seconds
+add thirty seconds to the timer
+thirty seconds please
+like just add thirty seconds
+i'll take thirty more seconds of cooking
+just thirty seconds more
+add thirty seconds to the timer now
+it's still a bit frozen so add thirty seconds
+put on thirty seconds
+could you please add another thirty seconds for me
+like add thirty seconds
+go ahead and add thirty seconds
+please add thirty seconds
+could you add thirty seconds
+i think it needs thirty seconds more
+put thirty more seconds on the clock
+could you please add thirty seconds
+yeah just add thirty seconds
+add thirty seconds to the time
+can you add thirty seconds please since it's cold
+just add thirty seconds for me
+so yeah add thirty seconds
+give me thirty seconds more
+could you maybe just add thirty seconds
+make it thirty seconds longer
+add thirty seconds to the count
+i need a bit more time so add thirty seconds
+um add thirty more seconds
+add another thirty seconds
+add thirty seconds for me please
+just thirty more
+i'm not sure if it's done so add thirty seconds
+give me thirty more seconds
+okay so just add thirty seconds
+add thirty seconds to the clock for me
+give me another thirty seconds please
+## microwave stop
+please stop the cooking right now
+hey stop
+pause the timer for me
+i need to take it out so stop
+stop it for a moment
+stop the process right now
+stop what you're doing
+let's just pause it
+i need you to pause it
+hold on a second
+hold on i need to grab something
+wait a second stop it
+can you just pause it for me
+you can stop now
+could you please stop it
+stop the timer now
+i think we should stop it
+let's just stop it for now
+stop the cooking right now
+it's getting way too hot stop
+it smells like it's burning so stop
+hold on just a second
+don't cook anymore
+hold
+stop it immediately
+stop the timer please
+stop everything
+stop what you are doing
+just stop
+can you just stop
+just pause it
+hold on a minute
+it's getting too hot so please stop
+can you please stop the timer
+i need to stop the microwave
+just pause it for a second
+please pause it
+please stop it right now
+let's pause it
+## microwave power_level
+make it level 10 | power=10
+can you do power level 2 | power=2
+can you put it on level 9 | power=9
+change it to level 8 | power=8
+um, can you just set it to 3 | power=3
+can you set it to level 5 | power=5
+level 7 | power=7
+switch to 10 | power=10
+set power level to 5 | power=5
+so, let's do level 1 | power=1
+set power to 4 | power=4
+it's kind of frozen, so maybe do it at level 3 | power=3
+hey, like, just put it at level 6 | power=6
+so, just set it to 9 | power=9
+i need it at level 1 | power=1
+can you set the level to 6 | power=6
+switch the power to 4 | power=4
+let's go with power level 7 | power=7
+set power level to 2 | power=2
+set the power level to 7 | power=7
+change to 9 | power=9
+set the power to 7 | power=7
+hey, like, set it to level 4 | power=4
+can you put the power level at 7 | power=7
+i'd like it at level 4 | power=4
+i need it to be on power level 2 | power=2
+it's melting so make it power level 2 | power=2
+set power level to 8 | power=8
+um, can you set it to power 8 | power=8
+hey, could you just set it to level 8 | power=8
+set it to level 3 | power=3
+can you set it to level 6 | power=6
+actually, can you just set the power level to 8 | power=8
+i'm not sure, but let's do power 7 | power=7
+i want power level 1 | power=1
+adjust to level 5 | power=5
+adjust the power to 8 | power=8
+set the power level to 8 | power=8
+set it to level 2 | power=2
+set it to level 8 | power=8
+could you maybe change it to level 4 | power=4
+hey, make it power 3 | power=3
+make it level 9 | power=9
+could you please set the power level to 9 | power=9
+set power level to 3 | power=3
+set the power to level 6 | power=6
+set the power to level 7 | power=7
+set power level to 6 | power=6
+set the power to level 1 | power=1
+i want this to be on power 5 | power=5
+make it power level 3 | power=3
+set the power to 9 | power=9
+go to power 6 | power=6
+it's too hot, so can you put it on power 2 | power=2
+hey, just put it at 1 | power=1
+it's taking too long, just blast it at power level 10 | power=10
+set the level to 3 | power=3
+set the intensity to 2 | power=2
+could you make it level 9 | power=9
+give me level 6 | power=6

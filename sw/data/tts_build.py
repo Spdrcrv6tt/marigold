@@ -354,6 +354,36 @@ def cmd_jobs2():
     print(f"eval_v2 jobs {len(ej)} from {len(v2)} lines; train_v4 jobs {len(tj)}; dropped {nd} training lines")
 
 
+def cmd_jobs_eval(name):
+    """Iteration 2: jobs_eval_<name>.jsonl for eval/text_<name> (dev2: calibration DEV set; v3: blind TEST set), 3 EVAL
+    voices per line, same picking rule as eval/text and eval/text_v2."""
+    voices = json.load(open(D / "voices.json", encoding="utf-8"))["voices"]
+    ev = [v for v in voices if v["split"] == "eval"]
+    evk, evp = [v for v in ev if v["engine"] == "kokoro"], [v for v in ev if v["engine"] == "piper"]
+    rows = []
+    for f in sorted((R / f"eval/text_{name}").glob("*.txt")):
+        non = "noncommand" in f.name
+        for r in parse_eval(f, 10 ** 9):
+            rows.append(dict(set="noncommands" if non else "paraphrases", product=None if non else r["block"][0],
+                             action=None if non else " ".join(r["block"][1:]), category=" ".join(r["block"]) if non else None,
+                             idx=r["idx"], text=r["text"], values=r["values"], split=name))
+    ej = []
+    for s in rows:
+        rng = random.Random(hashlib.sha1(f"{name}|{s['set']}|{s['product']}|{s['action']}|{s['category']}|{s['idx']}".encode()).hexdigest())
+        pick = [rng.choice(evk), rng.choice(evp)]
+        pick.append(rng.choice([v for v in ev if v not in pick]))
+        group = slug(f"{name}-{s['set']}-{s['product'] or s['category']}-{s['action'] or ''}")
+        for v in pick:
+            ls = round(rng.uniform(0.9, 1.15), 3)
+            ej.append(dict(id=f"{group}-{s['idx']:03d}-{vshort(v)}", text=s["text"], product=s["product"], action=s["action"],
+                           values=s["values"] or {}, category=s["category"], set=s["set"], split=name, voice=v["id"],
+                           engine=v["engine"], model=v["model"], speaker=v["speaker"], locale=v["locale"], length_scale=ls,
+                           noise_scale=round(rng.uniform(0.5, 0.8), 3), noise_w=round(rng.uniform(0.6, 1.0), 3),
+                           out=f"eval_{name}/wav/{group}/{group}-{s['idx']:03d}-{vshort(v)}.wav"))
+    jdump(D / f"jobs_eval_{name}.jsonl", ej)
+    print(f"eval_{name} jobs {len(ej)} from {len(rows)} lines")
+
+
 # ---------------------------------------------------------------- merge
 def f0_median(x):
     import numpy as np
@@ -428,4 +458,4 @@ def cmd_merge(*names):
 
 if __name__ == "__main__":
     c, a = sys.argv[1], sys.argv[2:]
-    dict(voices=cmd_voices, jobs=cmd_jobs, jobs2=cmd_jobs2, synth=cmd_synth, merge=cmd_merge)[c](*a)
+    dict(voices=cmd_voices, jobs=cmd_jobs, jobs2=cmd_jobs2, jobs_eval=cmd_jobs_eval, synth=cmd_synth, merge=cmd_merge)[c](*a)

@@ -1,0 +1,100 @@
+[
+ {
+  "model": "data/gate0b/models/v3cand-small",
+  "proj": "PCA on training text",
+  "full": {
+   "acc": 0.9245577054855326,
+   "rej": 0.9379082304858702,
+   "acc_norej": 0.925775569746875,
+   "per_product": {
+    "humidifier": [
+     0.974,
+     0.913
+    ],
+    "soundbar": [
+     0.833,
+     0.935
+    ],
+    "treadmill": [
+     0.909,
+     0.935
+    ],
+    "garage door": [
+     0.972,
+     0.939
+    ],
+    "rice cooker": [
+     0.987,
+     0.978
+    ],
+    "massage chair": [
+     0.973,
+     0.978
+    ],
+    "security camera": [
+     0.923,
+     0.933
+    ],
+    "thermostat": [
+     0.902,
+     0.932
+    ],
+    "display turntable": [
+     0.917,
+     0.881
+    ],
+    "mini split heat pump": [
+     0.855,
+     0.956
+    ]
+   }
+  },
+  "chip128": {
+   "acc": 0.9233046214714102,
+   "rej": 0.9492059010692552,
+   "acc_norej": 0.9285385478831303,
+   "per_product": {
+    "humidifier": [
+     0.974,
+     0.935
+    ],
+    "soundbar": [
+     0.829,
+     0.957
+    ],
+    "treadmill": [
+     0.913,
+     0.935
+    ],
+    "garage door": [
+     0.966,
+     0.959
+    ],
+    "rice cooker": [
+     0.987,
+     0.935
+    ],
+    "massage chair": [
+     0.973,
+     0.978
+    ],
+    "security camera": [
+     0.897,
+     0.933
+    ],
+    "thermostat": [
+     0.906,
+     0.955
+    ],
+    "display turntable": [
+     0.924,
+     0.929
+    ],
+    "mini split heat pump": [
+     0.865,
+     0.978
+    ]
+   }
+  }
+ }
+]

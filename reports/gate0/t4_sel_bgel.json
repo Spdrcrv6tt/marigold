@@ -1,0 +1,100 @@
+[
+ {
+  "model": "data/gate0b/models/t4-bgel",
+  "proj": "own head",
+  "full": {
+   "acc": 0.9371595190343432,
+   "rej": 0.9201247613669974,
+   "acc_norej": 0.9407487068451299,
+   "per_product": {
+    "humidifier": [
+     0.99,
+     0.891
+    ],
+    "soundbar": [
+     0.852,
+     0.87
+    ],
+    "treadmill": [
+     0.885,
+     0.957
+    ],
+    "garage door": [
+     0.993,
+     0.735
+    ],
+    "rice cooker": [
+     0.994,
+     0.957
+    ],
+    "massage chair": [
+     0.962,
+     1.0
+    ],
+    "security camera": [
+     0.982,
+     0.956
+    ],
+    "thermostat": [
+     0.889,
+     0.955
+    ],
+    "display turntable": [
+     0.93,
+     0.905
+    ],
+    "mini split heat pump": [
+     0.895,
+     0.978
+    ]
+   }
+  },
+  "chip128": {
+   "acc": 0.9254321611813735,
+   "rej": 0.9261892662203222,
+   "acc_norej": 0.9315033924279202,
+   "per_product": {
+    "humidifier": [
+     0.984,
+     0.935
+    ],
+    "soundbar": [
+     0.847,
+     0.957
+    ],
+    "treadmill": [
+     0.822,
+     0.978
+    ],
+    "garage door": [
+     0.972,
+     0.776
+    ],
+    "rice cooker": [
+     0.987,
+     0.935
+    ],
+    "massage chair": [
+     0.973,
+     1.0
+    ],
+    "security camera": [
+     0.978,
+     0.911
+    ],
+    "thermostat": [
+     0.885,
+     0.977
+    ],
+    "display turntable": [
+     0.924,
+     0.905
+    ],
+    "mini split heat pump": [
+     0.882,
+     0.889
+    ]
+   }
+  }
+ }
+]

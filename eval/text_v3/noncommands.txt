@@ -1,0 +1,284 @@
+# marigold v3: written blind, TEST-ONLY: never train, tune or set thresholds on it
+# generated 2026-11-16 by local gemma4:12b (seed 2026111603) from sdk/configs/fan.json and microwave.json only (sw/teacher4/gen_evalsets.py)
+# lines identical to eval/text, eval/text_v2, the other new set, config examples or training text were dropped
+# format: '## <block>' blocks (chat, near, tv, other_device); no line may trigger a fan or microwave action
+## chat
+pretty much
+i hear you
+that looks tasty
+coming
+relax
+oh my god
+i'm kidding
+exactly
+is it spicy
+that's crazy
+maybe tomorrow
+tada
+pretty good
+don't forget
+whoops
+maybe
+see ya
+kind of
+let's see
+make some room
+however
+for real
+well
+who knows
+it was fine
+what's for dinner
+yours
+i agree
+let's stay in
+do you want some
+are you sure
+no joke
+true
+nice one
+really good
+see you
+eh
+let me check
+yup
+right on
+yes
+sweet
+hi
+right here
+pass the salt
+oh
+i'm telling you
+yikes
+take your time
+way too early
+just kidding
+i think so
+how was it
+did you hear me
+thank you
+listen
+good job
+great
+noted
+look at this
+just a second
+it was awful
+i got it
+shame
+you know
+honestly
+let me think
+hello
+sounds like it
+for sure
+nah
+where is it
+mine
+almost
+whatever you want
+you're right
+grab a chair
+fine
+is it ready
+so true
+i know
+probably
+phew
+did you see that
+it smells amazing in here
+can you grab that for me
+good point
+where are my keys
+sit down
+hold this
+you got it
+it's delicious
+actually
+somehow
+too bad
+it was great
+sort of
+you're joking
+my bad
+where are we going
+we'll see
+i'm not sure
+fair enough
+look at that
+basically
+shh
+quiet
+the coffee is ready
+i love it
+you're kidding
+help me with this
+over there
+pretty cool
+don't worry
+how about that
+no kidding
+how about
+nearly
+i'm making pasta
+quite
+pass me that
+how about this
+i mean
+i'll see
+ah
+indeed
+## near
+the display screen is too dim to read
+it feels like it's vibrating the whole counter
+the motor in that fan sounds a bit strained
+i think the fan is making a clicking noise
+your fan is much louder than mine
+it was manufactured in 2018
+the fan's timer setting is very useful
+your fan is spinning much faster than mine
+that fan has a really wide reach
+the microwave is older than i thought
+it has a very steady hum
+it was bought at the local shop
+i love how the fan feels on my skin
+the motor sounds a bit old
+it works on every setting
+the internal turntable is spinning perfectly
+it was a gift from aunt mary
+the fan is much quieter than the old one
+it works well in the breeze
+it works during the heatwave
+it was purchased for the nursery
+it was bought during the move
+i noticed the fan has three speeds
+it makes a low drone while it runs
+it works better facing the bed
+the voice control prompt is very clear
+the microwave surface is easy to clean
+it was purchased for the garage
+that fan has a very sturdy base
+it was bought for the guest room
+it was bought for the porch
+this microwave has a really long cooking cycle
+it heats up leftovers much better than the oven
+the fan has a very sleek design
+it was on sale when we bought it last summer
+the settings on the fan are easy to use
+the handle feels a bit loose
+the remote for the fan is missing
+the buttons are starting to get sticky
+the microwave is the newest appliance in the kitchen
+the voice control feature is actually pretty convenient
+the fan creates a nice breeze
+it works perfectly on high
+it works better with the window open
+the instruction manual is missing from the box
+the fan is really quiet tonight
+the voice interface is much faster than buttons
+the fan is perfect for the summer
+it heats up water in seconds
+the fan is my favorite way to stay cool
+that microwave is making a strange clicking sound
+the countdown timer is showing zero
+the oscillations on the fan are smooth
+it's much easier to clean than the old one
+it makes a melody instead of a beep
+the buttons on the panel are unresponsive
+it makes a very distinct and annoying beep
+i think the fan's motor is getting hot
+it was purchased in the fall
+it's been acting up since the power surge
+## tv
+it was the funniest thing i've ever heard
+the championship is on the line
+the temperature will peak at eighty-five degrees
+this is your host speaking to you
+this is your local traffic update
+you have to see this to believe it
+the results are coming in now
+it's a beautiful day for a hike
+the underdog is making a comeback in the third quarter
+order now and get a free gift
+we are reporting live from the scene
+your local news starts right now
+everything is going according to plan
+watch out for the construction ahead
+why did you do that just now
+the forecast calls for heavy rain on tuesday
+you're listening to ninety point nine
+stay hydrated in this afternoon heat
+the storm is moving east tonight
+the secret is finally out
+the suspect was seen fleeing the scene on foot
+check out our new summer collection
+it is going to be a beautiful day with clear skies
+the crowd is going wild as the buzzer sounds
+watch out for slippery roads during the commute
+your call is very important to us
+welcome back to the morning show
+welcome to the show everyone
+it's a total game changer
+don't forget to like and subscribe
+is that what you really wanted me to do
+it was a masterpiece of a play
+the jury has reached a verdict in the high-profile case
+welcome back to the morning show after the break
+grab a seat and relax for a moment
+the secret ingredient is a pinch of salt
+and that is why we call it the ultimate choice
+the crowd is going absolutely wild
+stay tuned for more updates
+how do you do, my friends
+the storm front is moving in from the west
+how do you feel about that decision in the final inning
+move over and let me take the lead
+get your tickets at the door
+it's going to be a long night
+order now and get fifty percent off your first purchase
+spin the wheel to see what you win
+this product will change the way you cook forever
+coming up in sixty seconds is the big game
+and he takes it into the end zone
+## other_device
+start the coffee maker
+set the thermostat to seventy degrees
+turn off the kitchen light
+preheat the oven
+set the oven to 350 degrees
+turn on the tv
+set thermostat
+close blinds
+turn on the hallway lights
+volume down speaker
+set oven temp
+volume up on the tv
+start coffee maker
+turn off the kitchen lights
+turn on tv
+play music on the speaker
+set the lights to blue
+vacuum the hallway
+turn on the coffee maker
+turn on speaker
+dim lights
+play my workout playlist
+turn on the accent lighting
+turn on coffee maker
+switch to evening mode
+lower the thermostat
+preheat oven
+set an alarm for 7am
+turn off the coffee maker
+turn on the fireplace
+stop music
+start the cleaning cycle
+turn on the nursery light
+turn on the movie scene
+lower temperature
+mute tv
+lock door
+set temperature
+open blinds
+start vacuum

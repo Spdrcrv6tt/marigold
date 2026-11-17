@@ -137,7 +137,9 @@ class Batches(torch.utils.data.IterableDataset):
                 # commands of only a few products per batch: the in-batch negatives are the product's other actions
                 r = rng.choice(pool) if (g == "tts_cmd" and pool) else rng.choice(self.groups[g])
                 try:
-                    if "start" in r:
+                    if r.get("lkd"):              # LibriSpeech crop without text: audio-teacher KD and reject only
+                        x = aug.read(str(ROOT / r["path"]), int(rng.uniform(1.5, 5.5) * SR))
+                    elif "start" in r:
                         x, _ = sf.read(str(ROOT / r["path"]), start=r["start"], stop=r["stop"], dtype="float32")
                     else:
                         x, _ = sf.read(str(ROOT / r["path"]), dtype="float32")
@@ -148,7 +150,7 @@ class Batches(torch.utils.data.IterableDataset):
                 if len(x) < 1600 or not np.isfinite(x).all():      # empty or broken clip: skip
                     continue
                 x = aug(x)[: int(self.max_s * SR)]
-                xs.append(x); tids.append(r["tid"]); txt.append(r["text"]); cm.append(0.0 if "start" in r else 1.0)
+                xs.append(x); tids.append(r["tid"]); txt.append(r["text"]); cm.append(0.0 if ("start" in r or r.get("lkd")) else 1.0)
                 lab.append((r.get("pa", -1), r.get("pp", -1), r.get("dk", -1)))
             n = max(len(x) for x in xs)
             pcm = np.zeros((len(xs), n), np.float32)
@@ -192,6 +194,12 @@ def main():
     ap.add_argument("--dec-m", type=float, default=0.05, help="additive margin on the true class (cosine units)")
     ap.add_argument("--aux-w", type=float, default=1.0, help="weight of the distillation losses (1 - cos, relational KD)")
     ap.add_argument("--thr0", type=float, default=0.45, help="initial reject threshold of the decision loss (cosine)")
+    ap.add_argument("--nl", type=int, default=0, help="encoder layers (0 = CFG's 2); 6 = the full Moonshine encoder (PC-side audio teacher)")
+    ap.add_argument("--fut", default="", help="look-ahead frames per layer, comma-separated (Moonshine's own: 4,4,0,0,4,4)")
+    ap.add_argument("--teacher-audio", default="", help="frozen audio-teacher checkpoint (same q space) for audio-to-audio KD")
+    ap.add_argument("--akd-w", type=float, default=1.0, help="weight of the audio-teacher KD (1 - cos plus relational KD)")
+    ap.add_argument("--lkd", type=float, default=0.0, help="sampling weight of LibriSpeech crops without text (all train subsets)")
+    ap.add_argument("--min-spm", type=float, default=0.0, help="exit code 3 if fewer steps per minute after 2 minutes")
     a = ap.parse_args()
     torch.manual_seed(0)
     if a.mix:
@@ -203,6 +211,24 @@ def main():
     groups, Y = load_index(a.targets, PZ)
     print({k: len(v) for k, v in groups.items()}, "targets", Y.shape, flush=True)
     cfg = dict(CFG); cfg["D"] = Y.shape[1]
+    if a.nl:
+        cfg["NL"] = a.nl
+    if a.fut:
+        cfg["FUT"] = tuple(int(v_) for v_ in a.fut.split(","))
+    if a.lkd > 0:          # every LibriSpeech training utterance (100 + 360 + 500 h when present), random crops, no text
+        MIX["lkd"] = a.lkd
+        groups["lkd"] = [{"path": str(f.relative_to(ROOT)).replace("\\", "/"), "text": "", "tid": -1, "lkd": True, "pa": -1, "pp": -1, "dk": 0}
+                         for base in ("data/librispeech/LibriSpeech/train-clean-100", "data/librispeech-360/LibriSpeech/train-clean-360",
+                                      "data/librispeech-extra/LibriSpeech/train-other-500") if (ROOT / base).is_dir()
+                         for f in sorted((ROOT / base).rglob("*.flac"))]
+        print("lkd utterances", len(groups["lkd"]), flush=True)
+    ta = None
+    if a.teacher_audio:
+        ckt = torch.load(ROOT / a.teacher_audio, map_location=dev)
+        ta = IntentEncoder(ckt["cfg"]).to(dev); ta.load_state_dict(ckt["state"]); ta.eval()
+        for p_ in ta.parameters():
+            p_.requires_grad_(False)
+        print("audio teacher", a.teacher_audio, "layers", ckt["cfg"]["NL"], flush=True)
     m = IntentEncoder(cfg).to(dev)
     fm = None
     pre = set()
@@ -250,12 +276,13 @@ def main():
         pcm, lens, tids = pcm.to(dev, non_blocking=True), lens.to(dev), tids.to(dev)
         with torch.autocast("cuda", dtype=torch.bfloat16):
             q, logits, flen = m(pcm, lens)
-        q = q.float(); y = Yt[tids]; D = q.shape[1]
+        q = q.float(); tm = tids >= 0; y = Yt[tids.clamp_min(0)]; D = q.shape[1]
         cos = (q * y).sum(1) / D
-        l_cos = (1 - cos).mean()
-        S = q @ y.T / D / a.tau
-        Tt = y @ y.T / D / a.tau
+        l_cos = ((1 - cos) * tm).sum() / tm.sum().clamp_min(1)
+        S = q[tm] @ y[tm].T / D / a.tau
+        Tt = y[tm] @ y[tm].T / D / a.tau
         l_kd = F.kl_div(F.log_softmax(S, 1), F.log_softmax(Tt, 1), log_target=True, reduction="batchmean")
+        cos = cos[tm]
         lp = F.log_softmax(logits.float(), -1).transpose(0, 1)
         tl = tl.to(dev); cmask = cmask.to(dev)      # crops of long LibriSpeech utterances: no CTC (estimated words)
         cmask = cmask * (tl <= flen).float()        # a target longer than the frames cannot be aligned
@@ -291,6 +318,14 @@ def main():
                 l_dec = F.cross_entropy(Lm / a.dec_tau, tg_)
                 dacc = float((Lg.argmax(1) == tg_).float().mean())
                 loss = loss + a.dec_w * l_dec
+        l_akd = torch.zeros((), device=dev)
+        if ta is not None:     # audio-to-audio KD from the frozen audio teacher on the same augmented audio
+            with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
+                qt, _, _ = ta(pcm, lens)
+            qt = qt.float()
+            l_akd = (1 - (q * qt).sum(1) / D).mean() + F.kl_div(F.log_softmax(q @ qt.T / D / a.tau, 1),
+                                                                 F.log_softmax(qt @ qt.T / D / a.tau, 1), log_target=True, reduction="batchmean")
+            loss = loss + a.akd_w * l_akd
         if fm is not None:
             with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
                 qf, _, _ = fm(pcm, lens)
@@ -298,10 +333,18 @@ def main():
         opt.zero_grad(set_to_none=True); loss.backward()
         torch.nn.utils.clip_grad_norm_(m.parameters(), 1.0)
         opt.step(); sched.step(); step += 1
-        stats.append([l_cos.item(), l_kd.item(), l_ctc.item(), cos.mean().item(), l_dec.item(), dacc])
+        if a.min_spm and not getattr(main, "_spm", False) and time.time() - t0 >= 120:
+            main._spm = True
+            spm = step / ((time.time() - t0) / 60)
+            print(f"throughput: {step} steps in {time.time() - t0:.0f} s = {spm:.0f} steps/min; GPU max reserved "
+                  f"{torch.cuda.max_memory_reserved() / 2 ** 30:.1f} GB", flush=True)
+            if spm < a.min_spm:
+                print(f"ABORT: below --min-spm {a.min_spm}", flush=True)
+                it._shutdown_workers(); os._exit(3)
+        stats.append([l_cos.item(), l_kd.item(), l_ctc.item(), cos.mean().item(), l_dec.item(), dacc, l_akd.item()])
         if step % 200 == 0:
             s = np.nanmean(stats, 0); stats = []
-            print(f"step {step} cos_loss {s[0]:.4f} kd {s[1]:.4f} ctc {s[2]:.4f} cos {s[3]:.4f} dec {s[4]:.4f} dacc {s[5]:.3f} "
+            print(f"step {step} cos_loss {s[0]:.4f} kd {s[1]:.4f} ctc {s[2]:.4f} cos {s[3]:.4f} dec {s[4]:.4f} dacc {s[5]:.3f} akd {s[6]:.4f} "
                   f"thr {float(thr_p) if PZ is not None else 0:.3f} lr {sched.get_last_lr()[0]:.2e} {(time.time()-t0)/60:.1f} min", flush=True)
         if step % 1000 == 0:
             torch.save({"state": m.state_dict(), "cfg": cfg, "step": step, "qat": a.qat,

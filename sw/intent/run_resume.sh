@@ -9,7 +9,10 @@ while [ $(date +%s) -lt $((DL - 120)) ]; do
   MIN=$(( (DL - $(date +%s)) / 60 ))
   [ -f data/intent/$TAG.pt ] && [ $n -gt 0 ] && INIT=data/intent/$TAG-resume.pt && cp data/intent/$TAG.pt $INIT
   echo "=== start $n at $(date +%H:%M) init $INIT minutes $MIN" >> data/logs/train_$TAG.log
-  PYTHONIOENCODING=utf-8 $PY sw/intent/train.py --tag $TAG --init $INIT --minutes $MIN "$@" >> data/logs/train_$TAG.log 2>&1 && break
+  PYTHONIOENCODING=utf-8 $PY sw/intent/train.py --tag $TAG --init "$INIT" --minutes $MIN "$@" >> data/logs/train_$TAG.log 2>&1
+  rc=$?
+  [ $rc -eq 0 ] && break
+  [ $rc -eq 3 ] && { echo "=== throughput abort at $(date +%H:%M)" >> data/logs/train_$TAG.log; exit 3; }
   n=$((n + 1))
 done
 echo "=== finished at $(date +%H:%M) after $n restarts" >> data/logs/train_$TAG.log

@@ -1,0 +1,258 @@
+# marigold dev2: written as a DEV set (thresholds may be set on it)
+# generated 2026-11-16 by local qwen2.5:14b (seed 2026111602) from sdk/configs/fan.json and microwave.json only (sw/teacher4/gen_evalsets.py)
+# lines identical to eval/text, eval/text_v2, the other new set, config examples were dropped
+# format: '## <block>' blocks (chat, near, tv, other_device); no line may trigger a fan or microwave action
+## chat
+oh great
+okay cool
+oh no way
+sixish
+anything good
+yeah sure
+nothing yet
+mine too
+what's cooking
+sounds yummy
+uh oh no
+not really
+okay thanks a lot
+want to join
+any plans for weekend
+awesome
+want to find out
+oh really
+oh wow cool
+what time
+okay thanks
+nice day
+any plans
+okay sure
+just relaxing
+sandwich
+any plans for dinner
+any chores
+oh wow
+uh uh
+want to split
+yeah right
+i guess
+what's for lunch
+oh okay
+what's up
+not much
+okay then
+going out
+perfect
+okay bye
+anything new
+any news
+same old
+oh no
+good
+okay sure thing
+no prob
+how about you
+oh yeah
+okay bye now
+what's playing
+want to watch a movie
+thinking about it
+pasta
+what's the weather
+okay got it
+yay
+how was work
+not yet
+sure thing
+how was the food
+no worries
+hey there
+nice
+hey
+mmm hmm
+anything you want
+want some tea
+no problem
+just chilling
+tired
+anything fun
+nice day out
+sounds fun
+anything interesting
+anything exciting
+later
+i see
+laughs
+you too
+wow
+me neither
+okay okay
+uh
+boring
+sunny
+same here
+i don't think so
+yep
+sounds nice
+not sure
+mmm
+sure okay
+no idea
+brought some berries
+anything planned
+anything else
+love pasta
+uh oh
+## near
+it's been pretty reliable so far
+it's a bit outdated now
+i should probably get a warranty extension
+the light inside is so bright
+has become a necessity
+it's too small for big dishes
+the magnetron must be working well
+the glass tray can be washed
+bought it last summer
+it keeps me cool without feeling too cold
+i love using the defrost setting
+it's a bit too big for the space
+the turntable spins really fast
+i need to replace the batteries in the remote
+it was quite loud when we first used it
+i should get one for my bedroom too
+i really appreciate how cool it keeps things
+it's getting a bit old now
+i wish i had one of these in every room
+wonderful to have during power outages
+it's great for making instant oatmeal
+it makes the room feel bigger
+the fan blades are clean
+it needs to be dusted soon
+i should turn off the display to save power
+the fan is so much quieter than my old one
+we use it for warming up leftovers
+the motor is a bit weak
+should test the safety features
+the light inside is too dim for my taste
+that smell when popcorn kernels pop
+it's not good for cooking whole meals
+got it for the guest room
+i need to get some lubricant for the motor
+like the nightlight feature
+that timer feature is a lifesaver
+i should upgrade to a bigger microwave
+should i get a convection microwave next
+i wish it had a night light feature
+the microwave is easy to move around
+the rotating platform helps heat food evenly
+it works really well on hot days
+it gets really hot in here when it's on
+fans are a lifesaver in summer
+maybe i should clean the interior
+it looks like it needs new batteries soon
+should read the manual again
+i should clean the fan blades this weekend
+did you feel that breeze earlier
+it uses too much energy sometimes
+## tv
+commercial break, enjoy these amazing deals on home electronics
+a terrible accident on the freeway has caused major traffic delays
+heavy rain expected tonight, bring your umbrellas and stay safe
+touchdown for the reds in the fourth quarter
+its a pleasure to introduce our guests today
+dial now for your chance to win
+welcome back to jeopardy, our contestant here just won fifty thousand dollars
+thats the final score, great game everyone
+the play at second base is a double steal
+the local high school team is in the championship game tonight
+welcome to the greatest show on earth
+join us for a special health and wellness segment
+live updates from the stock market, big changes in the tech sector
+join us for a special edition of the talk show, featuring celebrity guests
+forecast calls for a cold front moving in over the weekend
+listen for the special code word to win
+the baseball season is heating up, with our team at the top of the league
+the batter hits a line drive to center
+don't miss the concert series coming up in the city park
+commercial break coming up, stay tuned for more of your favorite show
+can i help you with that soup recipe
+the cake looks great, but how did you do that
+congratulations to our winners, you've each won a vacation to the tropics
+stay tuned for more updates on the ongoing political debate
+traffic is heavy in downtown due to a parade
+don't forget to vote in next week's election, your voice matters
+good evening and welcome to the news
+buy two get one free this weekend
+commercial break, enjoy these deals on kitchen appliances
+national parks are offering discounted entry fees this month
+see you next week for more laughs
+limited time offer, sign up now
+game seven of the playoffs is tonight dont miss it
+enjoy the freshest ingredients at your local market
+its a beautiful day for a run or walk
+the mayor announces a new green initiative to fight climate change
+happy hour starts now with our special deals
+introducing our new range of organic snacks, perfect for your healthy lifestyle
+the basketball star is on the verge of breaking the all-time scoring record
+it's time for the crossword puzzle, grab your pen and paper
+## other_device
+increase the thermostat by 2 degrees
+open the blinds in the living room
+make weak coffee
+set the temperature to 22
+play some rock music
+pause the music
+set an alarm for 7 am
+turn on the living room tv
+turn off the oven
+turn on the living room heater
+open the bedroom blinds
+play some jazz
+lock the back door
+make cold coffee
+open the curtains
+set the oven to 400
+set the lights to 100
+make hot coffee
+turn on the living room lights
+turn on the downstairs lights
+increase the volume
+play classical music
+start the vacuum in the bedroom
+lock the windows
+set the lights to 80
+dim the kitchen lights
+close the bedroom blinds
+set the lights to 60
+make regular coffee
+start a countdown
+set the bedroom lights to 50
+decrease the brightness
+turn off the lights
+turn off the alarm
+play rock music
+set the oven to 375
+make light coffee
+increase the thermostat to 68
+preheat the oven to 350
+make medium coffee
+set a timer for 10 minutes
+play some jazz on the speaker
+increase the thermostat to 74
+pause the music on the speaker
+turn on the kettle
+start the vacuum in the hallway
+turn on the upstairs lights
+increase the thermostat to 72
+turn on the upstairs heater
+play some calming music
+decrease the temperature by 2 degrees
+set the oven to 350
+set a reminder for tomorrow
+make strong coffee
+start the vacuum in the basement
+open the dining room blinds
+turn on the hallway heater
+unlock the front door
+set the lights to 75
+change to night mode

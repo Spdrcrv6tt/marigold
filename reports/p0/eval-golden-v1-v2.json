@@ -1,0 +1,653 @@
+{
+ "model": "data/intent/qv1.pt",
+ "golden": "data/golden/mg-v1.npz",
+ "synthetic_only": true,
+ "products": {
+  "fan": {
+   "chosen": "text",
+   "variants": {
+    "text": {
+     "N": 208,
+     "D": 128,
+     "reject_thr": 55136,
+     "margin": 0,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.3251336898395722,
+       "t2_unseen_acc_norej": 0.532620320855615,
+       "t1_typed_acc": 0.4375,
+       "t4_reject_headline": 0.8950617283950617,
+       "reject_other_device": 0.6666666666666666,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6474358974358975,
+       "t3_values_end_to_end": 0.3525641025641026,
+       "per_action_test": {
+        "on": 0.1987179487179487,
+        "off": 0.1870967741935484,
+        "faster": 0.391025641025641,
+        "slower": 0.38461538461538464,
+        "set_level": 0.4551282051282051,
+        "oscillate": 0.3333333333333333
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.24096385542168675,
+       "t2_unseen_acc_norej": 0.4569045412418906,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9236111111111112,
+       "reject_other_device": 0.7833333333333333,
+       "n": {
+        "para": 1079,
+        "typed": 0,
+        "nonc": 720,
+        "values": 180
+       },
+       "t3_values_given_action": 0.6111111111111112,
+       "t3_values_end_to_end": 0.26666666666666666,
+       "per_action_test": {
+        "on": 0.06666666666666667,
+        "off": 0.0893854748603352,
+        "faster": 0.3333333333333333,
+        "slower": 0.4222222222222222,
+        "set_level": 0.35555555555555557,
+        "oscillate": 0.17777777777777778
+       }
+      }
+     },
+     "dev_unseen_acc": 0.33641975308641975
+    },
+    "audio": {
+     "N": 208,
+     "D": 128,
+     "reject_thr": 66254,
+     "margin": 4000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.2898395721925134,
+       "t2_unseen_acc_norej": 0.6310160427807486,
+       "t1_typed_acc": 0.4722222222222222,
+       "t4_reject_headline": 0.9300411522633745,
+       "reject_other_device": 0.8589743589743589,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6474358974358975,
+       "t3_values_end_to_end": 0.21794871794871795,
+       "per_action_test": {
+        "on": 0.14743589743589744,
+        "off": 0.2129032258064516,
+        "faster": 0.2692307692307692,
+        "slower": 0.4166666666666667,
+        "set_level": 0.28846153846153844,
+        "oscillate": 0.40384615384615385
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.211306765523633,
+       "t2_unseen_acc_norej": 0.5189990732159406,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9361111111111111,
+       "reject_other_device": 0.9,
+       "n": {
+        "para": 1079,
+        "typed": 0,
+        "nonc": 720,
+        "values": 180
+       },
+       "t3_values_given_action": 0.6111111111111112,
+       "t3_values_end_to_end": 0.2,
+       "per_action_test": {
+        "on": 0.05555555555555555,
+        "off": 0.12290502793296089,
+        "faster": 0.21666666666666667,
+        "slower": 0.37222222222222223,
+        "set_level": 0.28888888888888886,
+        "oscillate": 0.2111111111111111
+       }
+      }
+     },
+     "dev_unseen_acc": 0.30864197530864196
+    },
+    "mix": {
+     "N": 208,
+     "D": 128,
+     "reject_thr": 65320,
+     "margin": 0,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.31122994652406416,
+       "t2_unseen_acc_norej": 0.597860962566845,
+       "t1_typed_acc": 0.4513888888888889,
+       "t4_reject_headline": 0.9238683127572016,
+       "reject_other_device": 0.7435897435897436,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6474358974358975,
+       "t3_values_end_to_end": 0.28205128205128205,
+       "per_action_test": {
+        "on": 0.1282051282051282,
+        "off": 0.17419354838709677,
+        "faster": 0.3782051282051282,
+        "slower": 0.4358974358974359,
+        "set_level": 0.358974358974359,
+        "oscillate": 0.391025641025641
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.22706209453197404,
+       "t2_unseen_acc_norej": 0.4893419833178869,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9444444444444444,
+       "reject_other_device": 0.8833333333333333,
+       "n": {
+        "para": 1079,
+        "typed": 0,
+        "nonc": 720,
+        "values": 180
+       },
+       "t3_values_given_action": 0.6111111111111112,
+       "t3_values_end_to_end": 0.22777777777777777,
+       "per_action_test": {
+        "on": 0.07777777777777778,
+        "off": 0.08379888268156424,
+        "faster": 0.28888888888888886,
+        "slower": 0.3888888888888889,
+        "set_level": 0.29444444444444445,
+        "oscillate": 0.22777777777777777
+       }
+      }
+     },
+     "dev_unseen_acc": 0.31790123456790126
+    },
+    "mix+bank": {
+     "N": 240,
+     "D": 128,
+     "reject_thr": 65320,
+     "margin": 0,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.31122994652406416,
+       "t2_unseen_acc_norej": 0.5925133689839572,
+       "t1_typed_acc": 0.4513888888888889,
+       "t4_reject_headline": 0.9238683127572016,
+       "reject_other_device": 0.7435897435897436,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6474358974358975,
+       "t3_values_end_to_end": 0.28205128205128205,
+       "per_action_test": {
+        "on": 0.1282051282051282,
+        "off": 0.17419354838709677,
+        "faster": 0.3782051282051282,
+        "slower": 0.4358974358974359,
+        "set_level": 0.358974358974359,
+        "oscillate": 0.391025641025641
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.22706209453197404,
+       "t2_unseen_acc_norej": 0.46246524559777574,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9444444444444444,
+       "reject_other_device": 0.8833333333333333,
+       "n": {
+        "para": 1079,
+        "typed": 0,
+        "nonc": 720,
+        "values": 180
+       },
+       "t3_values_given_action": 0.6111111111111112,
+       "t3_values_end_to_end": 0.22777777777777777,
+       "per_action_test": {
+        "on": 0.07777777777777778,
+        "off": 0.08379888268156424,
+        "faster": 0.28888888888888886,
+        "slower": 0.3888888888888889,
+        "set_level": 0.29444444444444445,
+        "oscillate": 0.22777777777777777
+       }
+      }
+     },
+     "dev_unseen_acc": 0.31790123456790126
+    },
+    "mix+bank+cal": {
+     "N": 240,
+     "D": 128,
+     "reject_thr": 65549,
+     "margin": 0,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.3122994652406417,
+       "t2_unseen_acc_norej": 0.5796791443850268,
+       "t1_typed_acc": 0.4444444444444444,
+       "t4_reject_headline": 0.9320987654320988,
+       "reject_other_device": 0.7435897435897436,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6474358974358975,
+       "t3_values_end_to_end": 0.28846153846153844,
+       "per_action_test": {
+        "on": 0.1346153846153846,
+        "off": 0.16129032258064516,
+        "faster": 0.3974358974358974,
+        "slower": 0.46153846153846156,
+        "set_level": 0.3782051282051282,
+        "oscillate": 0.33974358974358976
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.22613531047265986,
+       "t2_unseen_acc_norej": 0.4652455977757183,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.95,
+       "reject_other_device": 0.875,
+       "n": {
+        "para": 1079,
+        "typed": 0,
+        "nonc": 720,
+        "values": 180
+       },
+       "t3_values_given_action": 0.6111111111111112,
+       "t3_values_end_to_end": 0.2388888888888889,
+       "per_action_test": {
+        "on": 0.07222222222222222,
+        "off": 0.07262569832402235,
+        "faster": 0.3,
+        "slower": 0.37777777777777777,
+        "set_level": 0.3277777777777778,
+        "oscillate": 0.20555555555555555
+       }
+      }
+     },
+     "dev_unseen_acc": 0.3148148148148148
+    },
+    "audio+bank+cal": {
+     "N": 240,
+     "D": 128,
+     "reject_thr": 67796,
+     "margin": 4000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.27058823529411763,
+       "t2_unseen_acc_norej": 0.6149732620320856,
+       "t1_typed_acc": 0.4444444444444444,
+       "t4_reject_headline": 0.9382716049382716,
+       "reject_other_device": 0.8589743589743589,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6474358974358975,
+       "t3_values_end_to_end": 0.21794871794871795,
+       "per_action_test": {
+        "on": 0.1346153846153846,
+        "off": 0.1935483870967742,
+        "faster": 0.28205128205128205,
+        "slower": 0.3782051282051282,
+        "set_level": 0.27564102564102566,
+        "oscillate": 0.358974358974359
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.1974050046339203,
+       "t2_unseen_acc_norej": 0.49675625579240035,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9527777777777777,
+       "reject_other_device": 0.8916666666666667,
+       "n": {
+        "para": 1079,
+        "typed": 0,
+        "nonc": 720,
+        "values": 180
+       },
+       "t3_values_given_action": 0.6111111111111112,
+       "t3_values_end_to_end": 0.2,
+       "per_action_test": {
+        "on": 0.05,
+        "off": 0.11173184357541899,
+        "faster": 0.2111111111111111,
+        "slower": 0.3611111111111111,
+        "set_level": 0.2833333333333333,
+        "oscillate": 0.16666666666666666
+       }
+      }
+     },
+     "dev_unseen_acc": 0.2932098765432099
+    }
+   }
+  },
+  "microwave": {
+   "chosen": "audio+bank+cal",
+   "variants": {
+    "text": {
+     "N": 144,
+     "D": 128,
+     "reject_thr": 55036,
+     "margin": 1000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.32532051282051283,
+       "t2_unseen_acc_norej": 0.6378205128205128,
+       "t1_typed_acc": 0.46875,
+       "t4_reject_headline": 0.948559670781893,
+       "reject_other_device": 0.7435897435897436,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3888888888888889,
+       "t3_values_end_to_end": 0.21180555555555555,
+       "per_action_test": {
+        "start": 0.33974358974358976,
+        "add_30s": 0.36538461538461536,
+        "stop": 0.3141025641025641,
+        "power_level": 0.28205128205128205
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.2847222222222222,
+       "t2_unseen_acc_norej": 0.5875,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9361111111111111,
+       "reject_other_device": 0.8333333333333334,
+       "n": {
+        "para": 720,
+        "typed": 0,
+        "nonc": 720,
+        "values": 327
+       },
+       "t3_values_given_action": 0.38837920489296635,
+       "t3_values_end_to_end": 0.17737003058103976,
+       "per_action_test": {
+        "start": 0.35555555555555557,
+        "add_30s": 0.29444444444444445,
+        "stop": 0.25,
+        "power_level": 0.2388888888888889
+       }
+      }
+     },
+     "dev_unseen_acc": 0.3472222222222222
+    },
+    "audio": {
+     "N": 144,
+     "D": 128,
+     "reject_thr": 62288,
+     "margin": 13000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.3108974358974359,
+       "t2_unseen_acc_norej": 0.7291666666666666,
+       "t1_typed_acc": 0.4791666666666667,
+       "t4_reject_headline": 0.9588477366255144,
+       "reject_other_device": 0.8974358974358975,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3888888888888889,
+       "t3_values_end_to_end": 0.19444444444444445,
+       "per_action_test": {
+        "start": 0.3333333333333333,
+        "add_30s": 0.28846153846153844,
+        "stop": 0.24358974358974358,
+        "power_level": 0.3782051282051282
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.2569444444444444,
+       "t2_unseen_acc_norej": 0.6944444444444444,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9486111111111111,
+       "reject_other_device": 0.9166666666666666,
+       "n": {
+        "para": 720,
+        "typed": 0,
+        "nonc": 720,
+        "values": 327
+       },
+       "t3_values_given_action": 0.38837920489296635,
+       "t3_values_end_to_end": 0.15902140672782875,
+       "per_action_test": {
+        "start": 0.32222222222222224,
+        "add_30s": 0.26666666666666666,
+        "stop": 0.15,
+        "power_level": 0.28888888888888886
+       }
+      }
+     },
+     "dev_unseen_acc": 0.38425925925925924
+    },
+    "mix": {
+     "N": 144,
+     "D": 128,
+     "reject_thr": 70531,
+     "margin": 0,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.24519230769230768,
+       "t2_unseen_acc_norej": 0.6939102564102564,
+       "t1_typed_acc": 0.4166666666666667,
+       "t4_reject_headline": 0.9650205761316872,
+       "reject_other_device": 0.8461538461538461,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3888888888888889,
+       "t3_values_end_to_end": 0.19444444444444445,
+       "per_action_test": {
+        "start": 0.28205128205128205,
+        "add_30s": 0.27564102564102566,
+        "stop": 0.1282051282051282,
+        "power_level": 0.2948717948717949
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.22777777777777777,
+       "t2_unseen_acc_norej": 0.6444444444444445,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9625,
+       "reject_other_device": 0.8916666666666667,
+       "n": {
+        "para": 720,
+        "typed": 0,
+        "nonc": 720,
+        "values": 327
+       },
+       "t3_values_given_action": 0.38837920489296635,
+       "t3_values_end_to_end": 0.1559633027522936,
+       "per_action_test": {
+        "start": 0.3,
+        "add_30s": 0.24444444444444444,
+        "stop": 0.14444444444444443,
+        "power_level": 0.2222222222222222
+       }
+      }
+     },
+     "dev_unseen_acc": 0.3333333333333333
+    },
+    "mix+bank": {
+     "N": 176,
+     "D": 128,
+     "reject_thr": 70531,
+     "margin": 0,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.24519230769230768,
+       "t2_unseen_acc_norej": 0.6842948717948718,
+       "t1_typed_acc": 0.4166666666666667,
+       "t4_reject_headline": 0.9650205761316872,
+       "reject_other_device": 0.8461538461538461,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3888888888888889,
+       "t3_values_end_to_end": 0.19444444444444445,
+       "per_action_test": {
+        "start": 0.28205128205128205,
+        "add_30s": 0.27564102564102566,
+        "stop": 0.1282051282051282,
+        "power_level": 0.2948717948717949
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.22777777777777777,
+       "t2_unseen_acc_norej": 0.5986111111111111,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9625,
+       "reject_other_device": 0.8916666666666667,
+       "n": {
+        "para": 720,
+        "typed": 0,
+        "nonc": 720,
+        "values": 327
+       },
+       "t3_values_given_action": 0.38837920489296635,
+       "t3_values_end_to_end": 0.1559633027522936,
+       "per_action_test": {
+        "start": 0.3,
+        "add_30s": 0.24444444444444444,
+        "stop": 0.14444444444444443,
+        "power_level": 0.2222222222222222
+       }
+      }
+     },
+     "dev_unseen_acc": 0.3333333333333333
+    },
+    "mix+bank+cal": {
+     "N": 176,
+     "D": 128,
+     "reject_thr": 70370,
+     "margin": 0,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.25,
+       "t2_unseen_acc_norej": 0.6842948717948718,
+       "t1_typed_acc": 0.4479166666666667,
+       "t4_reject_headline": 0.9670781893004116,
+       "reject_other_device": 0.8333333333333334,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3888888888888889,
+       "t3_values_end_to_end": 0.20833333333333334,
+       "per_action_test": {
+        "start": 0.24358974358974358,
+        "add_30s": 0.28846153846153844,
+        "stop": 0.10256410256410256,
+        "power_level": 0.36538461538461536
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.24444444444444444,
+       "t2_unseen_acc_norej": 0.5888888888888889,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9652777777777778,
+       "reject_other_device": 0.9,
+       "n": {
+        "para": 720,
+        "typed": 0,
+        "nonc": 720,
+        "values": 327
+       },
+       "t3_values_given_action": 0.38837920489296635,
+       "t3_values_end_to_end": 0.17737003058103976,
+       "per_action_test": {
+        "start": 0.28888888888888886,
+        "add_30s": 0.2611111111111111,
+        "stop": 0.14444444444444443,
+        "power_level": 0.2833333333333333
+       }
+      }
+     },
+     "dev_unseen_acc": 0.35185185185185186
+    },
+    "audio+bank+cal": {
+     "N": 176,
+     "D": 128,
+     "reject_thr": 64079,
+     "margin": 13000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.30448717948717946,
+       "t2_unseen_acc_norej": 0.719551282051282,
+       "t1_typed_acc": 0.4895833333333333,
+       "t4_reject_headline": 0.9732510288065843,
+       "reject_other_device": 0.9102564102564102,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3888888888888889,
+       "t3_values_end_to_end": 0.2013888888888889,
+       "per_action_test": {
+        "start": 0.28846153846153844,
+        "add_30s": 0.27564102564102566,
+        "stop": 0.23076923076923078,
+        "power_level": 0.4230769230769231
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.24722222222222223,
+       "t2_unseen_acc_norej": 0.6444444444444445,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9486111111111111,
+       "reject_other_device": 0.9416666666666667,
+       "n": {
+        "para": 720,
+        "typed": 0,
+        "nonc": 720,
+        "values": 327
+       },
+       "t3_values_given_action": 0.38837920489296635,
+       "t3_values_end_to_end": 0.16819571865443425,
+       "per_action_test": {
+        "start": 0.2722222222222222,
+        "add_30s": 0.26666666666666666,
+        "stop": 0.13333333333333333,
+        "power_level": 0.31666666666666665
+       }
+      }
+     },
+     "dev_unseen_acc": 0.39814814814814814
+    }
+   }
+  }
+ }
+}

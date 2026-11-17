@@ -1,0 +1,375 @@
+# marigold dev2: written as a DEV set (thresholds may be set on it)
+# generated 2026-11-16 by local qwen2.5:14b (seed 2026111602) from sdk/configs/fan.json and microwave.json only (sw/teacher4/gen_evalsets.py)
+# lines identical to eval/text, eval/text_v2, the other new set, config examples were dropped
+# fragments ending in a filler or function word (truncated generations) were removed afterwards (32 lines)
+# format: '## <product> <action>' blocks; ' | slot=value' (time in seconds, speed 1-5, power 1-10)
+## fan on
+switch the fan to on mode
+get going
+i think we need some air
+i need a little breeze
+i think we need some air movement
+could you maybe turn the fan on
+turn on the fan
+could you please turn it on
+so yeah let's turn
+so i want this on
+okay so i need the fan on
+activate
+could you start the fan
+give me some cool
+i'd like some cool air
+can you turn on
+i need a breeze
+i could use some air circulation
+could you give me a bit of a fan
+could you turn the fan on for me
+please power up
+i think the room could use some ventilation
+can we have a breeze
+i feel like the room could use some air circulation
+it's getting kind of hot in here
+make the fan go
+ok fan
+rise and shine
+can i have some fan action
+it would be nice if the fan was on
+can i get some cool air
+you know what let's have some breeze
+turn the fan on for a moment
+the room needs some air
+time to cool
+it's a bit warm in here
+okay so start
+give me some air
+turn me on
+## fan off
+okay so you know the fan
+can i turn it off now
+um could you stop
+i don't need it anymore
+i want the fan off
+it needs to be off
+so i think ill turn it off
+can you shut off
+i think i should turn it off
+shutting this off now
+i dont want it anymore
+you know what i think ill turn it off
+it's too cold so could you turn it off
+could you turn the fan off now
+it's getting too cold can you turn it off
+shutting it off
+turning off the fan
+the room is getting cold can you turn it off
+i dont need this anymore
+turn off the fan please
+can you turn it off
+okay so could you turn it off
+i think it's enough
+can we shut it off
+turn it off for me
+it's getting chilly could you turn it off
+turn it off please
+can we turn off the fan
+it's too warm so could you turn it off
+okay so could you turn off
+no more breeze
+could you please turn it off
+i dont need it now
+i think it's fine without the fan
+the fan is not needed anymore
+turn off the fan
+i think it would be good to turn it off
+shutting it down
+could you maybe turn it off
+could you switch it off
+## fan faster
+i could use a little more air
+can i get a stronger wind
+can i get a stronger setting
+hey can i get it quicker
+increase the flow
+hey fan can you just go up a level
+can you give me more breeze
+one more level of speed please
+can you step it up a notch
+it's a bit slow
+hey could you give it a boost
+could you step up the speed
+could you raise the tempo
+bump the speed
+speed it up one level
+can i get a higher level
+increase the pace
+speed it up a notch
+just a tiny bit faster please
+can you give it a little more power
+okay can you just make it a little stronger
+give it a slight increase
+can you bump it up
+can you speed up
+please make it faster
+one more level
+can you please make it a notch higher
+increase the breeze a tad
+turn it up just a little
+make it go faster
+could you step it up
+one more notch
+speed it up by one increment
+## fan slower
+can you lower the fan speed one step
+could you please tone down the fan speed
+cool off a bit
+could i get one less speed
+can you ease up
+could you maybe lower the speed just a bit
+slow the fan just a tad
+make it one level slower please
+could you give it a break
+so yeah can we tone it down
+one step slower please
+could you back off the speed a notch
+it's a tad too fast
+can you dial it back a hair
+turn it down a level
+slow it down a notch
+could you ease up on the speed a bit
+slow it down by one setting
+slow the rotation slightly please
+slow it down a little bit
+could you make it less intense
+could you lower the fan speed just a touch
+can you bring the speed back one tick
+i think it's spinning too fast
+slow the fan down a notch
+slow that down slightly
+could you just cool it off
+reduce the speed a little
+could you reduce it a tick
+could you tone it down please
+like uh could the fan maybe chill out a little
+dial it back just a bit
+um could you back it off one
+## fan set_level
+make it about three | speed=3
+okay so bring it down a bit | speed=2
+can you set it to number 2 | speed=2
+bring the speed to level 2 | speed=2
+it's just a bit too cold, can you bump it up a little | speed=2
+okay so make it super low | speed=1
+can you adjust it to a medium level | speed=3
+um, can you bump it up to medium | speed=3
+you know, make it lower | speed=1
+can you bump it up to the top | speed=5
+set it to the lowest setting | speed=1
+it's a bit too strong, could you tone it down a bit | speed=1
+you know what, put it on 4 | speed=4
+set the fan speed to low | speed=1
+boost it up a bit | speed=2
+set it to high | speed=5
+bump it down to one | speed=1
+set it to number 5 | speed=5
+could you set it to the middle level | speed=3
+bump it up a notch | speed=4
+can you bring it down some | speed=2
+crank it to full | speed=5
+make it lower | speed=1
+can you put it on the highest level | speed=5
+i feel cold set it to one | speed=1
+## fan oscillate
+could you oscillate the fan
+i want some air movement so oscillate
+please change to oscillate mode
+start swiveling please
+can you switch oscillation on
+can you set oscillation to on
+can you move
+make the fan oscillate
+can you start oscillating
+okay so start oscillating
+start the oscillating motion
+it's like really stuffy so could you oscillate
+start oscillating the fan
+switch it up
+uh could you maybe oscillate
+um can you start oscillating
+can you put oscillation on
+please set the fan to oscillate
+swing it around
+the room needs some air movement so oscillate
+the air feels stagnant so oscillate
+can you start the oscillation mode
+i need some circulation so oscillate
+please start moving
+please start the fan oscillating
+start the oscillating function
+turn oscillation on
+turn it side
+could you make it oscillate
+move the fan
+so yeah start oscillating
+start the fan oscillating please
+please start rotating
+please start the oscillating mode
+turn that thing
+start oscillating mode
+you know what start oscillating
+## microwave start
+um, start it at low for a minute and a half | time=90
+i was wondering if you could start it for a minute on full power | time=60
+start cooking at full power for a minute | time=60
+start cooking for one minute on high power | time=60
+can you heat this up for thirty seconds
+start cooking for one minute at full blast | time=60
+start cooking at medium power for ninety seconds | time=90
+cook for three minutes | time=180
+uh i was thinking you could start it for sixty seconds | time=60
+start cooking for four minutes at full power | time=240
+okay so start it at three for ninety seconds | time=90
+i was thinking uh maybe a minute and a half on high | time=90
+can you start the heating process for a minute and a half | time=90
+heat this for two minutes at low power | time=120
+start it at five for sixty seconds | time=60
+i think i need to warm this up for a minute on high | time=60
+crank it up to three and go for ninety seconds | time=90
+can you start it for ninety seconds on medium | time=90
+could you maybe start it for a minute and a half on medium | time=90
+start it at level 5 for 120 seconds | time=120
+just start it for forty-five seconds
+like i was wondering if you could maybe do a minute on high | time=60
+it's cold out so could you heat this for ninety seconds | time=90
+get it going for three minutes at low power | time=180
+start cooking for one minute and thirty seconds | time=90
+power to ten for ninety seconds | time=90
+start it for forty-five seconds on high | time=45
+can you start it for five minutes on half power | time=300
+start it at full power for three minutes | time=180
+start it for a minute on full blast | time=60
+start it at full blast for a minute | time=60
+medium heat for two minutes | time=120
+power ten for thirty seconds | time=30
+start cooking at low power for ninety seconds | time=90
+start heating for ninety seconds on medium power | time=90
+popcorn please for two minutes on medium | time=120
+start heating for two minutes on medium power | time=120
+it would be great if you could start it for ninety seconds | time=90
+it would be good if you could start it for sixty seconds on high | time=60
+start cooking | time=30
+## microwave add_30s
+just thirty more seconds okay
+so yeah add thirty more
+it's freezing so could you add thirty seconds
+i need just a bit more time
+can you put in another thirty seconds please
+um thirty more would help
+i just need thirty more
+i need like thirty extra seconds
+can i bump it up thirty
+i want to add another thirty seconds to the cooking
+uh, i think it needs a little more
+i was wondering if you could add thirty seconds
+i forgot to set it earlier so please add thirty seconds
+it's still undercooked so can you add thirty
+i forgot the timing so could you add thirty seconds
+could you just add thirty seconds to the time
+i really think we need thirty more seconds could you add
+30 more would be great
+another thirty please
+i need thirty more seconds
+i was in the middle of something so could you add thirty seconds
+it's still not quite done could you add thirty seconds
+i really need thirty more seconds can you do that
+i need another thirty seconds can you do that
+add thirty more seconds
+um thirty more seconds
+can i add thirty
+i was waiting on something so can you add thirty seconds
+i need a little more time could you add thirty seconds
+can i just add thirty
+i think we need a bit more cooking time could you add thirty
+could i just do another thirty
+okay so can i just add thirty seconds
+could you maybe add thirty seconds
+can i add half a minute
+30 more seconds
+i need another thirty seconds please can you do that
+i forgot to say it before so could you add thirty
+add thirty seconds please
+can i just do thirty more
+## microwave stop
+so we should pause
+stop the microwave please
+cease now
+pause microwave
+halt for now
+maybe it's time to pause
+cease momentarily
+i have to step out for
+pause a moment
+stop for a sec
+um time out
+could you pause for now
+it's been long enough stop
+stop the spin
+i'm worried it's too much
+you know what pause
+could you just stop for now
+break please
+stop microwave cooking
+momentarily stop
+pause it real quick
+so yeah let's pause
+halt microwave
+can i interrupt for a sec
+cease momentarily please
+can we interrupt the cooking
+hit pause
+stop now okay
+it might be overcooked already
+can we stop for a bit
+uh i guess it's time
+cease for a bit
+could you interrupt the cooking
+## microwave power_level
+can you like set it on a medium level | power=5
+can you turn it down to a number three | power=3
+can you take it down to three | power=3
+can you do a medium power | power=5
+power level six | power=6
+set it to five | power=5
+um, can you set it to full | power=10
+okay so can i have medium | power=5
+just a bit more, nine | power=9
+low power mode | power=3
+full power needed | power=10
+uh, could you maybe go with a five or something | power=5
+it's too strong, can you make it two | power=2
+three will do | power=3
+not too hot, make it four | power=4
+ten for this | power=10
+five please | power=5
+i want it on low, could you set it at three | power=3
+crank it up to the highest setting | power=10
+okay so can you just set it to one | power=1
+like, could i have it on medium or around five | power=5
+like, set it on a six or something | power=6
+you know what, make it medium | power=5
+so yeah, medium power | power=5
+can you please set it to full power | power=10
+power down to two | power=2
+can you put it at half way | power=5
+could you put it on a medium heat | power=5
+five setting | power=5
+could you set it to high power | power=10
+could you bring it up to seven | power=7
+uh, make it about half way, like five | power=5
+half power please | power=5
+make it seven please | power=7
+can you like turn it to half power | power=5
+set it at the highest possible | power=10
+seven should work | power=7
+can you please go to the lowest setting | power=1
+ten power | power=10
+make it a six | power=6

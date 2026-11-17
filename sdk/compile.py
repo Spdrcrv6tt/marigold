@@ -355,8 +355,47 @@ def kmeans(X, k, iters=50):
     return C
 
 
+def enroll_protos(b0, byact, qb=None, K_audio=32, K_text=0, K_bank=0, cal=False, text_reject=False):
+    """SDK audio enrollment (the matching variants sw/intent/evaluate.py chooses on dev; one implementation for both).
+    byact {action id: [int8 q of the config's phrases spoken by TTS train voices through the chip model]} (id 0 = the
+    expansion non-commands), qb int8 q of a generic speech bank (LibriSpeech training utterances). Prototypes: K_audio
+    k-means centroids per action of the enrolled q, plus K_text centroids of the text blob b0's vectors, 16 reject
+    centroids of the enrolled non-commands, K_bank reject centroids of the bank; cal = cohort bias normalisation
+    (each action prototype's mean score on the bank, centred on the median, subtracted as the vector's bias).
+    Returns a parsed-blob dict with the new vectors (pack() it with the dev threshold and margin)."""
+    D = b0["D"]
+    Cs, va = [], []
+    if text_reject:      # iteration-2 reject fix: keep the text blob's action-0 prototypes (expansion + reject bank)
+        R0 = b0["vectors"][b0["vec_action"] == 0].astype(np.float64)
+        n_act = sum(1 for x in byact if x != 0)
+        room = (MAX_BLOB - 512) // (VEC.size + D) - len(R0) - (16 if 0 in byact else 0) - K_bank
+        K_audio = max(1, min(K_audio, room // max(1, n_act) - K_text))
+        Cs.append(unit(R0)); va += [0] * len(R0)
+    for aid in sorted(byact):
+        if aid == 0:
+            continue
+        X = unit(np.array(byact[aid], np.float64)); cent = kmeans(X, K_audio); Cs.append(cent); va += [aid] * len(cent)
+        if K_text:
+            T = b0["vectors"][b0["vec_action"] == aid].astype(np.float64)
+            ct = kmeans(unit(T), K_text); Cs.append(ct); va += [aid] * len(ct)
+    if 0 in byact:
+        X = unit(np.array(byact[0], np.float64)); cent = kmeans(X, 16); Cs.append(cent); va += [0] * len(cent)
+    if K_bank:
+        cent = kmeans(unit(qb.astype(np.float64)), K_bank); Cs.append(cent); va += [0] * len(cent)
+    Cm = np.concatenate(Cs)
+    V = np.clip(np.round(golden_vec(Cm, 0.0, np.eye(D)) * 32.0), -127, 127).astype(np.int8)
+    va = np.array(va, np.int32)
+    bias = np.zeros(len(va), np.int32)
+    if cal:
+        mu = (qb.astype(np.int64) @ V.astype(np.int64).T).mean(0)
+        act = va != 0
+        bias[act] = np.clip(np.round(-(mu[act] - np.median(mu[act]))), -32767, 32767).astype(np.int32)
+    bb = dict(b0); bb.update(vectors=V, vec_action=va, vec_flags=np.zeros(len(va), int), bias=bias, N=len(va))
+    return bb
+
+
 def compile_config(c, key, embedder, expansion=None, D=256, proj="random", protos=0, reject_protos=16,
-                   q_scale=None, reject_rate=0.90, margin=0.0, reject_thr=None):
+                   q_scale=None, reject_rate=0.90, margin=0.0, reject_thr=None, reject_bank=None, bank_protos=0, bank_keep=0.8):
     validate(c)
     h, actions, slots, gpio, wake = tables(c)
     exp_acts = (expansion or {}).get("actions", {}).get(key, {})
@@ -381,9 +420,18 @@ def compile_config(c, key, embedder, expansion=None, D=256, proj="random", proto
     if not 1 <= D <= 256:
         raise ValueError(f"D = {D}: the chip accepts D <= 256 (architecture 8.6); use --projection with --dim")
     Ep, En = E[:len(phrases)], E[len(phrases):]
+    Rb = None
+    if reject_bank is not None and bank_protos > 0:
+        # iteration 2 reject fix: action-0 prototypes from a generic bank (commands of the 120 training appliances,
+        # their non-commands and LibriSpeech snippets; data/sdk/reject_bank-<teacher>.npz, unit vectors in this teacher's
+        # chip space). Bank lines that sit close to one of this product's own phrases (cosine >= bank_keep) are left out,
+        # so "turn it on" from a lamp never becomes a reject prototype for a fan's "on".
+        Vb = np.asarray(reject_bank["V"], np.float64)
+        Vb = Vb[(Vb @ Ep.T).max(1) < bank_keep]
+        Rb = kmeans(Vb, bank_protos) if len(Vb) else None
     fixed = HDR.size + len(actions) * ACT.size + len(slots) * SLOT.size + len(gpio) * GPIO.size + len(wake) + 4
     if protos <= 0:                            # auto: fill the 32 KB blob, at most 32 prototypes per action
-        budget = (MAX_BLOB - fixed) // (VEC.size + D) - (reject_protos if len(En) else 0)
+        budget = (MAX_BLOB - fixed) // (VEC.size + D) - (reject_protos if len(En) else 0) - (len(Rb) if Rb is not None else 0)
         protos = max(1, min(32, budget // len(c["actions"])))
     while True:                                # shrink prototypes until the blob fits
         C, va = [], []
@@ -395,6 +443,9 @@ def compile_config(c, key, embedder, expansion=None, D=256, proj="random", proto
             cent = kmeans(En, reject_protos)
             C.append(cent)
             va += [0] * len(cent)
+        if Rb is not None:
+            C.append(Rb)
+            va += [0] * len(Rb)
         C = np.concatenate(C)
         size = fixed + len(C) * (VEC.size + D)
         if size <= MAX_BLOB or (protos == 1 and reject_protos <= 1):
@@ -468,6 +519,9 @@ def main():
     ap.add_argument("--q-scale", type=float, default=None)
     ap.add_argument("--reject-rate", type=float, default=0.90, help="share of the expansion non-commands to reject (0.90 chosen on the eval DEV split)")
     ap.add_argument("--margin", type=float, default=0.0)
+    ap.add_argument("--reject-bank", default=None, help="iteration 2: generic reject bank npz (sw/teacher4/make_reject_bank.py)")
+    ap.add_argument("--bank-protos", type=int, default=0, help="action-0 prototypes taken from the reject bank")
+    ap.add_argument("--bank-keep", type=float, default=0.8, help="bank lines closer than this to the product's own phrases are dropped")
     a = ap.parse_args()
     if a.parse:
         b = parse(Path(a.parse).read_bytes())
@@ -485,7 +539,8 @@ def main():
     proj = a.projection
     if proj == "auto":
         proj = "teacher" if emb_path and (Path(emb_path) / "marigold_proj.npz").exists() else "random"
-    blob, rep = compile_config(c, cfg.stem, emb, exp, a.dim, proj, a.protos, a.reject_protos, a.q_scale, a.reject_rate, a.margin, a.reject_thr)
+    blob, rep = compile_config(c, cfg.stem, emb, exp, a.dim, proj, a.protos, a.reject_protos, a.q_scale, a.reject_rate, a.margin, a.reject_thr,
+                               np.load(a.reject_bank) if a.reject_bank else None, a.bank_protos, a.bank_keep)
     rep.update(config=str(cfg), embedder=str(emb_path) if emb_path else "stub", expansion=a.expansion if exp else None)
     out = Path(a.out) if a.out else ROOT / "data/sdk" / f"{cfg.stem}.mgc"
     out.parent.mkdir(parents=True, exist_ok=True)
