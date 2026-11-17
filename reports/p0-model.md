@@ -294,3 +294,39 @@ fan noise 37.0 -> 36.4, microwave noise 38.0 -> 36.2, v2 38.1 -> 36.9, v3 41.2 -
 Still missed: targets 1 to 4 (best unseen about 44% at 95% rejection on synthetic speech) and 10 (noise loss 5 to 7
 points). The audio encoder remains the limit: the 6-layer audio teacher reaches about 47 to 48% at the same point, so
 distillation can at best close part of the gap to text.
+
+## 11. Post-merge reruns (Nov 17, 2026; review S6, S7)
+
+The integer golden models v1, v2 and v3 scored once each with the merged review fixes: the frozen enrollment speech bank
+(sw/intent/speech_bank.txt, S6), both rejection-off figures (S7), the budget check on every variant (K3), and the
+reject-fix protocol (calibration and variant choice on eval/text_dev2 audio, reject bank with the per-product settings the
+text gate chose on dev2; v1 uses a teacher-v3 bank built the same way, with the same settings, no tuning). No tuning
+on any test set. Raw: reports/p0/eval-pm-golden-v1.json, -v2.json, -v3.json; sw/intent/run_postmerge.sh.
+Cells: end to end / rejection off (threshold and margin off) / pure rejection off (reject prototypes masked too)
+(headline rejection), unseen accuracy in %, synthetic speech by held-out voices.
+
+| Set | v1 | v2 | v3 |
+|---|---|---|---|
+| **fan** dev2 (selection; variants: v1 mix+bank+cal, v2 audio, v3 mix+bank) | 27.5 | 32.2 | 35.3 |
+| fan eval/text clean | 29.1 / 56.1 / 61.6 (94.0) | 34.5 / 61.3 / 66.3 (95.5) | 37.1 / 58.3 / 66.6 (97.9) |
+| fan eval/text, fan noise 10 dB | 24.0 / 50.2 / 56.6 (95.3) | 28.7 / 56.1 / 63.4 (97.1) | 31.1 / 54.3 / 64.5 (96.5) |
+| fan eval/text, microwave noise 10 dB | 23.3 / 49.6 / 55.5 (95.3) | 28.7 / 53.3 / 61.7 (97.7) | 29.2 / 51.9 / 63.1 (97.3) |
+| fan eval/text_v2 (seen) | 21.8 / 41.5 / 50.8 (95.7) | 23.0 / 49.0 / 59.0 (95.1) | 24.2 / 45.2 / 56.1 (94.2) |
+| fan eval/text_v3 (blind) | 40.8 / 65.0 / 71.8 (94.2) | 39.9 / 68.1 / 74.9 (92.8) | 37.9 / 62.3 / 71.0 (92.4) |
+| **microwave** dev2 (selection; variants: v1 audio+bank+cal, v2 audio, v3 audio) | 37.9 | 33.6 | 39.7 |
+| microwave eval/text clean | 38.3 / 69.4 / 75.6 (94.2) | 41.8 / 70.2 / 81.1 (94.4) | 43.8 / 72.4 / 82.9 (95.3) |
+| microwave eval/text, fan noise 10 dB | 30.0 / 64.6 / 72.1 (95.3) | 31.6 / 64.1 / 76.6 (96.9) | 36.4 / 68.9 / 80.8 (94.9) |
+| microwave eval/text, microwave noise 10 dB | 30.6 / 65.4 / 72.3 (94.9) | 31.2 / 63.0 / 74.8 (97.1) | 36.2 / 68.8 / 79.6 (95.1) |
+| microwave eval/text_v2 (seen) | 32.6 / 62.4 / 76.5 (92.5) | 31.0 / 62.6 / 74.7 (94.6) | 36.9 / 63.6 / 74.3 (93.1) |
+| microwave eval/text_v3 (blind) | 46.7 / 71.8 / 79.5 (91.4) | 39.6 / 70.0 / 79.5 (95.1) | 43.5 / 68.2 / 78.7 (93.8) |
+
+**Ship ordering on dev2 (mean of the two products): v3 37.5% > v2 32.9% > v1 32.7%.** S6 and S7 do
+not change the v2-against-v3 call. Two plain findings:
+- v1 and v2 nearly tie under this protocol (0.2 points on dev2), while v2 beat v1 by 10 points under the iteration-1
+  protocol (eval/text dev, section 9). The calibration set decides much of the end-to-end number.
+- v3's fan variant changed between runs (now mix+bank, dev2 35.3%, against audio at 34.8% in section 10) because the
+  text-side prototypes move slightly from run to run (bf16 teacher numerics, as in the D3 note). With it, v3's fan
+  scores on the blind v3 set drop from 42.2% to 37.9%, below v2's 39.9%. The microwave choice and numbers repeat.
+- The pure rejection-off figures are 5 to 15 points above the plain rejection-off ones: reject prototypes win for many
+  commands even with no threshold. Action confusion alone (pure) is about 61 to 67% (fan) and 75 to 83% (microwave) on
+  clean speech; the rest of the gap to the end-to-end number is rejection.

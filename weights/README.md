@@ -6,11 +6,12 @@ These are the weights the chip runs, plus the SDK-side text projections. Larger 
 
 | File | What it is |
 |---|---|
-| `mg-v2.npz`, `mg-v2.json` | **Intent model v2, as it sits in the chip's weight ROM (shipping).** Integer golden model, golden format v1.0 (docs/golden-format.md). Moonshine Streaming Tiny frontend plus 2 encoder layers, D = 128 head, 4,586,560 weights (4-bit; the frontend linear and CTC are 8-bit), weight ROM 18,506,240 bits (see the .json). Built from checkpoint qv2.pt (QAT of f6). Tag `model-v2`. |
+| `mg-v3.npz`, `mg-v3.json` | **Intent model v3, as it sits in the chip's weight ROM (shipping since Nov 17, 2026).** Same format, architecture and size as v2 (golden format v1.0, 4,586,560 weights, weight ROM 18,506,240 bits). The same 2-layer student, distilled from a PC-side 6-layer Moonshine audio teacher (reports/p0-model.md section 10). Built from checkpoint qv3.pt (QAT of f7). Tag `model-v3`. Its float twin, vectors and checkpoints are not on a release yet. |
+| `mg-v2.npz`, `mg-v2.json` | Intent model v2 (shipped Nov 16 to 17, replaced by v3). Integer golden model, golden format v1.0 (docs/golden-format.md). Moonshine Streaming Tiny frontend plus 2 encoder layers, D = 128 head, 4,586,560 weights (4-bit; the frontend linear and CTC are 8-bit), weight ROM 18,506,240 bits (see the .json). Built from checkpoint qv2.pt (QAT of f6). Tag `model-v2`. |
 | `mg-v1.npz`, `mg-v1.json` | Intent model v1 (iteration 1), same format and size. Tag `model-v1`. |
-| `teacher-v4_proj.npz` | The 128-d chip-space projection on top of teacher-v4 (Qwen3-Embedding-4B + LoRA 16). Used only by the SDK on a PC, to embed OEM phrases. Pairs with mg-v2. |
+| `teacher-v4_proj.npz` | The 128-d chip-space projection on top of teacher-v4 (Qwen3-Embedding-4B + LoRA 16). Used only by the SDK on a PC, to embed OEM phrases. Pairs with mg-v2 and mg-v3. |
 | `teacher-v3_proj.npz` | Same for teacher-v3, which pairs with mg-v1. |
-| `SHA256SUMS` | Checksums. |
+| `SHA256SUMS` | Checksums (of the files as stored in git; the .json files are LF since Nov 17). |
 
 The `.json` next to each `.npz` gives the config, per-tensor bit widths, the weight count and the ROM size.
 
