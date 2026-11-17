@@ -1,0 +1,21 @@
+{
+ "tag": "v3",
+ "D": 128,
+ "weights": 4586560,
+ "weight_bits": 18506240,
+ "row_params_bits": 252393,
+ "norm_bits": 29187,
+ "lut_bits": 28992,
+ "rom_bits_total": 18816988,
+ "rom_mbit": 18.817,
+ "macs_per_frame": 5670720,
+ "macs_per_audio_second": 283536000,
+ "real_time_factor_core": 4.81,
+ "response_ms_estimate": {
+  "hang": 128,
+  "encoder_tail": 33.3,
+  "head_parse_bridge": 0.3,
+  "match_max": 10.7,
+  "total": 172.3
+ }
+}

@@ -202,7 +202,11 @@ What changed (chip side unchanged):
 
 Gate 0 (text only, teacher-v4, SDK blob, integer scores, eval/text dev thresholds; sw/teacher4/text_gate.py):
 eval/text test fan 91.7% / 93.8%, microwave 94.7% / 93.2% (teacher-v3 under the same protocol 50 / 93 and 56 / 93);
-the blind **eval/text_v2: fan 71.9% / 93.8%, microwave 75.0% / 93.3%: gate (90 / 95) missed**. Most v2 misses are
+the blind **eval/text_v2: fan 71.9% / 93.8%, microwave 75.0% / 93.3%: gate (90 / 95) missed**. Review D3: the JSON
+files of that run had an older layout; reports/gate0/text_gate_teacher_v4.json and _v3.json were re-run on Nov 17 with
+the current script and the same protocol: teacher-v4 fan 90.4 / 93.8 (test) and 71.7 / 93.8 (v2), microwave 94.7 /
+93.2 and 75.0 / 93.8; teacher-v3 identical to the first run. The teacher-v4 drift of up to 1.3 points comes from bf16
+embedding numerics with a different batch order, which moves the knife-edge threshold. Most v2 misses are
 rejected long, chatty commands; short fillers are accepted.
 
 v1 against v2, integer golden models, synthetic speech by held-out voices (eval/text test and its 10 dB copies;
@@ -225,9 +229,68 @@ v1's clean and eval/text_v2 cells are the Nov 16 rerun (reports/p0/eval-golden-v
 under 3 points because its speech bank is drawn from the rebuilt training index); v1's noise rows are section 6's.
 
 Targets 1 to 4 are still far off; target 10 (noise within 5 points) is worse than v1 in points lost (fan config -5.7 /
--6.2, microwave config -9.6 / -11.8). The float model before QAT (reports/p0/eval-f6.json) scored within about a point.
+-6.2, microwave config -9.6 / -11.8). QAT cost (review D1; the earlier "within about a point" was wrong for the microwave): integer qv2 against float f6,
+unseen accuracy, same protocol (reports/p0/eval-f6.json against eval-golden-v2.json): fan clean 40.0 -> 40.0, fan noise
+33.6 -> 34.3, microwave noise 33.4 -> 33.8, eval/text_v2 24.1 -> 25.7 (dev 49.7 -> 47.2); microwave clean 43.9 -> 39.7
+(-4.2), fan noise 33.8 -> 30.1 (-3.7), microwave noise 35.7 -> 27.9 (-7.8), eval/text_v2 30.0 -> 25.3 (-4.7) (dev
+47.7 -> 46.8). Review S1 applied: QAT restarted the learned decision threshold at 0.45 (f6 had learned 0.462), a small
+change; the microwave loss is not explained yet.
 The audio encoder, not the teacher, is the limit: text matching with the same teacher reaches 72 to 95%.
 
 Next (approved, running as milestone c): an audio teacher (all six Moonshine layers, PC only) distilled into the same
 2-layer chip student on LibriSpeech crops plus the TTS; and the reject fix (SDK reject bank, calibration on the new
 dev set eval/text_dev2, blind eval/text_v3 scored once).
+
+## 10. Milestone (c): audio teacher, distilled student, model v3 (Nov 16-17, 2026)
+
+**Model v3 ships** (tag `model-v3`; export `data/golden/mg-v3.npz`, vectors `vectors-mg-v3-0..3.npz`, ROM image
+rtl/core/imh_rom.svh from data/core/mg-v3; same golden format v1.0, 4,586,560 weights, 18.82 Mbit). Ship rule: better
+than v2 on dev under the same protocol. Integer, reject-fix protocol (below), dev2 unseen accuracy at the dev2
+95%-rejection point: **v3 37.2% against v2 32.9%** (fan 34.8 / 32.2, microwave 39.7 / 33.6). Whole-chip regression on
+v3 (Nov 17, 01:13): libri-pos and breeze-pos identical in frames, q, values, GPIO and front end; the ROM, mic and CRC
+negatives fail; MAC lanes 0 failures (judged per check: the run used the old script, whose rc is not meaningful, R9).
+
+What was done (John approved; chip side unchanged):
+- **Audio teacher at6** (PC only): the full 6-layer Moonshine Streaming Tiny encoder (MIT, Moonshine's own windows
+  4,4,0,0,4,4) plus the same head, trained 150 min into teacher-v4's chip space with the decision loss. Float, eval/text
+  dev protocol: fan 46.6% unseen / 97.5% rejection, microwave 47.9% / 93.4% (f6: 40.0 / 95.3, 43.9 / 94.9); dev 54.9 /
+  53.7%. Better than the 2-layer student, but far from text (72 to 95%).
+- **Student f7**: f6 distilled from at6 (1 - cos and relational KD on the same augmented audio) for 180 min, keeping the
+  text distillation, decision and CTC losses, plus 25% LibriSpeech crops without text from train-clean-100 and
+  train-other-500 (600 h; train-clean-360 was still downloading). Then 40 min QAT (qv3) with the same losses.
+- **Reject fix** (SDK; sw/teacher4/text_gate.py, sdk/compile.py --reject-bank): a generic bank of 35,201 lines (commands
+  of the 120 training appliances, their non-commands, LibriSpeech snippets) gives action-0 prototypes; bank lines close
+  to the product's own phrases are dropped; bank size, closeness cut-off, threshold and margin are chosen on the new dev
+  set eval/text_dev2 (qwen2.5:14b, 360 commands, 250 non-commands). The blind set eval/text_v3 (gemma4:12b, 541
+  commands, 276 non-commands) was written before any result and scored once.
+  - Text (teacher-v4): v2 (seen) fan 71.9 -> 74.2% unseen, 93.8 -> 94.6% rejection; microwave 75.0 -> 72.9%, 93.3 ->
+    92.5%. v3 (blind): fan 95.0% / 94.5%, microwave 55.7% / 91.1% (start 18%, power_level 33%: 78 of 80 errors are
+    rejections, mostly lines that write numbers as digits, "start for 180", with the 10,000 margin chosen on dev2).
+  - Audio, float f6, eval/text-dev protocol -> fix protocol: fan clean 40.0 -> 34.9%, v2 24.1 -> 20.5%; microwave
+    clean 43.9 -> 37.0%, v2 30.0 -> 32.4%. The fix does not help audio overall: the dev2 operating point sits higher.
+    It is kept as the protocol so that v2 and v3 are compared on the same footing; rejection-off and calibration need
+    more work (review K2, S7).
+
+Integer v2 against v3, both under the reject-fix protocol (calibration on eval/text_dev2 audio, reject bank, variant
+chosen on dev2: "audio" for both), synthetic speech by held-out voices, rejections count as errors (raw:
+reports/p0/eval-golden-v2-fix.json, eval-golden-v3-fix.json). Cells: unseen (rejection off) / headline rejection.
+
+| Set | Fan v2 | Fan v3 | Microwave v2 | Microwave v3 |
+|---|---|---|---|---|
+| dev2 (selection) | 32.2 (55.6) / 95.1 | **34.8** (57.5) / 95.1 | 33.6 (64.7) / 95.1 | **39.7** (63.2) / 95.1 |
+| eval/text clean | 34.5 (61.3) / 95.5 | **39.3** (65.5) / 97.5 | 41.8 (70.2) / 94.4 | **43.8** (72.4) / 95.3 |
+| eval/text, fan noise 10 dB | 28.7 / 97.1 | 33.7 / 97.7 | 31.6 / 96.9 | 36.4 / 94.9 |
+| eval/text, microwave noise 10 dB | 28.7 / 97.7 | 32.4 / 97.7 | 31.2 / 97.1 | 36.2 / 95.1 |
+| eval/text_v2 (seen) | 23.0 (49.0) / 95.1 | 25.7 (52.3) / 95.0 | 31.0 (62.6) / 94.6 | 36.9 (63.6) / 93.1 |
+| eval/text_v3 (blind, once per model) | 39.9 (68.1) / 92.8 | **42.2** (69.4) / 91.5 | 39.6 (70.0) / 95.1 | **43.5** (68.2) / 93.8 |
+| Typed phrasings | 50.7 | 63.9 | 61.5 | 63.5 |
+| Values given the action (clean) | 64.1 | 64.1 | 41.0 | 41.3 |
+
+Float to integer (review D1), unseen accuracy, same protocol: f7 -> qv3: fan clean 39.0 -> 39.3, fan noise 33.6 ->
+33.7, microwave noise 33.6 -> 32.4, v2 25.1 -> 25.7, v3 42.8 -> 42.2, dev2 35.1 -> 34.8; microwave clean 45.2 -> 43.8,
+fan noise 37.0 -> 36.4, microwave noise 38.0 -> 36.2, v2 38.1 -> 36.9, v3 41.2 -> 43.5, dev2 40.1 -> 39.7 (within
+-1.8 to +2.3 points). Review S1 also applied to qv3: QAT restarted the threshold at 0.45 (f7 had learned 0.458).
+
+Still missed: targets 1 to 4 (best unseen about 44% at 95% rejection on synthetic speech) and 10 (noise loss 5 to 7
+points). The audio encoder remains the limit: the 6-layer audio teacher reaches about 47 to 48% at the same point, so
+distillation can at best close part of the gap to text.

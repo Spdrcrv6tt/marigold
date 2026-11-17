@@ -1,0 +1,1709 @@
+{
+ "model": "data/intent/f7-final.pt",
+ "golden": null,
+ "synthetic_only": true,
+ "products": {
+  "fan": {
+   "chosen": "audio+bank+cal",
+   "variants": {
+    "text": {
+     "N": 240,
+     "D": 128,
+     "reject_thr": 74381,
+     "margin": 1000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.360427807486631,
+       "t2_unseen_acc_norej": 0.5689839572192513,
+       "t1_typed_acc": 0.4861111111111111,
+       "t4_reject_headline": 0.9794238683127572,
+       "reject_other_device": 0.7435897435897436,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6410256410256411,
+       "t3_values_end_to_end": 0.3076923076923077,
+       "per_action_test": {
+        "on": 0.24358974358974358,
+        "off": 0.5870967741935483,
+        "faster": 0.3525641025641026,
+        "slower": 0.391025641025641,
+        "set_level": 0.3717948717948718,
+        "oscillate": 0.21794871794871795
+       }
+      },
+      "fan10db": {
+       "t2_unseen_acc": 0.29732620320855613,
+       "t2_unseen_acc_norej": 0.5315508021390374,
+       "t1_typed_acc": 0.3680555555555556,
+       "t4_reject_headline": 0.977366255144033,
+       "reject_other_device": 0.7692307692307693,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6282051282051282,
+       "t3_values_end_to_end": 0.25,
+       "per_action_test": {
+        "on": 0.1858974358974359,
+        "off": 0.432258064516129,
+        "faster": 0.34615384615384615,
+        "slower": 0.3333333333333333,
+        "set_level": 0.28846153846153844,
+        "oscillate": 0.1987179487179487
+       }
+      },
+      "microwave10db": {
+       "t2_unseen_acc": 0.2802139037433155,
+       "t2_unseen_acc_norej": 0.5037433155080214,
+       "t1_typed_acc": 0.3333333333333333,
+       "t4_reject_headline": 0.9835390946502057,
+       "reject_other_device": 0.7564102564102564,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6282051282051282,
+       "t3_values_end_to_end": 0.1987179487179487,
+       "per_action_test": {
+        "on": 0.15384615384615385,
+        "off": 0.44516129032258067,
+        "faster": 0.3333333333333333,
+        "slower": 0.3269230769230769,
+        "set_level": 0.2564102564102564,
+        "oscillate": 0.16666666666666666
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.2391102873030584,
+       "t2_unseen_acc_norej": 0.4541241890639481,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9486111111111111,
+       "reject_other_device": 0.8833333333333333,
+       "n": {
+        "para": 1079,
+        "typed": 0,
+        "nonc": 720,
+        "values": 180
+       },
+       "t3_values_given_action": 0.6166666666666667,
+       "t3_values_end_to_end": 0.26666666666666666,
+       "per_action_test": {
+        "on": 0.14444444444444443,
+        "off": 0.22905027932960895,
+        "faster": 0.32222222222222224,
+        "slower": 0.2833333333333333,
+        "set_level": 0.3111111111111111,
+        "oscillate": 0.14444444444444443
+       }
+      },
+      "v3": {
+       "t2_unseen_acc": 0.3322949117341641,
+       "t2_unseen_acc_norej": 0.5981308411214953,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9307909604519774,
+       "reject_other_device": 0.7583333333333333,
+       "n": {
+        "para": 963,
+        "typed": 0,
+        "nonc": 708,
+        "values": 171
+       },
+       "t3_values_given_action": 0.8596491228070176,
+       "t3_values_end_to_end": 0.5321637426900585,
+       "per_action_test": {
+        "on": 0.20155038759689922,
+        "off": 0.4065040650406504,
+        "faster": 0.4666666666666667,
+        "slower": 0.18888888888888888,
+        "set_level": 0.5847953216374269,
+        "oscillate": 0.14444444444444443
+       }
+      },
+      "dev2": {
+       "t2_unseen_acc": 0.3188405797101449,
+       "t2_unseen_acc_norej": 0.5120772946859904,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9508771929824561,
+       "reject_other_device": 0.8777777777777778,
+       "n": {
+        "para": 621,
+        "typed": 0,
+        "nonc": 570,
+        "values": 75
+       },
+       "t3_values_given_action": 0.6133333333333333,
+       "t3_values_end_to_end": 0.25333333333333335,
+       "per_action_test": {
+        "on": 0.21367521367521367,
+        "off": 0.44166666666666665,
+        "faster": 0.5353535353535354,
+        "slower": 0.30303030303030304,
+        "set_level": 0.3333333333333333,
+        "oscillate": 0.10810810810810811
+       }
+      }
+     },
+     "dev_unseen_acc": 0.3188405797101449
+    },
+    "audio": {
+     "N": 244,
+     "D": 128,
+     "reject_thr": 68593,
+     "margin": 8000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.34866310160427805,
+       "t2_unseen_acc_norej": 0.6213903743315508,
+       "t1_typed_acc": 0.5347222222222222,
+       "t4_reject_headline": 0.9444444444444444,
+       "reject_other_device": 0.8589743589743589,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6410256410256411,
+       "t3_values_end_to_end": 0.28846153846153844,
+       "per_action_test": {
+        "on": 0.1794871794871795,
+        "off": 0.36774193548387096,
+        "faster": 0.4551282051282051,
+        "slower": 0.38461538461538464,
+        "set_level": 0.36538461538461536,
+        "oscillate": 0.33974358974358976
+       }
+      },
+      "fan10db": {
+       "t2_unseen_acc": 0.3090909090909091,
+       "t2_unseen_acc_norej": 0.5871657754010695,
+       "t1_typed_acc": 0.4027777777777778,
+       "t4_reject_headline": 0.9609053497942387,
+       "reject_other_device": 0.8974358974358975,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6282051282051282,
+       "t3_values_end_to_end": 0.2564102564102564,
+       "per_action_test": {
+        "on": 0.12179487179487179,
+        "off": 0.27741935483870966,
+        "faster": 0.5064102564102564,
+        "slower": 0.358974358974359,
+        "set_level": 0.33974358974358976,
+        "oscillate": 0.25
+       }
+      },
+      "microwave10db": {
+       "t2_unseen_acc": 0.2909090909090909,
+       "t2_unseen_acc_norej": 0.5529411764705883,
+       "t1_typed_acc": 0.3958333333333333,
+       "t4_reject_headline": 0.9670781893004116,
+       "reject_other_device": 0.8205128205128205,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6282051282051282,
+       "t3_values_end_to_end": 0.21794871794871795,
+       "per_action_test": {
+        "on": 0.14102564102564102,
+        "off": 0.27741935483870966,
+        "faster": 0.4358974358974359,
+        "slower": 0.3525641025641026,
+        "set_level": 0.3076923076923077,
+        "oscillate": 0.23076923076923078
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.2520852641334569,
+       "t2_unseen_acc_norej": 0.5236329935125116,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9597222222222223,
+       "reject_other_device": 0.95,
+       "n": {
+        "para": 1079,
+        "typed": 0,
+        "nonc": 720,
+        "values": 180
+       },
+       "t3_values_given_action": 0.6166666666666667,
+       "t3_values_end_to_end": 0.26666666666666666,
+       "per_action_test": {
+        "on": 0.07777777777777778,
+        "off": 0.16759776536312848,
+        "faster": 0.40555555555555556,
+        "slower": 0.3,
+        "set_level": 0.3333333333333333,
+        "oscillate": 0.22777777777777777
+       }
+      },
+      "v3": {
+       "t2_unseen_acc": 0.4153686396677051,
+       "t2_unseen_acc_norej": 0.6708203530633438,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9562146892655368,
+       "reject_other_device": 0.8916666666666667,
+       "n": {
+        "para": 963,
+        "typed": 0,
+        "nonc": 708,
+        "values": 171
+       },
+       "t3_values_given_action": 0.8596491228070176,
+       "t3_values_end_to_end": 0.5380116959064327,
+       "per_action_test": {
+        "on": 0.13178294573643412,
+        "off": 0.2682926829268293,
+        "faster": 0.5833333333333334,
+        "slower": 0.4111111111111111,
+        "set_level": 0.6140350877192983,
+        "oscillate": 0.36666666666666664
+       }
+      },
+      "dev2": {
+       "t2_unseen_acc": 0.33011272141706927,
+       "t2_unseen_acc_norej": 0.5700483091787439,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9508771929824561,
+       "reject_other_device": 0.9277777777777778,
+       "n": {
+        "para": 621,
+        "typed": 0,
+        "nonc": 570,
+        "values": 75
+       },
+       "t3_values_given_action": 0.6133333333333333,
+       "t3_values_end_to_end": 0.26666666666666666,
+       "per_action_test": {
+        "on": 0.21367521367521367,
+        "off": 0.24166666666666667,
+        "faster": 0.6262626262626263,
+        "slower": 0.3939393939393939,
+        "set_level": 0.3333333333333333,
+        "oscillate": 0.22522522522522523
+       }
+      }
+     },
+     "dev_unseen_acc": 0.33011272141706927
+    },
+    "mix": {
+     "N": 244,
+     "D": 128,
+     "reject_thr": 75115,
+     "margin": 4000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.33689839572192515,
+       "t2_unseen_acc_norej": 0.5786096256684492,
+       "t1_typed_acc": 0.5208333333333334,
+       "t4_reject_headline": 0.9382716049382716,
+       "reject_other_device": 0.8589743589743589,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6410256410256411,
+       "t3_values_end_to_end": 0.3141025641025641,
+       "per_action_test": {
+        "on": 0.1987179487179487,
+        "off": 0.5161290322580645,
+        "faster": 0.3333333333333333,
+        "slower": 0.34615384615384615,
+        "set_level": 0.38461538461538464,
+        "oscillate": 0.24358974358974358
+       }
+      },
+      "fan10db": {
+       "t2_unseen_acc": 0.2748663101604278,
+       "t2_unseen_acc_norej": 0.5636363636363636,
+       "t1_typed_acc": 0.3888888888888889,
+       "t4_reject_headline": 0.9691358024691358,
+       "reject_other_device": 0.8333333333333334,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6282051282051282,
+       "t3_values_end_to_end": 0.2564102564102564,
+       "per_action_test": {
+        "on": 0.1282051282051282,
+        "off": 0.4,
+        "faster": 0.32051282051282054,
+        "slower": 0.3076923076923077,
+        "set_level": 0.30128205128205127,
+        "oscillate": 0.19230769230769232
+       }
+      },
+      "microwave10db": {
+       "t2_unseen_acc": 0.27593582887700535,
+       "t2_unseen_acc_norej": 0.546524064171123,
+       "t1_typed_acc": 0.3472222222222222,
+       "t4_reject_headline": 0.9814814814814815,
+       "reject_other_device": 0.8589743589743589,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6282051282051282,
+       "t3_values_end_to_end": 0.23717948717948717,
+       "per_action_test": {
+        "on": 0.12179487179487179,
+        "off": 0.41935483870967744,
+        "faster": 0.3076923076923077,
+        "slower": 0.3076923076923077,
+        "set_level": 0.30128205128205127,
+        "oscillate": 0.1987179487179487
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.23725671918443003,
+       "t2_unseen_acc_norej": 0.468952734012975,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.95,
+       "reject_other_device": 0.9333333333333333,
+       "n": {
+        "para": 1079,
+        "typed": 0,
+        "nonc": 720,
+        "values": 180
+       },
+       "t3_values_given_action": 0.6166666666666667,
+       "t3_values_end_to_end": 0.29444444444444445,
+       "per_action_test": {
+        "on": 0.1,
+        "off": 0.22346368715083798,
+        "faster": 0.3055555555555556,
+        "slower": 0.26666666666666666,
+        "set_level": 0.3388888888888889,
+        "oscillate": 0.18888888888888888
+       }
+      },
+      "v3": {
+       "t2_unseen_acc": 0.37175493250259606,
+       "t2_unseen_acc_norej": 0.6344755970924195,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9279661016949152,
+       "reject_other_device": 0.8166666666666667,
+       "n": {
+        "para": 963,
+        "typed": 0,
+        "nonc": 708,
+        "values": 171
+       },
+       "t3_values_given_action": 0.8596491228070176,
+       "t3_values_end_to_end": 0.5614035087719298,
+       "per_action_test": {
+        "on": 0.12403100775193798,
+        "off": 0.3821138211382114,
+        "faster": 0.49444444444444446,
+        "slower": 0.3055555555555556,
+        "set_level": 0.631578947368421,
+        "oscillate": 0.2388888888888889
+       }
+      },
+      "dev2": {
+       "t2_unseen_acc": 0.33011272141706927,
+       "t2_unseen_acc_norej": 0.537842190016103,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9508771929824561,
+       "reject_other_device": 0.9222222222222223,
+       "n": {
+        "para": 621,
+        "typed": 0,
+        "nonc": 570,
+        "values": 75
+       },
+       "t3_values_given_action": 0.6133333333333333,
+       "t3_values_end_to_end": 0.29333333333333333,
+       "per_action_test": {
+        "on": 0.24786324786324787,
+        "off": 0.4,
+        "faster": 0.5050505050505051,
+        "slower": 0.29292929292929293,
+        "set_level": 0.4,
+        "oscillate": 0.17117117117117117
+       }
+      }
+     },
+     "dev_unseen_acc": 0.33011272141706927
+    },
+    "mix+bank": {
+     "N": 240,
+     "D": 128,
+     "reject_thr": 76189,
+     "margin": 2000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.3336898395721925,
+       "t2_unseen_acc_norej": 0.546524064171123,
+       "t1_typed_acc": 0.5138888888888888,
+       "t4_reject_headline": 0.9753086419753086,
+       "reject_other_device": 0.8461538461538461,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6410256410256411,
+       "t3_values_end_to_end": 0.30128205128205127,
+       "per_action_test": {
+        "on": 0.23717948717948717,
+        "off": 0.45161290322580644,
+        "faster": 0.3525641025641026,
+        "slower": 0.3269230769230769,
+        "set_level": 0.358974358974359,
+        "oscillate": 0.27564102564102566
+       }
+      },
+      "fan10db": {
+       "t2_unseen_acc": 0.27700534759358286,
+       "t2_unseen_acc_norej": 0.5219251336898396,
+       "t1_typed_acc": 0.4166666666666667,
+       "t4_reject_headline": 0.9794238683127572,
+       "reject_other_device": 0.8461538461538461,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6282051282051282,
+       "t3_values_end_to_end": 0.25,
+       "per_action_test": {
+        "on": 0.15384615384615385,
+        "off": 0.3935483870967742,
+        "faster": 0.32051282051282054,
+        "slower": 0.26282051282051283,
+        "set_level": 0.28846153846153844,
+        "oscillate": 0.24358974358974358
+       }
+      },
+      "microwave10db": {
+       "t2_unseen_acc": 0.2663101604278075,
+       "t2_unseen_acc_norej": 0.5048128342245989,
+       "t1_typed_acc": 0.3680555555555556,
+       "t4_reject_headline": 0.9835390946502057,
+       "reject_other_device": 0.8717948717948718,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6282051282051282,
+       "t3_values_end_to_end": 0.21153846153846154,
+       "per_action_test": {
+        "on": 0.16025641025641027,
+        "off": 0.38064516129032255,
+        "faster": 0.3269230769230769,
+        "slower": 0.27564102564102566,
+        "set_level": 0.2692307692307692,
+        "oscillate": 0.1858974358974359
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.22613531047265986,
+       "t2_unseen_acc_norej": 0.4318813716404078,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9541666666666667,
+       "reject_other_device": 0.925,
+       "n": {
+        "para": 1079,
+        "typed": 0,
+        "nonc": 720,
+        "values": 180
+       },
+       "t3_values_given_action": 0.6166666666666667,
+       "t3_values_end_to_end": 0.2722222222222222,
+       "per_action_test": {
+        "on": 0.1,
+        "off": 0.21787709497206703,
+        "faster": 0.3055555555555556,
+        "slower": 0.2611111111111111,
+        "set_level": 0.3111111111111111,
+        "oscillate": 0.16111111111111112
+       }
+      },
+      "v3": {
+       "t2_unseen_acc": 0.37798546209761164,
+       "t2_unseen_acc_norej": 0.6064382139148494,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.940677966101695,
+       "reject_other_device": 0.85,
+       "n": {
+        "para": 963,
+        "typed": 0,
+        "nonc": 708,
+        "values": 171
+       },
+       "t3_values_given_action": 0.8596491228070176,
+       "t3_values_end_to_end": 0.5497076023391813,
+       "per_action_test": {
+        "on": 0.13178294573643412,
+        "off": 0.37398373983739835,
+        "faster": 0.5055555555555555,
+        "slower": 0.36666666666666664,
+        "set_level": 0.6081871345029239,
+        "oscillate": 0.2222222222222222
+       }
+      },
+      "dev2": {
+       "t2_unseen_acc": 0.34299516908212563,
+       "t2_unseen_acc_norej": 0.5217391304347826,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9508771929824561,
+       "reject_other_device": 0.9333333333333333,
+       "n": {
+        "para": 621,
+        "typed": 0,
+        "nonc": 570,
+        "values": 75
+       },
+       "t3_values_given_action": 0.6133333333333333,
+       "t3_values_end_to_end": 0.26666666666666666,
+       "per_action_test": {
+        "on": 0.27350427350427353,
+        "off": 0.39166666666666666,
+        "faster": 0.5454545454545454,
+        "slower": 0.3333333333333333,
+        "set_level": 0.37333333333333335,
+        "oscillate": 0.17117117117117117
+       }
+      }
+     },
+     "dev_unseen_acc": 0.34299516908212563
+    },
+    "mix+bank+cal": {
+     "N": 240,
+     "D": 128,
+     "reject_thr": 93485,
+     "margin": 0,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.2994652406417112,
+       "t2_unseen_acc_norej": 0.6181818181818182,
+       "t1_typed_acc": 0.4652777777777778,
+       "t4_reject_headline": 0.9876543209876543,
+       "reject_other_device": 0.8461538461538461,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6410256410256411,
+       "t3_values_end_to_end": 0.25,
+       "per_action_test": {
+        "on": 0.23717948717948717,
+        "off": 0.45161290322580644,
+        "faster": 0.3269230769230769,
+        "slower": 0.2948717948717949,
+        "set_level": 0.28205128205128205,
+        "oscillate": 0.20512820512820512
+       }
+      },
+      "fan10db": {
+       "t2_unseen_acc": 0.24705882352941178,
+       "t2_unseen_acc_norej": 0.5700534759358289,
+       "t1_typed_acc": 0.3611111111111111,
+       "t4_reject_headline": 0.9917695473251029,
+       "reject_other_device": 0.8717948717948718,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6282051282051282,
+       "t3_values_end_to_end": 0.23717948717948717,
+       "per_action_test": {
+        "on": 0.14743589743589744,
+        "off": 0.36129032258064514,
+        "faster": 0.2948717948717949,
+        "slower": 0.25,
+        "set_level": 0.27564102564102566,
+        "oscillate": 0.15384615384615385
+       }
+      },
+      "microwave10db": {
+       "t2_unseen_acc": 0.23636363636363636,
+       "t2_unseen_acc_norej": 0.5561497326203209,
+       "t1_typed_acc": 0.3333333333333333,
+       "t4_reject_headline": 0.9938271604938271,
+       "reject_other_device": 0.8717948717948718,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6282051282051282,
+       "t3_values_end_to_end": 0.1858974358974359,
+       "per_action_test": {
+        "on": 0.16025641025641027,
+        "off": 0.38064516129032255,
+        "faster": 0.2692307692307692,
+        "slower": 0.23076923076923078,
+        "set_level": 0.23717948717948717,
+        "oscillate": 0.14102564102564102
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.164967562557924,
+       "t2_unseen_acc_norej": 0.4457831325301205,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9680555555555556,
+       "reject_other_device": 0.9583333333333334,
+       "n": {
+        "para": 1079,
+        "typed": 0,
+        "nonc": 720,
+        "values": 180
+       },
+       "t3_values_given_action": 0.6166666666666667,
+       "t3_values_end_to_end": 0.2,
+       "per_action_test": {
+        "on": 0.12222222222222222,
+        "off": 0.1787709497206704,
+        "faster": 0.2111111111111111,
+        "slower": 0.15,
+        "set_level": 0.21666666666666667,
+        "oscillate": 0.1111111111111111
+       }
+      },
+      "v3": {
+       "t2_unseen_acc": 0.2554517133956386,
+       "t2_unseen_acc_norej": 0.6074766355140186,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9322033898305084,
+       "reject_other_device": 0.8833333333333333,
+       "n": {
+        "para": 963,
+        "typed": 0,
+        "nonc": 708,
+        "values": 171
+       },
+       "t3_values_given_action": 0.8596491228070176,
+       "t3_values_end_to_end": 0.4152046783625731,
+       "per_action_test": {
+        "on": 0.14728682170542637,
+        "off": 0.3252032520325203,
+        "faster": 0.26666666666666666,
+        "slower": 0.2111111111111111,
+        "set_level": 0.45614035087719296,
+        "oscillate": 0.12777777777777777
+       }
+      },
+      "dev2": {
+       "t2_unseen_acc": 0.214170692431562,
+       "t2_unseen_acc_norej": 0.5185185185185185,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9508771929824561,
+       "reject_other_device": 0.9333333333333333,
+       "n": {
+        "para": 621,
+        "typed": 0,
+        "nonc": 570,
+        "values": 75
+       },
+       "t3_values_given_action": 0.6133333333333333,
+       "t3_values_end_to_end": 0.17333333333333334,
+       "per_action_test": {
+        "on": 0.18803418803418803,
+        "off": 0.275,
+        "faster": 0.32323232323232326,
+        "slower": 0.18181818181818182,
+        "set_level": 0.18666666666666668,
+        "oscillate": 0.12612612612612611
+       }
+      }
+     },
+     "dev_unseen_acc": 0.214170692431562
+    },
+    "audio+bank+cal": {
+     "N": 240,
+     "D": 128,
+     "reject_thr": 70577,
+     "margin": 10000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.39037433155080214,
+       "t2_unseen_acc_norej": 0.6588235294117647,
+       "t1_typed_acc": 0.5208333333333334,
+       "t4_reject_headline": 0.9526748971193416,
+       "reject_other_device": 0.782051282051282,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6410256410256411,
+       "t3_values_end_to_end": 0.32051282051282054,
+       "per_action_test": {
+        "on": 0.34615384615384615,
+        "off": 0.567741935483871,
+        "faster": 0.36538461538461536,
+        "slower": 0.3717948717948718,
+        "set_level": 0.41025641025641024,
+        "oscillate": 0.28205128205128205
+       }
+      },
+      "fan10db": {
+       "t2_unseen_acc": 0.3358288770053476,
+       "t2_unseen_acc_norej": 0.6192513368983957,
+       "t1_typed_acc": 0.4722222222222222,
+       "t4_reject_headline": 0.9588477366255144,
+       "reject_other_device": 0.8333333333333334,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6282051282051282,
+       "t3_values_end_to_end": 0.26282051282051283,
+       "per_action_test": {
+        "on": 0.23076923076923078,
+        "off": 0.4645161290322581,
+        "faster": 0.38461538461538464,
+        "slower": 0.358974358974359,
+        "set_level": 0.34615384615384615,
+        "oscillate": 0.23076923076923078
+       }
+      },
+      "microwave10db": {
+       "t2_unseen_acc": 0.3358288770053476,
+       "t2_unseen_acc_norej": 0.5967914438502674,
+       "t1_typed_acc": 0.4513888888888889,
+       "t4_reject_headline": 0.9609053497942387,
+       "reject_other_device": 0.8205128205128205,
+       "n": {
+        "para": 935,
+        "typed": 144,
+        "nonc": 486,
+        "values": 156
+       },
+       "t3_values_given_action": 0.6282051282051282,
+       "t3_values_end_to_end": 0.2564102564102564,
+       "per_action_test": {
+        "on": 0.26282051282051283,
+        "off": 0.44516129032258067,
+        "faster": 0.41025641025641024,
+        "slower": 0.3333333333333333,
+        "set_level": 0.3333333333333333,
+        "oscillate": 0.23076923076923078
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.2511584800741427,
+       "t2_unseen_acc_norej": 0.4939759036144578,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9513888888888888,
+       "reject_other_device": 0.9333333333333333,
+       "n": {
+        "para": 1079,
+        "typed": 0,
+        "nonc": 720,
+        "values": 180
+       },
+       "t3_values_given_action": 0.6166666666666667,
+       "t3_values_end_to_end": 0.2722222222222222,
+       "per_action_test": {
+        "on": 0.17777777777777778,
+        "off": 0.2737430167597765,
+        "faster": 0.32222222222222224,
+        "slower": 0.22777777777777777,
+        "set_level": 0.3055555555555556,
+        "oscillate": 0.2
+       }
+      },
+      "v3": {
+       "t2_unseen_acc": 0.42782969885773625,
+       "t2_unseen_acc_norej": 0.7175493250259606,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9307909604519774,
+       "reject_other_device": 0.7916666666666666,
+       "n": {
+        "para": 963,
+        "typed": 0,
+        "nonc": 708,
+        "values": 171
+       },
+       "t3_values_given_action": 0.8596491228070176,
+       "t3_values_end_to_end": 0.5614035087719298,
+       "per_action_test": {
+        "on": 0.27906976744186046,
+        "off": 0.4146341463414634,
+        "faster": 0.5388888888888889,
+        "slower": 0.3888888888888889,
+        "set_level": 0.6432748538011696,
+        "oscillate": 0.26666666666666666
+       }
+      },
+      "dev2": {
+       "t2_unseen_acc": 0.35104669887278583,
+       "t2_unseen_acc_norej": 0.5909822866344605,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9508771929824561,
+       "reject_other_device": 0.9,
+       "n": {
+        "para": 621,
+        "typed": 0,
+        "nonc": 570,
+        "values": 75
+       },
+       "t3_values_given_action": 0.6133333333333333,
+       "t3_values_end_to_end": 0.26666666666666666,
+       "per_action_test": {
+        "on": 0.28205128205128205,
+        "off": 0.4166666666666667,
+        "faster": 0.5858585858585859,
+        "slower": 0.3333333333333333,
+        "set_level": 0.3333333333333333,
+        "oscillate": 0.17117117117117117
+       }
+      }
+     },
+     "dev_unseen_acc": 0.35104669887278583
+    }
+   }
+  },
+  "microwave": {
+   "chosen": "audio",
+   "variants": {
+    "text": {
+     "N": 176,
+     "D": 128,
+     "reject_thr": 65599,
+     "margin": 8000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.3092948717948718,
+       "t2_unseen_acc_norej": 0.6314102564102564,
+       "t1_typed_acc": 0.3645833333333333,
+       "t4_reject_headline": 0.9670781893004116,
+       "reject_other_device": 0.8717948717948718,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.4097222222222222,
+       "t3_values_end_to_end": 0.1111111111111111,
+       "per_action_test": {
+        "start": 0.22435897435897437,
+        "add_30s": 0.3717948717948718,
+        "stop": 0.4358974358974359,
+        "power_level": 0.20512820512820512
+       }
+      },
+      "fan10db": {
+       "t2_unseen_acc": 0.23076923076923078,
+       "t2_unseen_acc_norej": 0.5464743589743589,
+       "t1_typed_acc": 0.3541666666666667,
+       "t4_reject_headline": 0.977366255144033,
+       "reject_other_device": 0.8974358974358975,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3784722222222222,
+       "t3_values_end_to_end": 0.09375,
+       "per_action_test": {
+        "start": 0.1987179487179487,
+        "add_30s": 0.28205128205128205,
+        "stop": 0.34615384615384615,
+        "power_level": 0.09615384615384616
+       }
+      },
+      "microwave10db": {
+       "t2_unseen_acc": 0.2467948717948718,
+       "t2_unseen_acc_norej": 0.5689102564102564,
+       "t1_typed_acc": 0.3333333333333333,
+       "t4_reject_headline": 0.9835390946502057,
+       "reject_other_device": 0.8846153846153846,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3368055555555556,
+       "t3_values_end_to_end": 0.08680555555555555,
+       "per_action_test": {
+        "start": 0.21794871794871795,
+        "add_30s": 0.28846153846153844,
+        "stop": 0.3782051282051282,
+        "power_level": 0.10256410256410256
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.23055555555555557,
+       "t2_unseen_acc_norej": 0.5583333333333333,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9694444444444444,
+       "reject_other_device": 0.9166666666666666,
+       "n": {
+        "para": 720,
+        "typed": 0,
+        "nonc": 720,
+        "values": 327
+       },
+       "t3_values_given_action": 0.43119266055045874,
+       "t3_values_end_to_end": 0.10091743119266056,
+       "per_action_test": {
+        "start": 0.19444444444444445,
+        "add_30s": 0.2222222222222222,
+        "stop": 0.37222222222222223,
+        "power_level": 0.13333333333333333
+       }
+      },
+      "v3": {
+       "t2_unseen_acc": 0.3211567732115677,
+       "t2_unseen_acc_norej": 0.5951293759512938,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9590395480225988,
+       "reject_other_device": 0.85,
+       "n": {
+        "para": 657,
+        "typed": 0,
+        "nonc": 708,
+        "values": 354
+       },
+       "t3_values_given_action": 0.6694915254237288,
+       "t3_values_end_to_end": 0.211864406779661,
+       "per_action_test": {
+        "start": 0.15555555555555556,
+        "add_30s": 0.2111111111111111,
+        "stop": 0.6239316239316239,
+        "power_level": 0.4
+       }
+      },
+      "dev2": {
+       "t2_unseen_acc": 0.23311546840958605,
+       "t2_unseen_acc_norej": 0.5446623093681917,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9508771929824561,
+       "reject_other_device": 0.9333333333333333,
+       "n": {
+        "para": 459,
+        "typed": 0,
+        "nonc": 570,
+        "values": 234
+       },
+       "t3_values_given_action": 0.49572649572649574,
+       "t3_values_end_to_end": 0.12393162393162394,
+       "per_action_test": {
+        "start": 0.14166666666666666,
+        "add_30s": 0.16666666666666666,
+        "stop": 0.46464646464646464,
+        "power_level": 0.2
+       }
+      }
+     },
+     "dev_unseen_acc": 0.23311546840958605
+    },
+    "audio": {
+     "N": 192,
+     "D": 128,
+     "reject_thr": 58514,
+     "margin": 10000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.4519230769230769,
+       "t2_unseen_acc_norej": 0.7163461538461539,
+       "t1_typed_acc": 0.625,
+       "t4_reject_headline": 0.9423868312757202,
+       "reject_other_device": 0.9487179487179487,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.4097222222222222,
+       "t3_values_end_to_end": 0.2604166666666667,
+       "per_action_test": {
+        "start": 0.3782051282051282,
+        "add_30s": 0.5128205128205128,
+        "stop": 0.38461538461538464,
+        "power_level": 0.532051282051282
+       }
+      },
+      "fan10db": {
+       "t2_unseen_acc": 0.3701923076923077,
+       "t2_unseen_acc_norej": 0.6506410256410257,
+       "t1_typed_acc": 0.5833333333333334,
+       "t4_reject_headline": 0.9444444444444444,
+       "reject_other_device": 0.8974358974358975,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3784722222222222,
+       "t3_values_end_to_end": 0.1736111111111111,
+       "per_action_test": {
+        "start": 0.33974358974358976,
+        "add_30s": 0.391025641025641,
+        "stop": 0.40384615384615385,
+        "power_level": 0.34615384615384615
+       }
+      },
+      "microwave10db": {
+       "t2_unseen_acc": 0.3798076923076923,
+       "t2_unseen_acc_norej": 0.655448717948718,
+       "t1_typed_acc": 0.5625,
+       "t4_reject_headline": 0.9403292181069959,
+       "reject_other_device": 0.9230769230769231,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3368055555555556,
+       "t3_values_end_to_end": 0.1736111111111111,
+       "per_action_test": {
+        "start": 0.33974358974358976,
+        "add_30s": 0.3782051282051282,
+        "stop": 0.40384615384615385,
+        "power_level": 0.3974358974358974
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.38055555555555554,
+       "t2_unseen_acc_norej": 0.6263888888888889,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.925,
+       "reject_other_device": 0.925,
+       "n": {
+        "para": 720,
+        "typed": 0,
+        "nonc": 720,
+        "values": 327
+       },
+       "t3_values_given_action": 0.43119266055045874,
+       "t3_values_end_to_end": 0.25688073394495414,
+       "per_action_test": {
+        "start": 0.40555555555555556,
+        "add_30s": 0.37222222222222223,
+        "stop": 0.31666666666666665,
+        "power_level": 0.42777777777777776
+       }
+      },
+      "v3": {
+       "t2_unseen_acc": 0.4124809741248097,
+       "t2_unseen_acc_norej": 0.6666666666666666,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9364406779661016,
+       "reject_other_device": 0.9083333333333333,
+       "n": {
+        "para": 657,
+        "typed": 0,
+        "nonc": 708,
+        "values": 354
+       },
+       "t3_values_given_action": 0.6694915254237288,
+       "t3_values_end_to_end": 0.3192090395480226,
+       "per_action_test": {
+        "start": 0.28888888888888886,
+        "add_30s": 0.3,
+        "stop": 0.47863247863247865,
+        "power_level": 0.6055555555555555
+       }
+      },
+      "dev2": {
+       "t2_unseen_acc": 0.4008714596949891,
+       "t2_unseen_acc_norej": 0.6209150326797386,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9508771929824561,
+       "reject_other_device": 0.9444444444444444,
+       "n": {
+        "para": 459,
+        "typed": 0,
+        "nonc": 570,
+        "values": 234
+       },
+       "t3_values_given_action": 0.49572649572649574,
+       "t3_values_end_to_end": 0.2264957264957265,
+       "per_action_test": {
+        "start": 0.5333333333333333,
+        "add_30s": 0.2916666666666667,
+        "stop": 0.48484848484848486,
+        "power_level": 0.30833333333333335
+       }
+      }
+     },
+     "dev_unseen_acc": 0.4008714596949891
+    },
+    "mix": {
+     "N": 192,
+     "D": 128,
+     "reject_thr": 58545,
+     "margin": 10000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.40865384615384615,
+       "t2_unseen_acc_norej": 0.6987179487179487,
+       "t1_typed_acc": 0.5833333333333334,
+       "t4_reject_headline": 0.9444444444444444,
+       "reject_other_device": 0.9102564102564102,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.4097222222222222,
+       "t3_values_end_to_end": 0.2152777777777778,
+       "per_action_test": {
+        "start": 0.33974358974358976,
+        "add_30s": 0.44871794871794873,
+        "stop": 0.4166666666666667,
+        "power_level": 0.42948717948717946
+       }
+      },
+      "fan10db": {
+       "t2_unseen_acc": 0.3269230769230769,
+       "t2_unseen_acc_norej": 0.6121794871794872,
+       "t1_typed_acc": 0.5208333333333334,
+       "t4_reject_headline": 0.9588477366255144,
+       "reject_other_device": 0.9102564102564102,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3784722222222222,
+       "t3_values_end_to_end": 0.1423611111111111,
+       "per_action_test": {
+        "start": 0.30128205128205127,
+        "add_30s": 0.3333333333333333,
+        "stop": 0.3974358974358974,
+        "power_level": 0.27564102564102566
+       }
+      },
+      "microwave10db": {
+       "t2_unseen_acc": 0.3317307692307692,
+       "t2_unseen_acc_norej": 0.6298076923076923,
+       "t1_typed_acc": 0.5104166666666666,
+       "t4_reject_headline": 0.9588477366255144,
+       "reject_other_device": 0.8846153846153846,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3368055555555556,
+       "t3_values_end_to_end": 0.1284722222222222,
+       "per_action_test": {
+        "start": 0.28205128205128205,
+        "add_30s": 0.32051282051282054,
+        "stop": 0.4230769230769231,
+        "power_level": 0.30128205128205127
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.3375,
+       "t2_unseen_acc_norej": 0.6055555555555555,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9236111111111112,
+       "reject_other_device": 0.925,
+       "n": {
+        "para": 720,
+        "typed": 0,
+        "nonc": 720,
+        "values": 327
+       },
+       "t3_values_given_action": 0.43119266055045874,
+       "t3_values_end_to_end": 0.21406727828746178,
+       "per_action_test": {
+        "start": 0.36666666666666664,
+        "add_30s": 0.3,
+        "stop": 0.3333333333333333,
+        "power_level": 0.35
+       }
+      },
+      "v3": {
+       "t2_unseen_acc": 0.3744292237442922,
+       "t2_unseen_acc_norej": 0.6575342465753424,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9463276836158192,
+       "reject_other_device": 0.9083333333333333,
+       "n": {
+        "para": 657,
+        "typed": 0,
+        "nonc": 708,
+        "values": 354
+       },
+       "t3_values_given_action": 0.6694915254237288,
+       "t3_values_end_to_end": 0.288135593220339,
+       "per_action_test": {
+        "start": 0.2222222222222222,
+        "add_30s": 0.23333333333333334,
+        "stop": 0.5128205128205128,
+        "power_level": 0.5777777777777777
+       }
+      },
+      "dev2": {
+       "t2_unseen_acc": 0.3747276688453159,
+       "t2_unseen_acc_norej": 0.6209150326797386,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9508771929824561,
+       "reject_other_device": 0.9277777777777778,
+       "n": {
+        "para": 459,
+        "typed": 0,
+        "nonc": 570,
+        "values": 234
+       },
+       "t3_values_given_action": 0.49572649572649574,
+       "t3_values_end_to_end": 0.20512820512820512,
+       "per_action_test": {
+        "start": 0.5,
+        "add_30s": 0.25,
+        "stop": 0.5252525252525253,
+        "power_level": 0.25
+       }
+      }
+     },
+     "dev_unseen_acc": 0.3747276688453159
+    },
+    "mix+bank": {
+     "N": 224,
+     "D": 128,
+     "reject_thr": 58545,
+     "margin": 10000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.40865384615384615,
+       "t2_unseen_acc_norej": 0.6794871794871795,
+       "t1_typed_acc": 0.5833333333333334,
+       "t4_reject_headline": 0.9465020576131687,
+       "reject_other_device": 0.9102564102564102,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.4097222222222222,
+       "t3_values_end_to_end": 0.2152777777777778,
+       "per_action_test": {
+        "start": 0.33974358974358976,
+        "add_30s": 0.44871794871794873,
+        "stop": 0.4166666666666667,
+        "power_level": 0.42948717948717946
+       }
+      },
+      "fan10db": {
+       "t2_unseen_acc": 0.32371794871794873,
+       "t2_unseen_acc_norej": 0.592948717948718,
+       "t1_typed_acc": 0.5,
+       "t4_reject_headline": 0.9588477366255144,
+       "reject_other_device": 0.9102564102564102,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3784722222222222,
+       "t3_values_end_to_end": 0.1388888888888889,
+       "per_action_test": {
+        "start": 0.28846153846153844,
+        "add_30s": 0.3333333333333333,
+        "stop": 0.3974358974358974,
+        "power_level": 0.27564102564102566
+       }
+      },
+      "microwave10db": {
+       "t2_unseen_acc": 0.328525641025641,
+       "t2_unseen_acc_norej": 0.6169871794871795,
+       "t1_typed_acc": 0.5,
+       "t4_reject_headline": 0.9588477366255144,
+       "reject_other_device": 0.8846153846153846,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3368055555555556,
+       "t3_values_end_to_end": 0.125,
+       "per_action_test": {
+        "start": 0.2692307692307692,
+        "add_30s": 0.32051282051282054,
+        "stop": 0.4230769230769231,
+        "power_level": 0.30128205128205127
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.3375,
+       "t2_unseen_acc_norej": 0.5791666666666667,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9263888888888889,
+       "reject_other_device": 0.925,
+       "n": {
+        "para": 720,
+        "typed": 0,
+        "nonc": 720,
+        "values": 327
+       },
+       "t3_values_given_action": 0.43119266055045874,
+       "t3_values_end_to_end": 0.21406727828746178,
+       "per_action_test": {
+        "start": 0.36666666666666664,
+        "add_30s": 0.3,
+        "stop": 0.3333333333333333,
+        "power_level": 0.35
+       }
+      },
+      "v3": {
+       "t2_unseen_acc": 0.3744292237442922,
+       "t2_unseen_acc_norej": 0.6316590563165906,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9463276836158192,
+       "reject_other_device": 0.9083333333333333,
+       "n": {
+        "para": 657,
+        "typed": 0,
+        "nonc": 708,
+        "values": 354
+       },
+       "t3_values_given_action": 0.6694915254237288,
+       "t3_values_end_to_end": 0.288135593220339,
+       "per_action_test": {
+        "start": 0.2222222222222222,
+        "add_30s": 0.23333333333333334,
+        "stop": 0.5128205128205128,
+        "power_level": 0.5777777777777777
+       }
+      },
+      "dev2": {
+       "t2_unseen_acc": 0.37037037037037035,
+       "t2_unseen_acc_norej": 0.5947712418300654,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9508771929824561,
+       "reject_other_device": 0.9277777777777778,
+       "n": {
+        "para": 459,
+        "typed": 0,
+        "nonc": 570,
+        "values": 234
+       },
+       "t3_values_given_action": 0.49572649572649574,
+       "t3_values_end_to_end": 0.20085470085470086,
+       "per_action_test": {
+        "start": 0.48333333333333334,
+        "add_30s": 0.25,
+        "stop": 0.5252525252525253,
+        "power_level": 0.25
+       }
+      }
+     },
+     "dev_unseen_acc": 0.37037037037037035
+    },
+    "mix+bank+cal": {
+     "N": 224,
+     "D": 128,
+     "reject_thr": 63926,
+     "margin": 13000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.36538461538461536,
+       "t2_unseen_acc_norej": 0.6875,
+       "t1_typed_acc": 0.6041666666666666,
+       "t4_reject_headline": 0.9588477366255144,
+       "reject_other_device": 0.8589743589743589,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.4097222222222222,
+       "t3_values_end_to_end": 0.16319444444444445,
+       "per_action_test": {
+        "start": 0.14743589743589744,
+        "add_30s": 0.41025641025641024,
+        "stop": 0.3974358974358974,
+        "power_level": 0.5064102564102564
+       }
+      },
+      "fan10db": {
+       "t2_unseen_acc": 0.2980769230769231,
+       "t2_unseen_acc_norej": 0.6105769230769231,
+       "t1_typed_acc": 0.5729166666666666,
+       "t4_reject_headline": 0.9650205761316872,
+       "reject_other_device": 0.8589743589743589,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3784722222222222,
+       "t3_values_end_to_end": 0.11458333333333333,
+       "per_action_test": {
+        "start": 0.1346153846153846,
+        "add_30s": 0.3333333333333333,
+        "stop": 0.34615384615384615,
+        "power_level": 0.3782051282051282
+       }
+      },
+      "microwave10db": {
+       "t2_unseen_acc": 0.32371794871794873,
+       "t2_unseen_acc_norej": 0.625,
+       "t1_typed_acc": 0.5625,
+       "t4_reject_headline": 0.9753086419753086,
+       "reject_other_device": 0.8589743589743589,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3368055555555556,
+       "t3_values_end_to_end": 0.1111111111111111,
+       "per_action_test": {
+        "start": 0.14743589743589744,
+        "add_30s": 0.34615384615384615,
+        "stop": 0.3782051282051282,
+        "power_level": 0.4230769230769231
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.2875,
+       "t2_unseen_acc_norej": 0.5833333333333334,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9430555555555555,
+       "reject_other_device": 0.9,
+       "n": {
+        "para": 720,
+        "typed": 0,
+        "nonc": 720,
+        "values": 327
+       },
+       "t3_values_given_action": 0.43119266055045874,
+       "t3_values_end_to_end": 0.18654434250764526,
+       "per_action_test": {
+        "start": 0.17222222222222222,
+        "add_30s": 0.2611111111111111,
+        "stop": 0.3111111111111111,
+        "power_level": 0.40555555555555556
+       }
+      },
+      "v3": {
+       "t2_unseen_acc": 0.3470319634703196,
+       "t2_unseen_acc_norej": 0.6255707762557078,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9251412429378532,
+       "reject_other_device": 0.9166666666666666,
+       "n": {
+        "para": 657,
+        "typed": 0,
+        "nonc": 708,
+        "values": 354
+       },
+       "t3_values_given_action": 0.6694915254237288,
+       "t3_values_end_to_end": 0.2740112994350282,
+       "per_action_test": {
+        "start": 0.05555555555555555,
+        "add_30s": 0.2833333333333333,
+        "stop": 0.4700854700854701,
+        "power_level": 0.6222222222222222
+       }
+      },
+      "dev2": {
+       "t2_unseen_acc": 0.2636165577342048,
+       "t2_unseen_acc_norej": 0.5904139433551199,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9508771929824561,
+       "reject_other_device": 0.9333333333333333,
+       "n": {
+        "para": 459,
+        "typed": 0,
+        "nonc": 570,
+        "values": 234
+       },
+       "t3_values_given_action": 0.49572649572649574,
+       "t3_values_end_to_end": 0.11538461538461539,
+       "per_action_test": {
+        "start": 0.125,
+        "add_30s": 0.25,
+        "stop": 0.41414141414141414,
+        "power_level": 0.2916666666666667
+       }
+      }
+     },
+     "dev_unseen_acc": 0.2636165577342048
+    },
+    "audio+bank+cal": {
+     "N": 224,
+     "D": 128,
+     "reject_thr": 67352,
+     "margin": 16000,
+     "conds": {
+      "clean": {
+       "t2_unseen_acc": 0.3541666666666667,
+       "t2_unseen_acc_norej": 0.7387820512820513,
+       "t1_typed_acc": 0.5520833333333334,
+       "t4_reject_headline": 0.977366255144033,
+       "reject_other_device": 0.8589743589743589,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.4097222222222222,
+       "t3_values_end_to_end": 0.1909722222222222,
+       "per_action_test": {
+        "start": 0.15384615384615385,
+        "add_30s": 0.3717948717948718,
+        "stop": 0.3141025641025641,
+        "power_level": 0.5769230769230769
+       }
+      },
+      "fan10db": {
+       "t2_unseen_acc": 0.30128205128205127,
+       "t2_unseen_acc_norej": 0.6618589743589743,
+       "t1_typed_acc": 0.5208333333333334,
+       "t4_reject_headline": 0.9691358024691358,
+       "reject_other_device": 0.8333333333333334,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3784722222222222,
+       "t3_values_end_to_end": 0.1527777777777778,
+       "per_action_test": {
+        "start": 0.15384615384615385,
+        "add_30s": 0.2564102564102564,
+        "stop": 0.33974358974358976,
+        "power_level": 0.4551282051282051
+       }
+      },
+      "microwave10db": {
+       "t2_unseen_acc": 0.32051282051282054,
+       "t2_unseen_acc_norej": 0.6778846153846154,
+       "t1_typed_acc": 0.46875,
+       "t4_reject_headline": 0.9753086419753086,
+       "reject_other_device": 0.8461538461538461,
+       "n": {
+        "para": 624,
+        "typed": 96,
+        "nonc": 486,
+        "values": 288
+       },
+       "t3_values_given_action": 0.3368055555555556,
+       "t3_values_end_to_end": 0.13194444444444445,
+       "per_action_test": {
+        "start": 0.14743589743589744,
+        "add_30s": 0.3076923076923077,
+        "stop": 0.34615384615384615,
+        "power_level": 0.4807692307692308
+       }
+      },
+      "v2": {
+       "t2_unseen_acc": 0.2652777777777778,
+       "t2_unseen_acc_norej": 0.6138888888888889,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9569444444444445,
+       "reject_other_device": 0.9666666666666667,
+       "n": {
+        "para": 720,
+        "typed": 0,
+        "nonc": 720,
+        "values": 327
+       },
+       "t3_values_given_action": 0.43119266055045874,
+       "t3_values_end_to_end": 0.2018348623853211,
+       "per_action_test": {
+        "start": 0.12777777777777777,
+        "add_30s": 0.25,
+        "stop": 0.23333333333333334,
+        "power_level": 0.45
+       }
+      },
+      "v3": {
+       "t2_unseen_acc": 0.3150684931506849,
+       "t2_unseen_acc_norej": 0.6453576864535768,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.940677966101695,
+       "reject_other_device": 0.8916666666666667,
+       "n": {
+        "para": 657,
+        "typed": 0,
+        "nonc": 708,
+        "values": 354
+       },
+       "t3_values_given_action": 0.6694915254237288,
+       "t3_values_end_to_end": 0.2824858757062147,
+       "per_action_test": {
+        "start": 0.09444444444444444,
+        "add_30s": 0.25555555555555554,
+        "stop": 0.3333333333333333,
+        "power_level": 0.5833333333333334
+       }
+      },
+      "dev2": {
+       "t2_unseen_acc": 0.2701525054466231,
+       "t2_unseen_acc_norej": 0.6405228758169934,
+       "t1_typed_acc": null,
+       "t4_reject_headline": 0.9508771929824561,
+       "reject_other_device": 0.9611111111111111,
+       "n": {
+        "para": 459,
+        "typed": 0,
+        "nonc": 570,
+        "values": 234
+       },
+       "t3_values_given_action": 0.49572649572649574,
+       "t3_values_end_to_end": 0.13675213675213677,
+       "per_action_test": {
+        "start": 0.16666666666666666,
+        "add_30s": 0.20833333333333334,
+        "stop": 0.3838383838383838,
+        "power_level": 0.3416666666666667
+       }
+      }
+     },
+     "dev_unseen_acc": 0.2701525054466231
+    }
+   }
+  }
+ }
+}

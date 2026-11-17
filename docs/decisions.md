@@ -112,3 +112,12 @@
 - **Not started:**
   - R16 (a value-present bit in the host frame) and K1 (teacher and model id in the blob) change formats and need John's ruling.
   - K2 (audio enrollment as the SDK default) and S8 (wake retrain on digital silence) are research.
+- 2026-11-17, 1:40 AM, **model v3 ships** (model agent; ship rule "better than v2 on dev", same protocol): tag
+  `model-v3`, export **mg-v3** (golden format v1.0, same size), ROM image rtl/core/imh_rom.svh = data/core/mg-v3 (in the
+  ship commit). The 2-layer chip student distilled from a PC-side 6-layer Moonshine audio teacher (milestone c, John
+  approved). Integer, reject-fix protocol (dev2 calibration, SDK reject bank): dev2 37.2% against v2's 32.9%; better on
+  every test set (eval/text clean fan 39.3 / microwave 43.8% unseen at 97.5 / 95.3% rejection; blind eval/text_v3 42.2 /
+  43.5%). Regression on v3 judged per check (old script, R9): positives bit-exact, negatives fail, MAC lanes clean.
+  The reject fix (dev2 calibration + bank) helps text a little and audio not at all; it stays the comparison protocol.
+  Details reports/p0-model.md section 10.
+
