@@ -1,0 +1,15 @@
+# Line endings (review S9, Nov 17, 2026): text is stored with LF. Python on Windows writes CRLF by default
+# (Path.write_text), which flipped files to CRLF in the v2 range and gave run_resume.sh a CRLF shebang.
+*.py    text eol=lf
+*.sh    text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.jsonl text eol=lf
+*.txt   text eol=lf
+*.toml  text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+*.csv   text eol=lf
+# rtl/ is renormalised by the core agent on its own branch (fix/review-rtl: 10 CRLF files under rtl/wake);
+# until then it is left exactly as committed.
+rtl/** -text

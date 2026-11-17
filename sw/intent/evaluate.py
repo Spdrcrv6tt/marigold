@@ -91,6 +91,14 @@ def scores(b, Q):
     return best, act, other
 
 
+def pure_action(b, Q):
+    """Review S7: the best ACTION prototype, reject (action-0) prototypes masked: pure action confusion."""
+    S = Q.astype(np.int64) @ b["vectors"].astype(np.int64).T + b["bias"][None].astype(np.int64)
+    va = np.asarray(b["vec_action"])
+    S[:, va == 0] = np.iinfo(np.int64).min // 4
+    return va[S.argmax(1)]
+
+
 def decide(b, Q, thr, margin=None):
     """Matching rule (config-blob.md, arch 8.2): returns (action or 0, best score)."""
     m = b["margin"] if margin is None else margin
@@ -165,8 +173,9 @@ def main():
         qe = run_golden(str(ROOT / a.golden), paths)[0] if a.golden else run_torch(m, paths)[0]
         # generic non-command speech bank (LibriSpeech TRAIN utterances the encoder trained on), for reject prototypes
         # and score normalisation of the action prototypes (SDK side; same bank for every product)
-        idx = [json.loads(l) for l in open(ROOT / "data/intent/index_train.jsonl", encoding="utf8")]
-        lib = [r["path"] for r in idx if r["src"] == "libri" and "start" not in r][::7][:1500]
+        # review S6: a frozen list (sw/intent/speech_bank.txt, 1,500 LibriSpeech train-clean-100/train-other-500
+        # utterances), not a slice of the mutable training index
+        lib = [l.strip() for l in open(ROOT / "sw/intent/speech_bank.txt", encoding="utf8") if l.strip() and not l.startswith("#")]
         qb = run_golden(str(ROOT / a.golden), lib)[0] if a.golden else run_torch(m, lib)[0]
         enr = (jobs, qe, qb)
         print("enrollment clips", len(jobs), flush=True)
@@ -218,6 +227,7 @@ def one_variant(a, prod, cfg, b, name2id, rows, out, vname):
     b["reject_thr"] = thr; b["margin"] = mg
     blob = C.pack({k_: b[k_] for k_ in ("D", "reject_thr", "margin", "wake_sens", "flags", "host", "i2c_addr", "conf_sh")},
                   b["vec_action"], b["vec_flags"], b["bias"], b["vectors"], b["actions"], b["slots"], b["gpio"], b["wake"])
+    C.parse(blob)          # review K3: the chip's own checks (32 KB budget, sizes, CRC) on every packed variant
     outdir = ROOT / f"data/sdk/eval-{a.tag}"; outdir.mkdir(parents=True, exist_ok=True)
     (outdir / f"{prod}-{vname}.mgc").write_bytes(blob)
     pr = {"N": int(b["N"]), "D": int(b["D"]), "reject_thr": thr, "margin": mg, "conds": {}}
@@ -233,7 +243,8 @@ def one_variant(a, prod, cfg, b, name2id, rows, out, vname):
         y = lambda ix: np.array([name2id[rs[i]["action"]] for i in ix])
         d = {}
         d["t2_unseen_acc"] = float((pred[para] == y(para)).mean())
-        d["t2_unseen_acc_norej"] = float((decide(b, Q[para], -10 ** 9, 0)[0] == y(para)).mean())
+        d["t2_unseen_acc_norej"] = float((decide(b, Q[para], -10 ** 9, 0)[0] == y(para)).mean())   # threshold and margin off
+        d["t2_unseen_acc_norej_pure"] = float((pure_action(b, Q[para]) == y(para)).mean())        # also reject prototypes off
         d["t1_typed_acc"] = float((pred[typed] == y(typed)).mean()) if len(typed) else None
         d["t4_reject_headline"] = float((pred[nonc] == 0).mean())
         d["reject_other_device"] = float((pred[other] == 0).mean())
@@ -253,7 +264,7 @@ def one_variant(a, prod, cfg, b, name2id, rows, out, vname):
             per[nm] = float((pred[ii] == aid).mean()) if ii else None
         d["per_action_test"] = per
         pr["conds"][c] = d
-        print(f"{prod:<9} {vname:<14} {c:<13} unseen {d['t2_unseen_acc']:.3f} (no-rej {d['t2_unseen_acc_norej']:.3f}) typed "
+        print(f"{prod:<9} {vname:<14} {c:<13} unseen {d['t2_unseen_acc']:.3f} (no-rej {d['t2_unseen_acc_norej']:.3f}, pure {d['t2_unseen_acc_norej_pure']:.3f}) typed "
               f"{d['t1_typed_acc'] if d['t1_typed_acc'] is None else round(d['t1_typed_acc'], 3)} reject {d['t4_reject_headline']:.3f} "
               f"other-dev {d['reject_other_device']:.2f} values {d['t3_values_given_action']} / e2e {d['t3_values_end_to_end']}", flush=True)
     # dev accuracy (for the variant choice)

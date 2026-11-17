@@ -14,7 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def norm(s):
-    return " ".join(re.sub(r"[^a-z0-9' ]", " ", s.lower()).split())
+    # review S3: curly apostrophes fold to "'" first (as sw/data/tts_build.py norm does), so "don’t" matches "don't"
+    s = s.lower().replace("\u2019", "'").replace("\u2018", "'")
+    return " ".join(re.sub(r"[^a-z0-9' ]", " ", s).split())
 
 
 def eval_lines():
@@ -25,8 +27,8 @@ def eval_lines():
             if not line or line.startswith("#"):
                 continue
             out.add(norm(line.partition(" | ")[0]))
-    v2 = ROOT / "eval/text_v2"
-    for f in sorted(v2.rglob("*")) if v2.is_dir() else []:
+    # review S4: every later eval set (eval/text_v2, eval/text_v3, eval/text_dev2, ...), not only v2
+    for f in sorted(x for d in sorted(ROOT.glob("eval/text_*")) if d.is_dir() for x in d.rglob("*")):
         if f.suffix in (".txt", ".tsv", ".md"):
             for line in open(f, encoding="utf8"):
                 line = line.rstrip("\n")

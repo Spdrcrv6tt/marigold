@@ -28,6 +28,24 @@ SR = 16000
 MIX = {"tts_cmd": 0.45, "tts_none": 0.10, "libri": 0.30, "sc": 0.15}
 
 
+def thr_init(ck0, thr0):
+    """Review S1: the decision threshold a checkpoint carries (periodic and final saves), else --thr0."""
+    return float(ck0["thr"]) if (ck0 is not None and ck0.get("thr") is not None) else float(thr0)
+
+
+def make_prog(prog0, steps, minutes, t_start, clock=time.time):
+    """Review S2: schedule progress in [0, 1]; a resumed run continues from the checkpoint's progress prog0."""
+    return lambda s: min(1.0, prog0 + (1 - prog0) * max(s / steps, (clock() - t_start) / (minutes * 60)))
+
+
+def lr_factor(s, warm, prog):
+    return min(1, (s + 1) / warm) * (0.05 + 0.95 * 0.5 * (1 + math.cos(math.pi * prog(s))))
+
+
+def ckpt_dict(state, cfg, step, qat, thr, prog):
+    return {"state": state, "cfg": cfg, "step": step, "qat": qat, "thr": thr, "prog": prog}
+
+
 def load_index(targets, protos=None):
     z = np.load(targets, allow_pickle=True)
     tid = {t: i for i, t in enumerate(z["texts"])}
@@ -178,6 +196,7 @@ def main():
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--gpu-gb", type=float, default=10)
     ap.add_argument("--init", default="")
+    ap.add_argument("--resume", action="store_true", help="--init is this run's own checkpoint: continue its LR schedule (run_resume.sh)")
     ap.add_argument("--ppb", type=int, default=0, help="products per batch for the TTS commands (0 = any)")
     ap.add_argument("--mix", default="", help="sampling weights tts_cmd,tts_none,libri,sc (default 0.45,0.10,0.30,0.15)")
     ap.add_argument("--noise-p", type=float, default=0.75)
@@ -232,7 +251,7 @@ def main():
     m = IntentEncoder(cfg).to(dev)
     fm = None
     pre = set()
-    if a.moonshine and not a.init:
+    if a.moonshine:            # review S2: the pretrained names (LR x lr_pre) also after a resume; --init then overwrites the weights
         pre, _ = load_moonshine(m)
         print("moonshine init:", len(pre), "tensors", flush=True)
     ck0 = torch.load(a.init, map_location=dev) if a.init else None
@@ -253,7 +272,7 @@ def main():
         PA = F.normalize(torch.from_numpy(PZ["A"]).float().to(dev), dim=-1)          # [n_pa, K, D]
         PR = F.normalize(torch.from_numpy(PZ["R"]).float().to(dev), dim=-1)          # [n_p, Kr, D]
         pa_prod = torch.from_numpy(PZ["pa_prod"].astype(np.int64)).to(dev)          # [n_pa]
-        thr_p = torch.nn.Parameter(torch.tensor(float(a.thr0), device=dev))
+        thr_p = torch.nn.Parameter(torch.tensor(thr_init(ck0, a.thr0), device=dev))   # review S1: restored from --init
         print("decision prototypes", tuple(PA.shape), tuple(PR.shape), "rows with labels",
               {k: sum(r["dk"] >= 0 for r in v) for k, v in groups.items()}, flush=True)
     dl = torch.utils.data.DataLoader(Batches(groups, a.bs, a.max_s, 1, a.ppb, MIX, a.noise_p, a.snr_hi), batch_size=None, num_workers=a.workers,
@@ -264,10 +283,11 @@ def main():
     groups = [{"params": rest, "lr": a.lr}] + ([{"params": pw, "lr": a.lr * a.lr_pre}] if pw else []) + \
              ([{"params": [thr_p], "lr": 1e-3, "weight_decay": 0.0}] if PZ is not None else []) +              ([{"params": sc, "lr": a.lr_scale, "weight_decay": 0.0}] if sc else [])
     opt = torch.optim.AdamW(groups, lr=a.lr, weight_decay=0.01, betas=(0.9, 0.98))
-    warm = 200 if a.qat else 1000
+    prog0 = float(ck0.get("prog") or 0.0) if (a.resume and ck0 is not None) else 0.0
+    warm = 1 if prog0 > 0 else (200 if a.qat else 1000)          # a resumed run skips the warm-up
     t_start = time.time()
-    prog = lambda s: min(1.0, max(s / a.steps, (time.time() - t_start) / (a.minutes * 60)))   # step- or time-based
-    sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1, (s + 1) / warm) * (0.05 + 0.95 * 0.5 * (1 + math.cos(math.pi * prog(s)))))
+    prog = make_prog(prog0, a.steps, a.minutes, t_start)          # step- or time-based
+    sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: lr_factor(s, warm, prog))
     out = ROOT / f"data/intent/{a.tag}.pt"
     t0 = time.time(); stats = []
     step = 0
@@ -296,7 +316,7 @@ def main():
             qn = F.normalize(q, dim=1)
             SA = torch.einsum("bd,pkd->bpk", qn, PA).amax(-1)                       # [B, n_pa]
             SR = torch.einsum("bd,pkd->bpk", qn, PR).amax(-1)                       # [B, n_p]
-            thr = thr_p.clamp(0.0, 0.9)
+            thr = thr_p
             # pairs (sample, product): commands and TTS 'none' against their own product; LibriSpeech against every
             # training product's actions at once (reject = the best of all reject prototypes or the threshold)
             own = (dk >= 0) & (pp >= 0)
@@ -333,6 +353,9 @@ def main():
         opt.zero_grad(set_to_none=True); loss.backward()
         torch.nn.utils.clip_grad_norm_(m.parameters(), 1.0)
         opt.step(); sched.step(); step += 1
+        if PZ is not None:     # review S1: clamp after the step (a clamp in the forward pass zeroes the gradient outside)
+            with torch.no_grad():
+                thr_p.clamp_(0.0, 0.9)
         if a.min_spm and not getattr(main, "_spm", False) and time.time() - t0 >= 120:
             main._spm = True
             spm = step / ((time.time() - t0) / 60)
@@ -347,11 +370,10 @@ def main():
             print(f"step {step} cos_loss {s[0]:.4f} kd {s[1]:.4f} ctc {s[2]:.4f} cos {s[3]:.4f} dec {s[4]:.4f} dacc {s[5]:.3f} akd {s[6]:.4f} "
                   f"thr {float(thr_p) if PZ is not None else 0:.3f} lr {sched.get_last_lr()[0]:.2e} {(time.time()-t0)/60:.1f} min", flush=True)
         if step % 1000 == 0:
-            torch.save({"state": m.state_dict(), "cfg": cfg, "step": step, "qat": a.qat,
-                        "thr": float(thr_p) if PZ is not None else None}, out)
+            torch.save(ckpt_dict(m.state_dict(), cfg, step, a.qat, float(thr_p) if PZ is not None else None, prog(step)), out)
         if step >= a.steps or time.time() - t0 > a.minutes * 60:
             break
-    torch.save({"state": m.state_dict(), "cfg": cfg, "step": step, "qat": a.qat}, out)
+    torch.save(ckpt_dict(m.state_dict(), cfg, step, a.qat, float(thr_p) if PZ is not None else None, prog(step)), out)   # S1: thr kept
     print("saved", out, "steps", step, flush=True)
     it._shutdown_workers()          # no orphaned workers (they would hold the log pipe open)
     os._exit(0)
