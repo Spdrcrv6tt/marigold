@@ -32,18 +32,16 @@ DIRS = {"v2": "eval/text_v2", "v3": "eval/text_v3", "dev2": "eval/text_dev2"}
 
 
 class Emb:
+    """sdk/compile.py's deterministic STEmbedder with a cache (the text gate re-embeds the same lines often)."""
     def __init__(self, path):
-        import torch
-        from sentence_transformers import SentenceTransformer
         self.path = Path(path)
-        big = sum(f.stat().st_size for f in self.path.glob("*.safetensors")) > 2e9
-        self.m = SentenceTransformer(str(path), device="cuda", model_kwargs={"dtype": torch.bfloat16} if big else {})
+        self.m = C.STEmbedder(path)
         self.cache = {}
 
     def encode(self, texts):
         miss = [t for t in dict.fromkeys(texts) if t not in self.cache]
         if miss:
-            for t, v in zip(miss, self.m.encode(miss, batch_size=128, normalize_embeddings=True, convert_to_numpy=True)):
+            for t, v in zip(miss, self.m.encode(miss)):
                 self.cache[t] = v.astype(np.float64)
         return np.stack([self.cache[t] for t in texts])
 

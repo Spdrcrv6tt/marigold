@@ -299,18 +299,35 @@ class StubEmbedder:
 
 
 class STEmbedder:
+    """The SDK's teacher embedding, deterministic (Nov 17): the same phrase gives the same bits in any call, any process
+    and whatever the caller's batching, so the same config always compiles to the same blob bytes. Each text runs alone
+    (a batch of one: no padding and no batch-composition effects on the kernels), with deterministic algorithms and TF32
+    off. bf16 weights for teachers over 2 GB (teacher-v4: 8 GB) on the GPU when present. The caller's batch size
+    (MARIGOLD_EMBED_BATCH, default 64) only groups calls; sdk/tests/test_determinism.py checks byte identity across
+    processes and batch sizes."""
     def __init__(self, path):
+        import os
+        os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")   # deterministic cuBLAS (before the first CUDA call)
         import torch
         from sentence_transformers import SentenceTransformer
-        # iteration 2: the teacher may be a multi-GB model; GPU when present, bf16 weights for models over 2 GB
+        torch.backends.cuda.matmul.allow_tf32 = False
+        torch.backends.cudnn.allow_tf32 = False
+        torch.backends.cudnn.benchmark = False
+        torch.use_deterministic_algorithms(True, warn_only=True)
         big = sum(f.stat().st_size for f in Path(path).glob("*.safetensors")) > 2e9
         self.m = SentenceTransformer(str(path), device="cuda" if torch.cuda.is_available() else "cpu",
                                      model_kwargs={"dtype": torch.bfloat16} if big else {})
         self.path = Path(path)
         self.dim = self.m.get_sentence_embedding_dimension()
+        self.batch = int(os.environ.get("MARIGOLD_EMBED_BATCH", "64"))
 
     def encode(self, texts):
-        return self.m.encode(list(texts), batch_size=64, normalize_embeddings=True, convert_to_numpy=True)
+        texts = list(texts)
+        out = []
+        for i in range(0, len(texts), self.batch):            # grouping only; every text is its own forward pass
+            out += [self.m.encode([t], batch_size=1, normalize_embeddings=True, convert_to_numpy=True, show_progress_bar=False)[0]
+                    for t in texts[i:i + self.batch]]
+        return np.stack(out) if out else np.zeros((0, self.dim), np.float32)
 
 
 def newest_embedder():

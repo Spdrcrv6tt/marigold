@@ -330,3 +330,15 @@ not change the v2-against-v3 call. Two plain findings:
 - The pure rejection-off figures are 5 to 15 points above the plain rejection-off ones: reject prototypes win for many
   commands even with no threshold. Action confusion alone (pure) is about 61 to 67% (fan) and 75 to 83% (microwave) on
   clean speech; the rest of the gap to the end-to-end number is rejection.
+
+**Deterministic SDK embedding (Nov 17, later).** The run-to-run drift was an SDK bug: sdk/compile.py's STEmbedder (also
+used by the evaluation and the text gate) embedded phrases in bf16 batches, so a phrase's vector depended on its batch
+neighbours. Each phrase now runs alone (no padding, no batch-composition effect) with deterministic kernels and TF32 off;
+sdk/tests/test_determinism.py compiles fan.json with teacher-v4 in two processes at caller batch sizes 1000 and 7 and
+gets identical blob bytes (27,599 bytes). v3's integer eval re-run once under it (reports/p0/eval-pm-golden-v3-det.json,
+same protocol, no tuning): fan chooses **audio** (dev2 34.8%; mix+bank 34.3%), clean 39.3 / 65.7 / 73.2 (97.5), v2
+25.7 / 52.3 / 60.4 (95.0), blind v3 42.2 / 69.5 / 77.9 (91.7); microwave audio, dev2 39.4%, clean 43.4 / 72.4 / 82.9
+(95.5), v2 36.4 / 63.3 / 74.3 (93.3), blind v3 43.5 / 67.9 / 78.7 (93.8). This repeats section 10's v3 numbers; v3's
+dev2 mean is 37.1% against v2's 32.9%, so the v2-against-v3 call stands (v2 was not re-run; its chosen variants are
+audio-only for both products).
+
