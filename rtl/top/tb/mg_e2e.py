@@ -66,13 +66,17 @@ for seg in plan:
     else:
         parts.append(nrng.standard_normal(int(seg * 16000)) * 0.004); pos += int(seg * 16000)
 gap = marks[1] + len(parts[3]) + 16000 if len(marks) > 1 else 0
-cache = out.parent / ("stim-%d.npz" % a.seed)
+import hashlib, os                       # the cache file names its stimulus: checks of different stimuli share a dir
+key = hashlib.sha1(("%s|%s|%d" % (a.audio, a.gaps if a.audio else "libri", a.seed)).encode()).hexdigest()[:12]
+cache = out.parent / ("stim-%s.npz" % key)
 if cache.exists():
     z = np.load(cache); bits, ref = z["bits"].copy(), z["ref"]
 else:
     bits = pdm_model.sdm(np.clip(pdm_model.upsample_to_pdm(np.concatenate(parts), 192), -0.9, 0.9)).astype(np.uint8)
     ref = np.array(pdm_model.pdm_decimate(bits), dtype=np.int64)
-    np.savez(cache, bits=bits, ref=ref)
+    tmp = out / "stim-tmp.npz"
+    np.savez(tmp, bits=bits, ref=ref)
+    os.replace(tmp, cache)                 # atomic: a parallel check never reads a half-written file
 raw = np.asarray(Vad().run(ref)["raw"])
 if a.wakes == "golden":
     import golden as WG                    # sw/wake/golden (frozen format 1)
@@ -115,6 +119,9 @@ if a.neg == "rom":                        # one weight bit flipped: byte 0x9000 
     i = 0x9000
     lines[i] = "%02x" % (int(lines[i], 16) ^ 0x10)
     img = str(out / "flash_neg.hex"); open(img, "w").write("\n".join(lines))
+if not segs:                             # nothing for the core to run: the check would pass vacuously
+    print(json.dumps({"neg": a.neg, "error": "the golden model found no segment in this stimulus"}))
+    sys.exit(1)
 if a.neg == "mic":                       # 4,000 samples of mic bits flipped inside the first segment the core runs
     s0, e0 = segs[0]["segment"]
     i = (s0 + (e0 - s0) // 3) * 192
