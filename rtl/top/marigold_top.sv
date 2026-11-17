@@ -28,7 +28,9 @@ module marigold_top #(
     parameter        WAKE_NOUT = 48,
     parameter        WAKE_GATE = 1,
     parameter        WAKE_PREROLL = 10,
-    parameter [15:0] MODEL_D = 16'd128   // the ROM model's D: a blob with another D is refused (review R4)
+    parameter [15:0] MODEL_D = 16'd128,  // the ROM model's D: a blob with another D is refused (review R4)
+    parameter [7:0]  MODEL_ID = 8'd3,    // the ROM model (mg-v3) and its teacher (teacher-v4): a blob built for another
+    parameter [7:0]  TEACHER_ID = 8'd4   // is refused (K1; chip.mk sets both from the LUT ROM's tag, rtl/tests checks these)
 ) (
     input  wire        clk,
     input  wire        clk_fe,
@@ -122,7 +124,7 @@ module marigold_top #(
     assign dbg_br_d = br_wdata;
 
     mg_ctl #(.SEG_PRE(SEG_PRE), .SEG_MIN(SEG_MIN), .SEG_CAP(SEG_CAP), .SEG_HANG(SEG_HANG), .SEG_ONSET(SEG_ONSET),
-             .SEG_LISTEN(SEG_LISTEN), .MS(MS), .MODEL_D(MODEL_D)) u_ctl (
+             .SEG_LISTEN(SEG_LISTEN), .MS(MS), .MODEL_D(MODEL_D), .MODEL_ID(MODEL_ID), .TEACHER_ID(TEACHER_ID)) u_ctl (
         .clk(clk_fe), .rst_n(rst_fe_n), .scl_i(scl_i), .sda_i(sda_i), .sda_oe(sda_oe), .uart_tx_o(uart_tx_o),
         .irq_o(irq_o), .gpio_o(gpio_o), .ev_wake(ev_wake), .ev_tmo(ev_tmo), .cfg_valid(), .listening(listening),
         .wake_base(wake_base), .wake_len(wake_len), .wake_sens(wake_sens), .spot_req(spot_req), .spot_addr(spot_addr),

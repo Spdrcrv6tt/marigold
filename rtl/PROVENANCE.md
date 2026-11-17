@@ -118,4 +118,7 @@ do not use. Replace them with Marigold's own once mkimage_ts.py is adapted.
   every request with the handshake restarted at power-up.
 - mg_cfg_load.sv (R4): a MODEL_D parameter and config error 6. mg_match.sv and mg_gpio.sv (R6): an abort input;
   mg_match.sv (R14): the unused accept handshake removed.
+- John's rulings R16 and K1 (Nov 17, 2026, branch fix/r16-k1): mg_match.sv leaves a slot whose raw value is INT32_MIN
+  (nothing heard) out of slot_mask; mg_cfg_load.sv takes blob version 1, MODEL_ID and TEACHER_ID parameters and config
+  error 7 (mg_ctl.sv and marigold_top.sv pass them on; chip.mk sets them from the LUT ROM's model).
 - Every script and Makefile takes the repo root from its own location (R11). The build roots are overridable.

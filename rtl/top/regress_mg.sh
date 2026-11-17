@@ -6,13 +6,14 @@
 #   3. Checks (rtl/top/tb/mg_e2e.py, at most $JOBS simulators at a time; 1 while another regression runs):
 #      positives (must be bit-exact): LibriSpeech with stand-in wakes, "Hey Breeze..." x2 with the spotter, both
 #      also with the trace strap off (+trace=0, the product path), and a second wake 150 samples after a segment
-#      closes (review R2); negatives (must differ): ROM bit, mic bits, CRC.
+#      closes (review R2); negatives (must differ): ROM bit, mic bits, CRC, a blob for another model (K1: error 7).
 #   4. Unit tests: core (test-fan, test-mac on mg-<tag>'s tables) and the island blocks (cfg ctl cap).
 # Exit status 0 only if every step succeeded, every positive was identical and every negative failed.
 # The repo root comes from this file's location; builds go to $MARIGOLD_BUILD and $CORE_BUILD (rtl/core/tools/env.sh).
 # Inputs: the export from $GOLDEN_DIR (default weights/, then data/golden), LibriSpeech under data/librispeech, the
-# test blob rtl/top/tb/fan-i2c.mgc (data/sdk/fan.mgc with host = I2C and event flags 0xF; regenerate with
-# rtl/top/tb/mkblob_i2c.py).
+# test blob rtl/top/tb/fan-i2c.mgc (data/sdk/fan-v3.mgc, compiled for model v3 with teacher-v4, with host = I2C and
+# event flags 0xF; regenerate with rtl/top/tb/mkblob_i2c.py). The chip refuses a blob for another model (K1); chip.mk
+# takes the chip's model and teacher ids from the LUT ROM.
 # Test hooks: REGRESS_DRY=1 skips builds and replaces every check with `true`; REGRESS_FAKE_FAIL=<check> makes that
 # check fail (used to prove that a failing child fails the run).
 # (no set -u: bash treats an empty associative array as unbound under it)
@@ -88,7 +89,7 @@ run_check breeze-pos $SB --out "$L/breeze-pos"
 run_check libri-pos-t0 $SL --trace 0 --out "$L/libri-pos-t0"
 run_check libri-wake2 $SL --wake2 150 --out "$L/libri-wake2"       # review R2: a wake 9 ms after a close
 run_check breeze-pos-t0 $SB --trace 0 --out "$L/breeze-pos-t0"
-for n in rom mic crc; do run_check breeze-$n $SB --neg $n --out "$L/breeze-$n"; done
+for n in rom mic crc model; do run_check breeze-$n $SB --neg $n --out "$L/breeze-$n"; done
 while [ "${#PID2NAME[@]}" -gt 0 ]; do reap_one; done       # every child's status is collected, finished or not
 
 # ---- 4. unit tests (one simulator at a time)

@@ -55,11 +55,11 @@ The reference configs use it: the GPIO-only fan pulses pin 4 on NOMATCH; the I2C
 
 ## Host message (v0)
 
-Defined in docs/config-blob.md: `0xA5, type u8 (0 COMMAND, 1 WAKE, 2 NOMATCH, 3 TIMEOUT), action id u8 (0 for events), n_values u8, then for each value: slot u8 + int32 LE, confidence u8, crc8`. Durations travel in seconds, levels as integers. A rejected command is a NOMATCH event, sent only when `events.nomatch.host` is true. Every WAKE is followed by exactly one decision (COMMAND, NOMATCH or TIMEOUT) and decisions come in segment order, but the next WAKE may arrive before the previous decision: pair them first-in, first-out (docs/config-blob.md). The host always makes the final call: a microwave's controller checks the door before it starts.
+Defined in docs/config-blob.md: `0xA5, type u8 (0 COMMAND, 1 WAKE, 2 NOMATCH, 3 TIMEOUT), action id u8 (0 for events), n_values u8, then for each value: slot u8 + int32 LE, confidence u8, crc8`. Durations travel in seconds, levels as integers. Only values the person said are sent: n_values counts them, and a slot of the action that is missing from the frame was not said ("start" with no time arrives as start with no values, never as start, 1 s; the host applies its own default). A GPIO binary rule on a slot that was not said leaves its pins as they were. A rejected command is a NOMATCH event, sent only when `events.nomatch.host` is true. Every WAKE is followed by exactly one decision (COMMAND, NOMATCH or TIMEOUT) and decisions come in segment order, but the next WAKE may arrive before the previous decision: pair them first-in, first-out (docs/config-blob.md). The host always makes the final call: a microwave's controller checks the door before it starts.
 
 ## Compiling
 
-`python sdk/compile.py sdk/configs/<product>.json` writes data/sdk/<product>.mgc (config blob v0) and a JSON report next to it; `--parse BLOB` prints a blob back. Tests: `python -m pytest -q sdk/tests`. Placeholders until docs/golden-format.md and docs/golden-wake.md exist are listed at the top of sdk/compile.py.
+`python sdk/compile.py sdk/configs/<product>.json [--model-tag TAG]` writes data/sdk/<product>.mgc (config blob v1) and a JSON report next to it. The blob is for one chip model (--model-tag, default the shipping model, v3) and is embedded with that model's teacher (sdk/chip_models.py; data/models/teacher-v4 for v3); the compiler prints both, records both in the blob, and refuses an --embedder from another teacher. A chip refuses a blob made for another model (STATUS cfg error 7); `--parse BLOB` prints a blob back. Tests: `python -m pytest -q sdk/tests`. Placeholders until docs/golden-format.md and docs/golden-wake.md exist are listed at the top of sdk/compile.py.
 
 ## Rules the SDK enforces
 

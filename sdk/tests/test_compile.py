@@ -51,7 +51,8 @@ def test_round_trip_fan_and_microwave():
         assert b["wake"] == tpl and b["wake_sens"] == sens
         assert b["reject_thr"] == rep["reject_thr"] and b["margin"] == rep["margin"]
         # pack(parse(blob)) reproduces the blob byte for byte
-        h = {k: b[k] for k in ("D", "reject_thr", "margin", "wake_sens", "flags", "host", "i2c_addr", "conf_sh")}
+        h = {k: b[k] for k in ("D", "reject_thr", "margin", "wake_sens", "flags", "host", "i2c_addr", "conf_sh",
+                               "model_id", "teacher_id")}      # K1: the header records the model and teacher
         assert C.pack(h, b["vec_action"], b["vec_flags"], b["bias"], b["vectors"], b["actions"], b["slots"], b["gpio"], b["wake"]) == blob
 
 

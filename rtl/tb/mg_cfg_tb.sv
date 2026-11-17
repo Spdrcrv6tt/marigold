@@ -1,7 +1,9 @@
 // Unit test wrapper: config loader + config SRAM + matcher, with a testbench-driven reader of higher priority than
 // the matcher (stall source). test_cfg.py.
 module mg_cfg_tb #(
-    parameter [15:0] MODEL_D = 16'd0
+    parameter [15:0] MODEL_D = 16'd0,
+    parameter [7:0]  MODEL_ID = 8'd0,
+    parameter [7:0]  TEACHER_ID = 8'd0
 ) (
     input  wire        clk,
     input  wire        rst_n,
@@ -42,7 +44,7 @@ module mg_cfg_tb #(
     wire [31:0] reject_thr, margin, rdata;
     wire [1:0]  gnt, rvalid;
     wire        m_req;
-    mg_cfg_load #(.MODEL_D(MODEL_D)) u_ld (.clk(clk), .rst_n(rst_n), .begin_i(begin_i), .commit_i(commit_i), .in_valid(in_valid),
+    mg_cfg_load #(.MODEL_D(MODEL_D), .MODEL_ID(MODEL_ID), .TEACHER_ID(TEACHER_ID)) u_ld (.clk(clk), .rst_n(rst_n), .begin_i(begin_i), .commit_i(commit_i), .in_valid(in_valid),
         .in_data(in_data), .we(we), .waddr(waddr), .wdata(wdata), .valid(valid), .err(err), .cnt(cnt), .D(D), .N(N),
         .n_actions(n_actions), .n_slots(n_slots), .n_gpio(n_gpio), .wake_len(wake_len), .host(host),
         .i2c_addr(i2c_addr), .reject_thr(reject_thr), .margin(margin), .wake_sens(wake_sens), .flags(flags), .conf_sh(conf_sh),

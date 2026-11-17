@@ -72,7 +72,7 @@ keep their names (imh_*, rtl/PROVENANCE.md); new blocks are mg_*.
 | Capture ring | top/mg_capture.sv (from imh_capture.sv) | 2^15 samples = 64 KB in 16 banks of 4 KB with power enables. Segments open at a wake (rule in section 8.1), queue 2 deep, and are delivered to the core one sample per toggle handshake. |
 | Config SRAM | top/mg_cfg_ram.sv | 32 KB, 32-bit words with byte enables, one port, fixed-priority arbiter with a grant (stall) for every master: loader write > wake spotter (real time) > GPIO > matcher > core bridge. |
 | Config loader | top/mg_cfg_load.sv | Takes the blob as a byte stream from I2C (CFG_DATA), writes it to config SRAM, checks magic, version, field ranges, length and CRC-32. Only a blob that passes sets cfg_valid. Boot from SPI flash (spi_flash_reader.sv is in the tree) is cut from iteration 1 (coordinator scope ruling). |
-| Matcher | top/mg_match.sv | The exact rule of docs/config-blob.md, steps 2 to 5, one int8 MAC per clk_fe clock straight from config SRAM (N x D clocks: a full 32 KB blob takes at most 10.7 ms). Inputs q (D <= 256 int8) and one raw value per config slot (level codes included), written by the core over the bridge before MATCH_GO; table fields after the vectors are read a byte at a time (they need not be word aligned). |
+| Matcher | top/mg_match.sv | The exact rule of docs/config-blob.md, steps 2 to 5, one int8 MAC per clk_fe clock straight from config SRAM (N x D clocks: a full 32 KB blob takes at most 10.7 ms). Inputs q (D <= 256 int8) and one raw value per config slot (level codes included; INT32_MIN when nothing was heard, which drops the slot from the frame), written by the core over the bridge before MATCH_GO; table fields after the vectors are read a byte at a time (they need not be word aligned). |
 | Event and message formatter | top/mg_msg.sv | Events COMMAND, WAKE, NOMATCH, TIMEOUT (docs/config-blob.md, section 8.7). Builds 0xA5, type, action, n_values, {slot, i32 LE} per value, confidence, CRC-8 (section 8.4), at most 46 bytes, into a 2-frame FIFO; serves frames to I2C reads or sends them on the UART; drives irq_o. Event frames go to the host only when their flag bit is set. |
 | I2C target | top/mg_i2c.sv | 7-bit address, **standard mode (100 kHz) only** in iteration 1, sampled on clk_fe through two-flop synchronisers; no clock stretching. Fast mode is not supported: SDA changes 651 to 977 ns after SCL falls, so with fast mode's 300 ns rise the target misses tVD;DAT (0.9 us); measured in test_ctl.py i2c_timing (review R7). Fast mode needs clock stretching or a faster sampling clock (iteration 2). Register map in section 6. |
 | UART | src/uart_tx.sv (reused) | 8N1, bit time 27 clk_fe clocks (113.8 kbaud, 1.2% from 115200). Used for messages when the host strap selects UART. |
@@ -166,7 +166,7 @@ returns bytes from the pointer. The pointer increments after each byte except on
 | Reg | Name | Access | Meaning |
 |---|---|---|---|
 | 0x00 | ID | r | 0x4D |
-| 0x01 | STATUS | r | [0] cfg_valid, [1] loading or checking, [2] message ready, [3] listening, [7:4] cfg error (0 none, 1 magic, 2 version, 3 field range, 4 length, 5 CRC, 6 D is not the model's) |
+| 0x01 | STATUS | r | [0] cfg_valid, [1] loading or checking, [2] message ready, [3] listening, [7:4] cfg error (0 none, 1 magic, 2 version, 3 field range, 4 length, 5 CRC, 6 D is not the model's, 7 built for another model or teacher) |
 | 0x02 | CTRL | w | [0] begin a config load (clears cfg_valid, stops listening), [1] commit (check, then listen if valid), [2] listen on, [3] drop the pending frames, [4] listen off |
 | 0x03 | CFG_DATA | w, stream | next blob byte |
 | 0x04 | MSG_LEN | r | bytes in the pending message (0 = none) |
@@ -222,6 +222,10 @@ When listening stops (CTRL listen off, or a config begin) with a segment open, t
   (k < n_slots; 0 otherwise), codes -1 low, -2 medium, -3 high, -4 max, -5 min become the slot entry's level byte
   1, 2, 3 (a 0 byte means low = min, medium = floor((min + max) / 2), high = max) or the slot's max / min; then
   v = min(max(v, min), max). This is rtl/model/mg_model.py island_value and sw/intent/values.py island_value.
+- Unsaid values (R16, John's ruling of Nov 17, 2026): the core writes INT32_MIN (0x80000000) for a slot it heard no
+  value for. The island does not clamp it: the slot leaves the accepted action's slot mask and reads 0, so the
+  COMMAND frame leaves it out (n_values counts only the values said) and GPIO binary rules leave their pins alone.
+  No said value can be INT32_MIN (the parse gives numbers >= 0 and level codes -1 to -5).
 
 ### 8.3 Confidence (proposed)
 COMMAND and NOMATCH: confidence = clamp(s_b >> conf_sh, 0, 255) (arithmetic shift), s_b being the best score
@@ -241,15 +245,16 @@ For an accepted action, rules gpio_first to gpio_first + gpio_count - 1 apply in
 - mode 2 toggle: the pins in pin_mask invert.
 - mode 3 binary: the clamped value of slot `slot` goes out on the pins of pin_mask, least significant bit on the
   lowest pin; negative values give 0 and values above 2^k - 1 (k pins) give 2^k - 1. If the action does not carry
-  that slot, the pins do not change.
+  that slot, or carries it without a value (section 8.2, R16), the pins do not change.
 
 ### 8.7 Events
 - WAKE: raised at the wake sample when a segment opens (not for a wake ignored during an open segment).
   Frame: type 1, action 0, no values, confidence 0.
 - TIMEOUT: raised when a segment closes as a TIMEOUT (section 8.1). Type 3, action 0, no values, confidence 0.
 - NOMATCH: the matcher rejected (step 4). Type 2, action 0, no values, confidence of section 8.3.
-- COMMAND: accepted. Type 0, action[b], the action's slots in slot order (popcount of slot_mask), each value
-  clamped to its slot's [min, max], confidence of section 8.3.
+- COMMAND: accepted. Type 0, action[b], the action's slots that carry a value, in slot order (popcount of the
+  matcher's slot_mask; a slot not said is left out, section 8.2), each value clamped to its slot's [min, max],
+  confidence of section 8.3.
 - Frames go into a 2-frame FIFO in event order; a frame that finds it full is dropped and EVT_STAT bit 0 set.
   COMMAND is always queued; WAKE, NOMATCH and TIMEOUT only when flags bits 1, 2, 3 are set. GPIO rules (the
   action's, or entry 0xF0 / 0xF1 / 0xF2 found by id in the action table; none if the entry is absent) apply for
@@ -257,8 +262,9 @@ For an accepted action, rules gpio_first to gpio_first + gpio_count - 1 apply in
 - Pairing (review R2 fix): every WAKE is followed by exactly one decision frame (COMMAND, NOMATCH or TIMEOUT) in segment order, but the next WAKE may come before the previous decision (the core boots again for a segment that opened while it finished); hosts pair them first-in, first-out.
 
 ### 8.6 Config checks
-magic "MGC0", version 0, 1 <= n_actions <= 64, n_slots <= 8, n_gpio <= 32, host <= 2, D <= 256, total length
+magic "MGC0", version 1, 1 <= n_actions <= 64, n_slots <= 8, n_gpio <= 32, host <= 2, D <= 256, total length
 (0x20 + 4N + N D + 4 n_actions + 12 n_slots + 8 n_gpio + wake_len + 4) <= 32768 and equal to the bytes received,
 then CRC-32 (IEEE: reflected polynomial 0xEDB88320, initial 0xFFFFFFFF, final XOR 0xFFFFFFFF, as zlib.crc32) over
 every byte before the last four, compared with them.
 Then (review R4) D must equal the chip model's output size (MODEL_D, 128 for the shipped ROM), else error 6: a blob made for another model never loads.
+Then (K1, John's ruling of Nov 17, 2026) the model byte (0x1D) must equal MODEL_ID and the teacher byte (0x1E) TEACHER_ID, else error 7. They are build parameters: rtl/top/chip.mk takes them from the model the LUT ROM was generated from (sdk/chip_models.py; 3 and 4 for mg-v3, which pairs with teacher-v4), and rtl/tests/test_lut_rom.py checks marigold_top.sv's defaults against it. 0 turns a check off (unit tests).

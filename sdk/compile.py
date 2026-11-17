@@ -1,18 +1,20 @@
 #!/usr/bin/env python
-"""Marigold SDK: product config JSON (sdk/config-format.md) -> config blob v0 (docs/config-blob.md), and back.
+"""Marigold SDK: product config JSON (sdk/config-format.md) -> config blob v1 (docs/config-blob.md), and back.
 
-  python sdk/compile.py CONFIG.json [-o OUT.mgc] [--embedder DIR|stub] [--expansion FILE|none] [--dim D | --model-tag TAG]
+  python sdk/compile.py CONFIG.json [-o OUT.mgc] [--model-tag TAG] [--embedder DIR|stub] [--expansion FILE|none] [--dim D]
                         [--projection random|none|FILE.npy] [--protos 0=auto] [--reject-protos 16]
                         [--q-scale S] [--reject-rate 0.90] [--margin 0.0]
   python sdk/compile.py --parse BLOB.mgc
 
 What the compiler does: validate the config (SDK rules), gather each action's phrases (the typed
-examples plus the SDK expansion of that config, sdk/expand.py), embed them with the command
-embedder (newest data/gate0b/models/* by default), project to D dimensions, cluster each action
+examples plus the SDK expansion of that config, sdk/expand.py), embed them with the teacher of the
+chip model the blob is for (--model-tag, default the shipping model; data/models/<its teacher> by
+default, sdk/chip_models.py; an --embedder from another teacher is refused), project to D dimensions, cluster each action
 into up to --protos prototypes, add --reject-protos action-0 prototypes from the expansion's
 non-command set, quantize to int8, calibrate the reject threshold so that --reject-rate of the
 non-commands are rejected under the matching rule, and pack the blob. A JSON report goes next to
-the blob (OUT.mgc.json). The compiler never reads eval/.
+the blob (OUT.mgc.json). The blob records the model and the teacher (header bytes 0x1D and 0x1E; review K1), and
+the chip refuses a blob made for another model; every compile prints both. The compiler never reads eval/.
 
 Wake template and wake_sens: sw/wake/template.py (format in docs/golden-wake.md): CMUdict phones of the
 typed phrase (up to 4 pronunciation variants; compound split or letter rules for unknown words, with a
@@ -34,15 +36,16 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "sw/wake"))
 import template as wake_tpl                   # sw/wake/template.py (wake agent)
+import chip_models as CM                      # sdk/chip_models.py: the models, their ids and teachers (K1)
 
 
 def wake_template(wake):
     """Config "wake" object -> (template bytes, wake_sens u16, report)."""
     return wake_tpl.build(wake.get("phrase", ""), float(wake.get("sensitivity", 0.5)), wake.get("phones"))
-MAGIC, VERSION, MAX_BLOB = b"MGC0", 0, 32768
+MAGIC, VERSION, MAX_BLOB = b"MGC0", 1, 32768     # version 1: model and teacher ids (K1, Nov 17, 2026)
 DEFAULT_EXPANSION = ROOT / "data/expand/expanded_qwen25.json"      # written by sdk/expand.py (DEFAULT_OUT)
 GOLDEN_D = 128          # docs/golden-format.md v1.0: the model's q has D = 128 (review K7: was a 256 default)
-HDR = struct.Struct("<4sHHHBBBBBBiiHHB3x")    # 32 bytes, docs/config-blob.md offsets 0x00-0x1F (0x1C conf_sh, 3 reserved)
+HDR = struct.Struct("<4sHHHBBBBBBiiHHBBBx")   # 32 bytes, docs/config-blob.md 0x00-0x1F (0x1C conf_sh, 0x1D model, 0x1E teacher)
 VEC = struct.Struct("<BBh")                   # action u8, flags u8, bias i16
 ACT = struct.Struct("<BBBB")                  # id, slot_mask, gpio_first, gpio_count
 SLOT = struct.Struct("<BBBBii")               # type, low, medium, high (level words), min, max
@@ -57,14 +60,15 @@ MAX_ACTION_ID = 0xEF                                               # 0xF0-0xFF a
 
 # ------------------------------------------------------------------ packing (exact layout)
 def pack(h, vec_action, vec_flags, bias, V, actions, slots, gpio, wake):
-    """h: dict with D, reject_thr, margin, wake_sens, flags, host, i2c_addr. V: int8 [N, D]."""
+    """h: dict with D, reject_thr, margin, wake_sens, flags, host, i2c_addr, model_id, teacher_id (no ids: 0, a blob
+    no chip loads). V: int8 [N, D]."""
     V = np.asarray(V, dtype=np.int8)
     N, D = V.shape
     assert D == h["D"] and len(vec_action) == len(vec_flags) == len(bias) == N
     assert 1 <= len(actions) <= 64 and len(slots) <= 8 and len(gpio) <= 32 and len(wake) <= 255
     out = bytearray(HDR.pack(MAGIC, VERSION, D, N, len(actions), len(slots), len(gpio), len(wake), h["host"],
                              h["i2c_addr"], int(h["reject_thr"]), int(h["margin"]), h["wake_sens"], h["flags"],
-                             int(h.get("conf_sh", conf_shift(D)))))
+                             int(h.get("conf_sh", conf_shift(D))), int(h.get("model_id", 0)), int(h.get("teacher_id", 0))))
     for a, f, b in zip(vec_action, vec_flags, bias):
         out += VEC.pack(int(a), int(f), int(b))
     out += V.tobytes(order="C")
@@ -86,7 +90,7 @@ def parse(blob):
     crc = struct.unpack_from("<I", blob, len(blob) - 4)[0]
     if zlib.crc32(blob[:-4]) & 0xFFFFFFFF != crc:
         raise ValueError("CRC-32 mismatch")
-    magic, ver, D, N, na, ns, ng, wl, host, i2c, thr, margin, wsens, flags, conf_sh = HDR.unpack_from(blob, 0)
+    magic, ver, D, N, na, ns, ng, wl, host, i2c, thr, margin, wsens, flags, conf_sh, mid, tid = HDR.unpack_from(blob, 0)
     if magic != MAGIC or ver != VERSION:
         raise ValueError(f"bad magic/version {magic!r} {ver}")
     # the chip's config checks (docs/architecture.md 8.6)
@@ -110,7 +114,7 @@ def parse(blob):
     if o + 4 != len(blob):
         raise ValueError(f"size mismatch: parsed {o + 4} bytes, blob has {len(blob)}")
     return dict(D=D, N=N, host=host, i2c_addr=i2c, reject_thr=thr, margin=margin, wake_sens=wsens, flags=flags,
-                conf_sh=conf_sh, vec_action=np.array([v[0] for v in vt], dtype=np.int32), vec_flags=np.array([v[1] for v in vt]),
+                conf_sh=conf_sh, model_id=mid, teacher_id=tid, vec_action=np.array([v[0] for v in vt], dtype=np.int32), vec_flags=np.array([v[1] for v in vt]),
                 bias=np.array([v[2] for v in vt], dtype=np.int32), vectors=V, actions=actions, slots=slots, gpio=gpio,
                 wake=bytes(wake), crc32=crc, size=len(blob))
 
@@ -331,14 +335,33 @@ class STEmbedder:
         return np.stack(out) if out else np.zeros((0, self.dim), np.float32)
 
 
-def newest_embedder():
-    """The model agent's newest frozen teacher (data/models/teacher-v4, else teacher-v3) if present, else the newest
-    data/gate0b/models/*. Model v1 (mg-v1) pairs with teacher-v3, model v2 with teacher-v4 (pass --embedder)."""
-    for t in (ROOT / "data/models/teacher-v4", ROOT / "data/models/teacher-v3"):
-        if (t / "modules.json").exists():
-            return t
-    ms = sorted((p for p in (ROOT / "data/gate0b/models").glob("*") if (p / "modules.json").exists()), key=lambda p: p.stat().st_mtime)
-    return ms[-1] if ms else None
+def default_embedder(tag=CM.SHIPPING):
+    """The teacher of chip model `tag` (sdk/chip_models.py), data/models/<teacher>, if present (review K1: one default,
+    the model's own teacher; it no longer changes with whatever teacher directory exists)."""
+    t = ROOT / "data/models" / CM.TEACHER[tag]
+    return t if (t / "modules.json").exists() else None
+
+
+newest_embedder = default_embedder           # old name (the slow tests): the shipping model's teacher
+
+
+def model_ids(model_tag, embedder):
+    """(tag, model id, teacher name, teacher id) for a blob compiled with this embedder for chip model model_tag. A real
+    embedder must be that model's teacher (review K1); the stub has teacher id 0. model_tag None: a blob for no chip
+    model (teacher research, sw/teacher4/text_gate.py): model id 0, which every chip refuses, and no pairing check."""
+    path = getattr(embedder, "path", None)
+    name = "stub" if path is None else Path(path).name
+    if model_tag is None:
+        return None, 0, name, CM.teacher_id(name)
+    tag = model_tag
+    if tag not in CM.TEACHER:
+        raise ValueError(f"model {tag!r} is not in sdk/chip_models.py (models {', '.join(CM.TEACHER)})")
+    if path is None:
+        return tag, CM.model_id(tag), "stub", 0
+    if name != CM.TEACHER[tag]:
+        raise ValueError(f"the embedder is {name}, but model {tag} pairs with {CM.TEACHER[tag]} (sdk/chip_models.py): "
+                         f"a blob built with another teacher matches garbage on that chip")
+    return tag, CM.model_id(tag), name, CM.teacher_id(name)
 
 
 def projection(kind, dim_in, D):
@@ -419,7 +442,10 @@ def enroll_protos(b0, byact, qb=None, K_audio=32, K_text=0, K_bank=0, cal=False,
 
 
 def compile_config(c, key, embedder, expansion=None, D=None, proj="random", protos=0, reject_protos=16,
-                   q_scale=None, reject_rate=0.90, margin=0.0, reject_thr=None, reject_bank=None, bank_protos=0, bank_keep=0.8):
+                   q_scale=None, reject_rate=0.90, margin=0.0, reject_thr=None, reject_bank=None, bank_protos=0, bank_keep=0.8,
+                   model_tag=CM.SHIPPING):
+    """model_tag: the chip model the blob is for (sdk/chip_models.py; default the shipping model; None: no chip model,
+    for teacher research only, see model_ids)."""
     validate(c)
     if reject_bank is not None:      # review K4: a bank needs prototypes, and must come from this embedder's teacher
         if bank_protos <= 0:
@@ -429,6 +455,7 @@ def compile_config(c, key, embedder, expansion=None, D=None, proj="random", prot
         et = Path(embedder.path).name if getattr(embedder, "path", None) else None
         if bt and et and bt != et:
             raise ValueError(f"reject bank built with teacher {bt!r}, but the embedder is {et!r}")
+    tag, mid, teacher, tid = model_ids(model_tag, embedder)          # review K1: the blob records both
     D = GOLDEN_D if D is None else int(D)
     h, actions, slots, gpio, wake = tables(c)
     exp_acts = (expansion or {}).get("actions", {}).get(key, {})
@@ -517,7 +544,7 @@ def compile_config(c, key, embedder, expansion=None, D=None, proj="random", prot
     else:
         thr = int(round(0.5 * sq * sv))
         calib["source"] = "PLACEHOLDER: no non-command set, cosine 0.5"
-    h.update(D=D, reject_thr=thr, margin=m_int, conf_sh=conf_shift(D))
+    h.update(D=D, reject_thr=thr, margin=m_int, conf_sh=conf_shift(D), model_id=mid, teacher_id=tid)
     blob = pack(h, va, np.zeros(len(va), int), np.zeros(len(va), int), V, actions, slots, gpio, wake)
     b = parse(blob)
     pred = np.array([match(b, q) or 0 for q in qi(Ep)])
@@ -525,7 +552,7 @@ def compile_config(c, key, embedder, expansion=None, D=None, proj="random", prot
                  note="pos_* are on the SDK's own phrases (examples + expansion), not a test")
     if len(En):
         calib.update(neg_phrases=len(negs), neg_rejected=float(np.mean([match(b, q) is None for q in qi(En)])))
-    report = dict(product=c.get("product"), key=key, size_bytes=len(blob), crc32=f"{b['crc32']:08x}", D=D, N=b["N"],
+    report = dict(product=c.get("product"), key=key, model=tag, model_id=mid, teacher=teacher, teacher_id=tid, size_bytes=len(blob), crc32=f"{b['crc32']:08x}", D=D, N=b["N"],
                   protos_per_action=protos, reject_protos=int(np.sum(va == 0)), vector_scale=sv, q_scale=sq,
                   q_scale_source="golden-format 5 (32 per unit RMS)" if golden else "--q-scale" if q_scale else "127/max|calibration component|",
                   projection=proj if P is not None else "none", embedder_dim=int(E.shape[1]) if P is None else int(P.shape[1] if golden else P.shape[0]),
@@ -542,10 +569,12 @@ def main():
     ap.add_argument("config", nargs="?")
     ap.add_argument("-o", "--out")
     ap.add_argument("--parse")
-    ap.add_argument("--embedder", default=None, help="sentence-transformers dir, or 'stub' (tests); default newest data/gate0b/models/*")
+    ap.add_argument("--embedder", default=None, help="the model's teacher (sentence-transformers dir; default data/models/<teacher "
+                    "of --model-tag>), or 'stub' (tests; no chip loads such a blob)")
     ap.add_argument("--expansion", default=str(DEFAULT_EXPANSION), help="sdk/expand.py output, or 'none'")
-    ap.add_argument("--dim", type=int, default=None, help="D without a teacher projection (default: --model-tag's D, else 128)")
-    ap.add_argument("--model-tag", default=None, help="take D from data/golden/mg-<tag>.json (the model export)")
+    ap.add_argument("--dim", type=int, default=None, help="D without a teacher projection (default: the model's D)")
+    ap.add_argument("--model-tag", default=CM.SHIPPING, help="the chip model the blob is for (sdk/chip_models.py; default the "
+                    "shipping model): sets the teacher, the ids the blob records and D")
     ap.add_argument("--projection", default="auto", help="auto = the teacher's marigold_proj.npz when present (golden-format 5), else random")
     ap.add_argument("--reject-thr", type=int, default=None, help="absolute reject threshold in score units (overrides calibration)")
     ap.add_argument("--protos", type=int, default=0, help="prototypes per action; 0 = fill the 32 KB budget (max 32)")
@@ -565,9 +594,18 @@ def main():
         return
     cfg = Path(a.config)
     c = json.load(open(cfg, encoding="utf-8"))
-    emb_path = None if a.embedder == "stub" else Path(a.embedder) if a.embedder else newest_embedder()
+    tag = a.model_tag                          # review K1: the model and its teacher, checked before any model loads
+    if tag not in CM.TEACHER:
+        sys.exit(f"--model-tag {tag}: not a chip model in sdk/chip_models.py (models {', '.join(CM.TEACHER)})")
+    teacher = CM.TEACHER[tag]
+    emb_path = None if a.embedder == "stub" else Path(a.embedder) if a.embedder else default_embedder(tag)
     if a.embedder != "stub" and emb_path is None:
-        sys.exit("no embedder: pass --embedder DIR or --embedder stub")
+        sys.exit(f"no embedder: data/models/{teacher} (model {tag}'s teacher) not found; pass --embedder DIR or --embedder stub")
+    if emb_path is not None and emb_path.name != teacher:
+        sys.exit(f"--embedder {emb_path} is not model {tag}'s teacher {teacher} (sdk/chip_models.py): a blob built with another "
+                 f"teacher matches garbage on that chip; pass --model-tag for the model it belongs to")
+    print(f"compiling for model {tag} (id {CM.model_id(tag)}) with " + (f"{teacher} (teacher id {CM.teacher_id(teacher)})"
+          if emb_path else "the stub embedder (teacher id 0: tests only, no chip loads this blob)"), file=sys.stderr)
     emb = StubEmbedder() if a.embedder == "stub" else STEmbedder(emb_path)
     if a.expansion != "none" and not Path(a.expansion).exists():     # review K5: no silent fallback to typed examples only
         sys.exit(f"expansion file not found: {a.expansion} (run sdk/expand.py, which writes it, or pass --expansion none)")
@@ -575,19 +613,20 @@ def main():
     if exp is None:     # say so rather than build from the typed examples silently (Mythos's check, Nov 17)
         print("no expansion: the prototypes come from the typed examples only (run sdk/expand.py, or pass --expansion FILE)",
               file=sys.stderr)
-    if a.dim is None and a.model_tag:
-        a.dim = int(json.load(open(ROOT / f"data/golden/mg-{a.model_tag}.json", encoding="utf-8"))["cfg"]["D"])
+    if a.dim is None:                          # the model's D: weights/ (tracked), else data/golden/
+        mj = next((p for p in (ROOT / f"weights/mg-{tag}.json", ROOT / f"data/golden/mg-{tag}.json") if p.exists()), None)
+        a.dim = int(json.load(open(mj, encoding="utf-8"))["cfg"]["D"]) if mj else None
     proj = a.projection
     if proj == "auto":
         proj = "teacher" if emb_path and (Path(emb_path) / "marigold_proj.npz").exists() else "random"
     blob, rep = compile_config(c, cfg.stem, emb, exp, a.dim, proj, a.protos, a.reject_protos, a.q_scale, a.reject_rate, a.margin, a.reject_thr,
-                               np.load(a.reject_bank) if a.reject_bank else None, a.bank_protos, a.bank_keep)
+                               np.load(a.reject_bank) if a.reject_bank else None, a.bank_protos, a.bank_keep, model_tag=tag)
     rep.update(config=str(cfg), embedder=str(emb_path) if emb_path else "stub", expansion=a.expansion if exp else None)
     out = Path(a.out) if a.out else ROOT / "data/sdk" / f"{cfg.stem}.mgc"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_bytes(blob)
     json.dump(rep, open(f"{out}.json", "w", encoding="utf-8"), indent=1)
-    print(json.dumps({k: rep[k] for k in ("product", "size_bytes", "D", "N", "reject_thr", "calibration")}, indent=1))
+    print(json.dumps({k: rep[k] for k in ("product", "model", "teacher", "size_bytes", "D", "N", "reject_thr", "calibration")}, indent=1))
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
-"""Mythos's test (deoxylabs/marigold PR 1, Nov 17, 2026), adapted to master (marked ADAPTED): the stand-ins follow master's calls (mkimage_mg.py rom --out DIR; image-mg must leave B/flash.hex; the export must exist under weights/; LibriSpeech checks are named libri-*); master installs the ROM only with --install-rom, which Mythos's script always does; master runs 8 checks, not 5; master writes no blob (its checks read the committed rtl/top/tb/fan-i2c.mgc), so Mythos's blob test is left out.
+"""Mythos's test (deoxylabs/marigold PR 1, Nov 17, 2026), adapted to master (marked ADAPTED): the stand-ins follow master's calls (mkimage_mg.py rom --out DIR; image-mg must leave B/flash.hex; the export must exist under weights/; LibriSpeech checks are named libri-*); master installs the ROM only with --install-rom, which Mythos's script always does; master runs 9 checks, not 5 (8
+until K1 added the neg-model check, Nov 17, 2026); master writes no blob (its checks read the committed rtl/top/tb/fan-i2c.mgc), so Mythos's blob test is left out.
 
 rtl/top/regress_mg.sh reports failure when any step fails (review R9, R10, R11). Run: pytest rtl/tests
 
@@ -90,7 +91,7 @@ def e2e_runs(root):
 def test_passes_when_every_step_passes(tree):
     out = run(tree)
     assert out.returncode == 0, out.stdout[-600:] + out.stderr[-600:]
-    assert len(e2e_runs(tree)) == 8                     # ADAPTED: master has 5 positives and 3 negatives
+    assert len(e2e_runs(tree)) == 9                     # ADAPTED: master has 5 positives and 4 negatives (neg-model: K1)
 
 
 def test_installs_the_models_lut_rom_without_carriage_returns(tree):
@@ -98,7 +99,7 @@ def test_installs_the_models_lut_rom_without_carriage_returns(tree):
     assert (tree / "rtl/core/imh_rom.svh").read_bytes() == b"// rom " + TAG.encode() + b"\n"
 
 
-@pytest.mark.parametrize("step", ["libri", "breeze", "neg-rom", "neg-mic", "neg-crc", "unit"])
+@pytest.mark.parametrize("step", ["libri", "breeze", "neg-rom", "neg-mic", "neg-crc", "neg-model", "unit"])   # ADAPTED: neg-model (K1)
 def test_fails_when_a_check_fails(tree, step):
     assert run(tree, fail=step).returncode != 0
 

@@ -173,12 +173,16 @@ def items(tokens):
 
 
 LEVEL_CODE = {"low": -1, "medium": -2, "high": -3, "max": -4, "min": -5}   # coordinator ruling, Nov 15
+NO_VALUE = -(1 << 31)          # nothing heard for a slot (R16, John's ruling of Nov 17, 2026): the island leaves it out
 
 
 def island_value(raw, slot):
     """What the island does with a raw slot value (architecture.md 8.7 + ruling of Nov 15): codes -1..-5 are level
     words, mapped with the slot entry's low/medium/high bytes (0 = default: low = min, medium = floor((min + max)
-    / 2), high = max; max -> max, min -> min); then the value is clamped to [min, max]."""
+    / 2), high = max; max -> max, min -> min); then the value is clamped to [min, max]. NO_VALUE gives None: the
+    slot is not in the host frame (R16), never clamped to the minimum."""
+    if raw == NO_VALUE:
+        return None
     lo, hi, w = slot["min"], slot["max"], slot.get("words") or {}
     if -5 <= raw <= -1:
         raw = {-1: w.get("low") or lo, -2: w.get("medium") or (lo + hi) // 2, -3: w.get("high") or hi,
@@ -194,7 +198,7 @@ def raw_values(tokens, slots):
       level:    'level n', else the first level word as a code (-1 low, -2 medium, -3 high, -4 max, -5 min),
                 else the first bare number;
       number:   the first degree or percent number, else the first bare number, else 'level n';
-      nothing heard: 0."""
+      nothing heard: NO_VALUE (INT32_MIN; no said value is negative below the level codes, so it is never a value)."""
     it = items(tokens)
     first = lambda kinds: next((x for x in it if x[0] in kinds), None)
     out = []
@@ -217,12 +221,13 @@ def raw_values(tokens, slots):
         else:
             x = first(("deg", "pct")) or first(("num", "clk")) or first(("lvl",))
             v = x[1] if x else None
-        out.append(0 if v is None else int(v))
+        out.append(NO_VALUE if v is None else int(v))
     return out
 
 
 def parse(tokens, slots):
-    """raw_values as the island turns them into host values (level codes mapped, clamped to [min, max])."""
+    """raw_values as the island turns them into host values (level codes mapped, clamped to [min, max]; None for a
+    slot with nothing heard, which the host frame leaves out)."""
     return [island_value(v, s) for v, s in zip(raw_values(tokens, slots), slots)]
 
 

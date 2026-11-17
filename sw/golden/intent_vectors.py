@@ -1,6 +1,8 @@
 """Test vectors for the RTL (docs/golden-format.md section 7).
 
-  python sw/golden/intent_vectors.py --tag v1 [--blob data/sdk/microwave.mgc]
+  python sw/golden/intent_vectors.py --tag v3 [--blob data/sdk/microwave-v3.mgc]
+The blob defaults to data/sdk/microwave-<tag>.mgc (sdk/compile.py sdk/configs/microwave.json --model-tag <tag> -o it)
+and must be built for that model (K1: blob version 1 records the model and teacher; the chip refuses another).
 
 Per utterance n: data/golden/vectors-mg-<tag>-<n>.npz with
   version, pcm (int16 segment), every trace of IntIntent (fe.cmvn, fe.asinh, fe.lin, fe.c1, fe.feat, enc<i>.out,
@@ -49,12 +51,19 @@ def vad_example(pcm):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tag", required=True)
-    ap.add_argument("--blob", default="data/sdk/microwave.mgc")
+    ap.add_argument("--blob", default="", help="default data/sdk/microwave-<tag>.mgc")
     a = ap.parse_args()
-    G = {k: np.asarray(v) for k, v in np.load(ROOT / f"data/golden/mg-{a.tag}.npz").items()}
-    blob = (ROOT / a.blob).read_bytes()
-    err, cfg = CG.MG.parse_blob(blob)
-    assert not err, f"blob error {err}"
+    gp = next((q for q in (ROOT / f"data/golden/mg-{a.tag}.npz", ROOT / f"weights/mg-{a.tag}.npz") if q.exists()),
+              ROOT / f"data/golden/mg-{a.tag}.npz")              # weights/ holds the shipped exports in git
+    G = {k: np.asarray(v) for k, v in np.load(gp).items()}
+    bp = ROOT / (a.blob or f"data/sdk/microwave-{a.tag}.mgc")
+    if not bp.exists():
+        sys.exit(f"{bp} not found: python sdk/compile.py sdk/configs/microwave.json --model-tag {a.tag} -o {bp}")
+    blob = bp.read_bytes()
+    import chip_models as CM                    # on the path through chip_golden (sdk/)
+    mid, tid = CM.ids(a.tag)
+    err, cfg = CG.MG.parse_blob(blob, model_id=mid, teacher_id=tid)
+    assert not err, f"blob error {err} (7: built for another model than {a.tag})"
     slots = CG.slot_specs(blob)
     for n, r in enumerate(pick()):
         x = sf.read(str(ROOT / r["path"]), dtype="int16")[0].astype(np.int64)
