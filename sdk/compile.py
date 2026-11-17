@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Marigold SDK: product config JSON (sdk/config-format.md) -> config blob v0 (docs/config-blob.md), and back.
 
-  python sdk/compile.py CONFIG.json [-o OUT.mgc] [--embedder DIR|stub] [--expansion FILE|none] [--dim 256]
+  python sdk/compile.py CONFIG.json [-o OUT.mgc] [--embedder DIR|stub] [--expansion FILE|none] [--dim D | --model-tag TAG]
                         [--projection random|none|FILE.npy] [--protos 0=auto] [--reject-protos 16]
                         [--q-scale S] [--reject-rate 0.90] [--margin 0.0]
   python sdk/compile.py --parse BLOB.mgc
@@ -40,6 +40,7 @@ def wake_template(wake):
     """Config "wake" object -> (template bytes, wake_sens u16, report)."""
     return wake_tpl.build(wake.get("phrase", ""), float(wake.get("sensitivity", 0.5)), wake.get("phones"))
 MAGIC, VERSION, MAX_BLOB = b"MGC0", 0, 32768
+GOLDEN_D = 128          # docs/golden-format.md v1.0: the model's q has D = 128 (review K7: was a 256 default)
 HDR = struct.Struct("<4sHHHBBBBBBiiHHB3x")    # 32 bytes, docs/config-blob.md offsets 0x00-0x1F (0x1C conf_sh, 3 reserved)
 VEC = struct.Struct("<BBh")                   # action u8, flags u8, bias i16
 ACT = struct.Struct("<BBBB")                  # id, slot_mask, gpio_first, gpio_count
@@ -365,11 +366,14 @@ def enroll_protos(b0, byact, qb=None, K_audio=32, K_text=0, K_bank=0, cal=False,
     Returns a parsed-blob dict with the new vectors (pack() it with the dev threshold and margin)."""
     D = b0["D"]
     Cs, va = [], []
+    # review K3: the 32 KB budget holds on every path (the blob's fixed part from b0's own tables)
+    fixed = HDR.size + len(b0["actions"]) * ACT.size + len(b0["slots"]) * SLOT.size + len(b0["gpio"]) * GPIO.size + len(b0["wake"]) + 4
+    max_n = (MAX_BLOB - fixed) // (VEC.size + D)
+    R0 = b0["vectors"][b0["vec_action"] == 0].astype(np.float64) if text_reject else np.zeros((0, D))
+    n_act = sum(1 for x in byact if x != 0)
+    room = max_n - len(R0) - (16 if 0 in byact else 0) - K_bank
+    K_audio = max(1, min(K_audio, room // max(1, n_act) - K_text))
     if text_reject:      # iteration-2 reject fix: keep the text blob's action-0 prototypes (expansion + reject bank)
-        R0 = b0["vectors"][b0["vec_action"] == 0].astype(np.float64)
-        n_act = sum(1 for x in byact if x != 0)
-        room = (MAX_BLOB - 512) // (VEC.size + D) - len(R0) - (16 if 0 in byact else 0) - K_bank
-        K_audio = max(1, min(K_audio, room // max(1, n_act) - K_text))
         Cs.append(unit(R0)); va += [0] * len(R0)
     for aid in sorted(byact):
         if aid == 0:
@@ -390,13 +394,24 @@ def enroll_protos(b0, byact, qb=None, K_audio=32, K_text=0, K_bank=0, cal=False,
         mu = (qb.astype(np.int64) @ V.astype(np.int64).T).mean(0)
         act = va != 0
         bias[act] = np.clip(np.round(-(mu[act] - np.median(mu[act]))), -32767, 32767).astype(np.int32)
+    if len(va) > max_n:
+        raise ValueError(f"enrollment blob needs {len(va)} vectors, the 32 KB budget holds {max_n}")
     bb = dict(b0); bb.update(vectors=V, vec_action=va, vec_flags=np.zeros(len(va), int), bias=bias, N=len(va))
     return bb
 
 
-def compile_config(c, key, embedder, expansion=None, D=256, proj="random", protos=0, reject_protos=16,
+def compile_config(c, key, embedder, expansion=None, D=None, proj="random", protos=0, reject_protos=16,
                    q_scale=None, reject_rate=0.90, margin=0.0, reject_thr=None, reject_bank=None, bank_protos=0, bank_keep=0.8):
     validate(c)
+    if reject_bank is not None:      # review K4: a bank needs prototypes, and must come from this embedder's teacher
+        if bank_protos <= 0:
+            raise ValueError("a reject bank was given with bank_protos = 0: pass --bank-protos N (N > 0)")
+        files = getattr(reject_bank, "files", reject_bank)
+        bt = str(reject_bank["teacher"]) if "teacher" in files else None
+        et = Path(embedder.path).name if getattr(embedder, "path", None) else None
+        if bt and et and bt != et:
+            raise ValueError(f"reject bank built with teacher {bt!r}, but the embedder is {et!r}")
+    D = GOLDEN_D if D is None else int(D)
     h, actions, slots, gpio, wake = tables(c)
     exp_acts = (expansion or {}).get("actions", {}).get(key, {})
     negs = list((expansion or {}).get("negatives", {}).get(key, []))
@@ -511,7 +526,8 @@ def main():
     ap.add_argument("--parse")
     ap.add_argument("--embedder", default=None, help="sentence-transformers dir, or 'stub' (tests); default newest data/gate0b/models/*")
     ap.add_argument("--expansion", default=str(ROOT / "data/expand/expanded_qwen25.json"))
-    ap.add_argument("--dim", type=int, default=256)
+    ap.add_argument("--dim", type=int, default=None, help="D without a teacher projection (default: --model-tag's D, else 128)")
+    ap.add_argument("--model-tag", default=None, help="take D from data/golden/mg-<tag>.json (the model export)")
     ap.add_argument("--projection", default="auto", help="auto = the teacher's marigold_proj.npz when present (golden-format 5), else random")
     ap.add_argument("--reject-thr", type=int, default=None, help="absolute reject threshold in score units (overrides calibration)")
     ap.add_argument("--protos", type=int, default=0, help="prototypes per action; 0 = fill the 32 KB budget (max 32)")
@@ -535,7 +551,11 @@ def main():
     if a.embedder != "stub" and emb_path is None:
         sys.exit("no embedder: pass --embedder DIR or --embedder stub")
     emb = StubEmbedder() if a.embedder == "stub" else STEmbedder(emb_path)
-    exp = json.load(open(a.expansion, encoding="utf-8")) if a.expansion != "none" and Path(a.expansion).exists() else None
+    if a.expansion != "none" and not Path(a.expansion).exists():     # review K5: no silent fallback to typed examples only
+        sys.exit(f"expansion file {a.expansion} not found: run sdk/expand.py (it writes that file), or pass --expansion none")
+    exp = json.load(open(a.expansion, encoding="utf-8")) if a.expansion != "none" else None
+    if a.dim is None and a.model_tag:
+        a.dim = int(json.load(open(ROOT / f"data/golden/mg-{a.model_tag}.json", encoding="utf-8"))["cfg"]["D"])
     proj = a.projection
     if proj == "auto":
         proj = "teacher" if emb_path and (Path(emb_path) / "marigold_proj.npz").exists() else "random"

@@ -26,7 +26,7 @@ def test_header_offsets_match_spec():
     blob, _ = build("microwave")
     assert blob[:4] == b"MGC0"
     D, N = struct.unpack_from("<HH", blob, 0x06)
-    assert (D, N) == (256, (len(blob) - 0x20 - 4 * 4 - 2 * 12 - 0 - len(W.build("hey kitchen")[0]) - 4) // (4 + D))
+    assert (D, N) == (C.GOLDEN_D, (len(blob) - 0x20 - 4 * 4 - 2 * 12 - 0 - len(W.build("hey kitchen")[0]) - 4) // (4 + D))   # K7: D = 128
     assert blob[0x0E] == 1 and blob[0x0F] == 0x2A                # host I2C, address 0x2A
     assert struct.unpack_from("<H", blob, 0x1A)[0] == 0b1111     # IRQ pin + WAKE, NOMATCH, TIMEOUT events to the host
     assert struct.unpack_from("<I", blob, len(blob) - 4)[0] == zlib.crc32(blob[:-4]) & 0xFFFFFFFF
@@ -125,6 +125,7 @@ def test_config_rules():
 
 def test_real_embedder():
     if os.environ.get("MARIGOLD_SLOW") != "1" or C.newest_embedder() is None:
+        print("SKIP test_real_embedder (needs MARIGOLD_SLOW=1 and a teacher in data/models or data/gate0b/models)")
         return
     emb = C.STEmbedder(C.newest_embedder())
     for name in ("fan", "microwave"):
@@ -132,11 +133,6 @@ def test_real_embedder():
         assert rep["calibration"]["pos_correct"] > 0.8, rep["calibration"]
 
 
-if __name__ == "__main__":
-    for k, f in list(globals().items()):
-        if k.startswith("test_"):
-            f()
-            print("ok", k)
 
 
 def test_events():
@@ -207,9 +203,94 @@ def test_wake_template():
 
 def test_conf_sh_and_level_words():
     b = C.parse(build("microwave")[0])
-    assert b["conf_sh"] == C.conf_shift(b["D"]) == 10                     # D = 256 with the stub embedder
+    assert b["conf_sh"] == C.conf_shift(b["D"]) == C.conf_shift(C.GOLDEN_D) == 9   # D = 128 (golden format v1.0)
     power = b["slots"][1]
     assert (power["type"], power["low"], power["medium"], power["high"]) == (2, 3, 5, 10)
     assert (b["slots"][0]["low"], b["slots"][0]["medium"], b["slots"][0]["high"]) == (0, 0, 0)
     s_best = int((b["vectors"][0].astype(np.int32) ** 2).sum())
-    assert C.confidence(b, s_best) == min(255, s_best >> 10)
+    assert C.confidence(b, s_best) == min(255, s_best >> b["conf_sh"])
+
+
+# ---------------------------------------------------------------- review fixes K3, K4, K5 (Nov 17, 2026)
+def seven_action_config():
+    import copy
+    c = copy.deepcopy(CFG["fan"])
+    c["actions"].append(dict(id=max(a["id"] for a in c["actions"]) + 1, name="turbo", description="Run the fan at full blast",
+                             values=[], examples=["turbo", "full blast", "max power now", "blast it", "turbo mode"]))
+    return c
+
+
+def test_enroll_budget_every_path():
+    """K3: 7 actions x 32 audio prototypes + 16 + 32 bank prototypes used to pack 35.9 KB; every path now fits."""
+    c = seven_action_config()
+    b0 = C.parse(C.compile_config(c, "fan7", C.StubEmbedder(), None)[0])
+    rng = np.random.default_rng(0)
+    q = lambda n: rng.integers(-60, 60, (n, b0["D"])).astype(np.int8)
+    byact = {a["id"]: list(q(40)) for a in c["actions"]}
+    byact[0] = list(q(40))
+    for text_reject in (False, True):
+        bb = C.enroll_protos(b0, byact, q(300), K_audio=32, K_text=0, K_bank=32, cal=True, text_reject=text_reject)
+        blob = C.pack({k: bb[k] for k in ("D", "reject_thr", "margin", "wake_sens", "flags", "host", "i2c_addr", "conf_sh")},
+                      bb["vec_action"], bb["vec_flags"], bb["bias"], bb["vectors"], bb["actions"], bb["slots"], bb["gpio"], bb["wake"])
+        assert len(blob) <= C.MAX_BLOB and C.parse(blob)["N"] == bb["N"], (text_reject, len(blob))
+
+
+class NamedStub(C.StubEmbedder):
+    def __init__(self, name):
+        self.path = Path("data/models") / name
+
+
+def test_bank_needs_protos_and_matching_teacher():
+    """K4: a bank with 0 prototypes is an error, and a bank from another teacher is refused."""
+    V = C.unit(np.random.default_rng(1).standard_normal((50, C.GOLDEN_D)))
+    bank = {"V": V, "teacher": np.array("teacher-v4")}
+    for kw, emb, msg in ((dict(bank_protos=0), NamedStub("teacher-v4"), "bank_protos = 0"),
+                         (dict(bank_protos=4), NamedStub("teacher-v3"), "teacher")):
+        try:
+            C.compile_config(CFG["fan"], "fan", emb, None, reject_bank=bank, **kw)
+        except ValueError as e:
+            assert msg in str(e), e
+        else:
+            raise AssertionError(f"accepted: {kw}")
+    blob, rep = C.compile_config(CFG["fan"], "fan", NamedStub("teacher-v4"), None, reject_bank=bank, bank_protos=4)
+    assert rep["reject_protos"] >= 4
+
+
+def test_expand_any_product_and_cross_action_dedupe():
+    """K5: expand.py works for any product, drops a line written under two actions or equal to another action's example."""
+    sys.path.insert(0, str(ROOT / "sdk"))
+    import expand as X
+    c = {"product": "Desk lamp (test)", "actions": [
+        dict(id=1, name="on", description="Turn the lamp on", values=[], examples=["lamp on", "light on", "on", "switch on", "lights up"]),
+        dict(id=2, name="off", description="Turn the lamp off", values=[], examples=["lamp off", "light off", "off", "switch off", "lights out"])]}
+
+    def stub(model, prompt):
+        if "action 'on'" in prompt:
+            return "turn the lamp on\nlet there be light\nhit the switch\nlamp off"
+        if "action 'off'" in prompt:
+            return "turn the lamp off\nkill the light\nhit the switch"
+        return "nice weather today\nturn the lamp on\nwhat's for dinner"
+    acts, neg = X.expand_config(c, "stub", 3, ask_fn=stub, log=lambda s: None)
+    assert acts["on"] == ["let there be light", "turn the lamp on"], acts       # "hit the switch" (both) and "lamp off" (off's example) dropped
+    assert acts["off"] == ["kill the light", "turn the lamp off"], acts
+    assert neg == ["nice weather today", "what's for dinner"], neg               # a command is never a negative
+    assert X.DEFAULT_OUT.name == "expanded_qwen25.json"                          # the file compile.py reads by default
+
+
+def test_cli_missing_expansion_is_an_error():
+    """K5: the compiler no longer falls back silently to typed examples when the expansion file is missing."""
+    import subprocess, tempfile
+    with tempfile.TemporaryDirectory() as d:
+        r = subprocess.run([sys.executable, str(ROOT / "sdk/compile.py"), str(ROOT / "sdk/configs/fan.json"), "--embedder", "stub",
+                            "--expansion", str(Path(d) / "missing.json"), "-o", str(Path(d) / "f.mgc")], capture_output=True, text=True)
+        assert r.returncode != 0 and "not found" in (r.stderr + r.stdout), r
+        r = subprocess.run([sys.executable, str(ROOT / "sdk/compile.py"), str(ROOT / "sdk/configs/fan.json"), "--embedder", "stub",
+                            "--expansion", "none", "-o", str(Path(d) / "f.mgc")], capture_output=True, text=True)
+        assert r.returncode == 0 and C.parse((Path(d) / "f.mgc").read_bytes())["D"] == C.GOLDEN_D, r
+
+
+if __name__ == "__main__":
+    for k, f in list(globals().items()):
+        if k.startswith("test_"):
+            f()
+            print("ok", k)
