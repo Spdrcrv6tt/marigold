@@ -121,3 +121,21 @@
   The reject fix (dev2 calibration + bank) helps text a little and audio not at all; it stays the comparison protocol.
   Details reports/p0-model.md section 10.
 
+
+## External review: fixes done (Nov 17, 2026, 4 AM)
+
+- **Merged into master:** fix/review-sw (b7f3d4e) and fix/review-rtl (167686d, 71dc83a).
+- **Fixed, 32 of 36 items, each with a check:**
+  - R1 to R15 except R7: R7 is measured unfixable at 3.072 MHz, so I2C is standard mode, 100 kHz only.
+  - S1 to S7 and S9; K3 to K7; D1 to D3. D2 boot time is about 147 µs, derived.
+  - Confirmed real by a directed test that failed before its fix: R1 (the 2^32 wrap), R2 (the second-wake livelock), R5 (listen-off during a segment) and R8 (the ack race).
+  - Two more harness bugs, found while fixing: stale cocotb builds caused by WSL clock skew, and a shared stimulus cache that let checks pass with no wake.
+  - One more SDK bug: bf16 batch-order nondeterminism. The same config now compiles to byte-identical blobs.
+- **Behaviour change from R2:** the next segment's WAKE may precede the previous decision. Hosts pair WAKE and decision frames first-in, first-out; documented, and asserted on every regress run.
+- **Evidence:** `regress_mg.sh v3` from a fresh clone of master exits 0 with REGRESS PASS. Positives bit-exact, including trace=0 and the second-wake check; the rom, mic and crc negatives fail; core, island and block unit tests pass (69 of 69).
+- **Open:**
+  - R16 and K1 change formats and wait for John's ruling (recommended yes; a sequence number could join R16).
+  - K2 (rejection design) and S8 (wake on digital silence) are research.
+  - D4 (duplicated loaders) is deferred.
+  - The v2 QAT microwave loss is unexplained.
+- **Model-v3 ships** (4ad57cc): dev2 37.1% against v2's 32.9%. Most of the remaining loss is rejection: pure rejection-off reaches 73 to 83% clean.
