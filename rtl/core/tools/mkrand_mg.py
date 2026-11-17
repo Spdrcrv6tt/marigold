@@ -6,7 +6,7 @@ written outside data/golden:
 
     .venv/Scripts/python.exe rtl/core/tools/mkrand_mg.py [--tag rand3] [--init moonshine|random] [--calib 40]
         -> data/core/mg-<tag>/mg-<tag>.npz, mg-<tag>.json
-then  make -C rtl/top TAG=<tag> MGGOLD=/mnt/d/marigold/data/core/mg-<tag> B=$CORE_BUILD/r3 host-mg image-mg
+then  make -C rtl/top TAG=<tag> MGGOLD=<repo>/data/core/mg-<tag> B=$CORE_BUILD/r3 host-mg image-mg
 """
 import argparse, json, sys
 from pathlib import Path

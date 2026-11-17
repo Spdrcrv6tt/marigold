@@ -134,9 +134,8 @@ def build(tag, outdir, gdir=""):
     if ROM_SVH.exists():
         have = ROM_SVH.read_text()
         if not all(l in have for l in rom_lines(G)):
-            print(f"WARNING: {ROM_SVH.relative_to(ROOT)} is not the LUT ROM of mg-{tag}.npz (asinh / GELU / SiLU "
-                  f"tables differ): the RTL cannot be bit-exact until it is replaced by `mkimage_mg.py rom --tag {tag}`",
-                  file=sys.stderr)
+            sys.exit(f"ERROR: {ROM_SVH.relative_to(ROOT)} is not the LUT ROM of mg-{tag}.npz (asinh / GELU / SiLU "
+                  f"tables differ): the RTL cannot be bit-exact until it is replaced by `mkimage_mg.py rom --tag {tag}`")
     blob = bytearray()
 
     def put(b):

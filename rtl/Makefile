@@ -3,7 +3,7 @@
 #   make -C rtl test-pdm      one block
 #   make -C rtl quality       PDM signal quality + VAD accuracy from the reference models
 #   make -C rtl synth         Yosys + OpenSTA against GF180 (see syn/)
-BLOCKS ?= pdm vad flash uart mac ram
+BLOCKS ?= pdm vad flash uart mac ram cfg ctl cap
 
 .PHONY: test quality synth activity clean $(addprefix test-,$(BLOCKS))
 

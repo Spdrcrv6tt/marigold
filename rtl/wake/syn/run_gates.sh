@@ -1,4 +1,6 @@
-. /mnt/d/marigold/rtl/tools/env.sh
-cd /mnt/d/marigold/rtl/wake/mem
-yosys -q -l ../syn/gates.log -s ../syn/gates.ys > /dev/null 2>&1
+H=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd); M=$(cd "$H/../../.." && pwd)
+. "$M/rtl/tools/env.sh"
+sed "s#/mnt/d/marigold#$M#g" "$H/gates.ys" > "${MARIGOLD_BUILD}/wake_gates.ys"
+cd "$M/rtl/wake/mem"
+yosys -q -l ../syn/gates.log -s "${MARIGOLD_BUILD}/wake_gates.ys" > /dev/null 2>&1
 grep -E "cells|_" ../syn/gates.log | tail -30

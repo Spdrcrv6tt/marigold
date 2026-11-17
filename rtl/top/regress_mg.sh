@@ -1,32 +1,101 @@
 #!/bin/bash
-# Whole-chip regression for a model export (run in WSL): image, LUT ROM install, chip builds (spotter and stand-in),
-# five checks (LibriSpeech stand-in; "Hey Breeze" x2 with the spotter; ROM, mic and CRC negative controls) and the
-# core unit tests.   bash rtl/top/regress_mg.sh <tag>   (results under $MARIGOLD_BUILD/e2e*)
-. /mnt/d/marigold/rtl/core/tools/env.sh
-cd /mnt/d/marigold
-T=${1:-v1}
-mkdir -p $CORE_BUILD/$T
-timeout 1200 make -C rtl/top TAG=$T B=$CORE_BUILD/$T image-mg > $CORE_BUILD/$T-image.log 2>&1 || { tail -20 $CORE_BUILD/$T-image.log; exit 1; }
-grep -E "image .* bytes" $CORE_BUILD/$T-image.log
-timeout 600 python3 rtl/core/tools/mkimage_mg.py rom --tag $T > $CORE_BUILD/$T-rom.log 2>&1 && cp data/core/mg-$T/imh_rom.svh rtl/core/imh_rom.svh && sed -i 's/\r$//' rtl/core/imh_rom.svh
-IMG=$CORE_BUILD/$T/flash.hex
-timeout 1500 make -f rtl/top/chip.mk sim BSUF=$T STUB=0 IMG=$IMG > $MARIGOLD_BUILD/chip$T-build.log 2>&1 &
-timeout 1500 make -f rtl/top/chip.mk sim BSUF=${T}s STUB=1 IMG=$IMG > $MARIGOLD_BUILD/chip${T}s-build.log 2>&1 &
-wait
-python3 - <<'PY'
-import struct, zlib
-b = bytearray(open("data/sdk/fan.mgc", "rb").read())
-b[14] = 1; b[15] = 0x2A; b[26:28] = struct.pack("<H", 0xF)
-b[-4:] = struct.pack("<I", zlib.crc32(bytes(b[:-4])) & 0xFFFFFFFF)
-open("/home/johnmc/.marigold/build/fan-i2c.mgc", "wb").write(b)
-PY
+# Whole-chip regression for a model export (run in WSL):   bash rtl/top/regress_mg.sh <tag> [--install-rom]
+#   1. LUT ROM: generate mg-<tag>'s rtl/core/imh_rom.svh and compare it with the tracked file; a difference fails
+#      the run unless --install-rom is given, which installs it (and the image step then checks it again).
+#   2. ROM image (mkimage_mg.py data + image-mg), whole-chip simulators (spotter and stand-in builds), each step checked.
+#   3. Checks (rtl/top/tb/mg_e2e.py, at most $JOBS simulators at a time; 1 while another regression runs):
+#      positives (must be bit-exact): LibriSpeech with stand-in wakes, "Hey Breeze..." x2 with the spotter, both
+#      also with the trace strap off (+trace=0, the product path); negatives (must differ): ROM bit, mic bits, CRC.
+#   4. Unit tests: core (test-fan, test-mac on mg-<tag>'s tables) and the island blocks (cfg ctl cap).
+# Exit status 0 only if every step succeeded, every positive was identical and every negative failed.
+# The repo root comes from this file's location; builds go to $MARIGOLD_BUILD and $CORE_BUILD (rtl/core/tools/env.sh).
+# Inputs: the export from $GOLDEN_DIR (default weights/, then data/golden), LibriSpeech under data/librispeech, the
+# test blob rtl/top/tb/fan-i2c.mgc (data/sdk/fan.mgc with host = I2C and event flags 0xF; regenerate with
+# rtl/top/tb/mkblob_i2c.py).
+# Test hooks: REGRESS_DRY=1 skips builds and replaces every check with `true`; REGRESS_FAKE_FAIL=<check> makes that
+# check fail (used to prove that a failing child fails the run).
+# (no set -u: bash treats an empty associative array as unbound under it)
+HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+ROOT=$(cd "$HERE/../.." && pwd)
+. "$ROOT/rtl/core/tools/env.sh"
+cd "$ROOT"
+T=${1:-v2}
+INSTALL=0; [ "${2:-}" = "--install-rom" ] && INSTALL=1
+DRY=${REGRESS_DRY:-0}
+GD=${GOLDEN_DIR:-}
+if [ -z "$GD" ]; then for d in "$ROOT/weights" "$ROOT/data/golden"; do [ -f "$d/mg-$T.npz" ] && { GD=$d; break; }; done; fi
+[ -n "$GD" ] && [ -f "$GD/mg-$T.npz" ] || { [ "$DRY" = 1 ] || { echo "REGRESS FAIL: mg-$T.npz not found"; exit 1; }; }
+B=$CORE_BUILD/$T; L=$MARIGOLD_BUILD/regress-$T
+mkdir -p "$B" "$L"
+FAILED=0
+fail() { echo "REGRESS FAIL: $*"; FAILED=1; }
+step() {   # name, command...: run it, log it, stop the run on failure
+    local n=$1; shift
+    if [ "$DRY" = 1 ]; then echo "step $n (dry)"; return 0; fi
+    if "$@" > "$L/$n.log" 2>&1; then echo "step $n ok"; else echo "REGRESS FAIL: step $n (log $L/$n.log)"; tail -15 "$L/$n.log"; exit 1; fi
+}
+
+# ---- 1. LUT ROM of this export, compared with (or installed as) the tracked file
+step rom python3 rtl/core/tools/mkimage_mg.py rom --tag "$T" --golden-dir "$GD" --out "$B/rom"
+if [ "$DRY" != 1 ]; then
+    if ! cmp -s "$B/rom/imh_rom.svh" rtl/core/imh_rom.svh; then
+        if [ $INSTALL = 1 ]; then cp "$B/rom/imh_rom.svh" rtl/core/imh_rom.svh; echo "installed mg-$T's LUT ROM as rtl/core/imh_rom.svh"
+        else echo "REGRESS FAIL: rtl/core/imh_rom.svh is not mg-$T's LUT ROM (rerun with --install-rom, then commit it)"; exit 1; fi
+    fi
+    cmp -s "$B/rom/imh_rom.svh" rtl/core/imh_rom.svh || { echo "REGRESS FAIL: LUT ROM install"; exit 1; }
+fi
+# ---- 2. image (mkimage_mg.py data refuses a mismatched LUT ROM) and simulators (old obj/ removed by chip.mk)
+rm -f "$B/flash.hex" "$ROOT/data/core/mg-$T/layout.h"
+step image make -C rtl/top TAG="$T" MGGOLD="$GD" B="$B" image-mg
+[ "$DRY" = 1 ] || [ -s "$B/flash.hex" ] || { echo "REGRESS FAIL: no image"; exit 1; }
+IMG=$B/flash.hex
+step chip make -f rtl/top/chip.mk sim BSUF="$T" STUB=0 IMG="$IMG"
+step chips make -f rtl/top/chip.mk sim BSUF="${T}s" STUB=1 IMG="$IMG"
+
+# ---- 3. whole-chip checks, a bounded number of simulators at a time
+JOBS=${JOBS:-2}
 X=rtl/wake/tb/vectors2/carrier_op/x.txt
-E="python3 rtl/top/tb/mg_e2e.py --img $IMG --golden data/golden/mg-$T.npz"
-B="--audio $X,$X --gaps 0.6,1.5,1.5 --blob $MARIGOLD_BUILD/fan-i2c.mgc --wakes golden --sim $MARIGOLD_BUILD/chip$T/obj/sim"
-timeout 9000 $E --sim $MARIGOLD_BUILD/chip${T}s/obj/sim --out $MARIGOLD_BUILD/e2e/libri/$T-pos > $MARIGOLD_BUILD/e2e-$T-libri-pos.txt 2>&1 &
-timeout 9000 $E $B --out $MARIGOLD_BUILD/e2e/breeze/$T-pos > $MARIGOLD_BUILD/e2e-$T-breeze-pos.txt 2>&1 &
-for n in rom mic crc; do timeout 9000 $E $B --neg $n --out $MARIGOLD_BUILD/e2e/breeze/$T-$n > $MARIGOLD_BUILD/e2e-$T-breeze-$n.txt 2>&1 & done
-timeout 2400 make -C rtl/top test-fan test-mac UIMG=/mnt/d/marigold/data/core/mg-$T UTSIMG=/mnt/d/marigold/data/core/mg-$T 2>&1 | grep -E "^fan:|^LANES=|FAIL" > $MARIGOLD_BUILD/unit-$T.txt &
-wait
-cat $MARIGOLD_BUILD/unit-$T.txt
-for f in libri-pos breeze-pos breeze-rom breeze-mic breeze-crc; do echo "== $f"; tail -1 $MARIGOLD_BUILD/e2e-$T-$f.txt | cut -c1-900; done
+E="python3 rtl/top/tb/mg_e2e.py --img $IMG --golden $GD/mg-$T.npz"
+SB="--audio $X,$X --gaps 0.6,1.5,1.5 --blob rtl/top/tb/fan-i2c.mgc --wakes golden --sim $MARIGOLD_BUILD/chip$T/obj/sim"
+SL="--sim $MARIGOLD_BUILD/chip${T}s/obj/sim"
+declare -A PID2NAME
+run_check() {   # name, args...
+    local n=$1; shift
+    while :; do
+        local lim=$JOBS
+        [ "$T" != v3 ] && pgrep -f 'regress_mg.sh v3' > /dev/null && lim=1   # the model chain's regression is running
+        [ "${#PID2NAME[@]}" -lt "$lim" ] && break
+        reap_one
+    done
+    if [ "$DRY" = 1 ]; then cmd="true"; else cmd="timeout 9000 $E $*"; fi
+    [ "${REGRESS_FAKE_FAIL:-}" = "$n" ] && cmd="false"
+    bash -c "$cmd" > "$L/e2e-$n.txt" 2>&1 &
+    PID2NAME[$!]=$n
+}
+reap_one() {
+    local p st
+    wait -n -p p; st=$?
+    [ -n "${p:-}" ] || return 0
+    if [ $st -eq 0 ]; then echo "check ${PID2NAME[$p]} ok"; else fail "check ${PID2NAME[$p]} (exit $st, $L/e2e-${PID2NAME[$p]}.txt)"; fi
+    tail -1 "$L/e2e-${PID2NAME[$p]}.txt" 2>/dev/null | cut -c1-400
+    unset "PID2NAME[$p]"
+}
+run_check libri-pos $SL --out "$L/libri-pos"
+run_check breeze-pos $SB --out "$L/breeze-pos"
+run_check libri-pos-t0 $SL --trace 0 --out "$L/libri-pos-t0"
+run_check breeze-pos-t0 $SB --trace 0 --out "$L/breeze-pos-t0"
+for n in rom mic crc; do run_check breeze-$n $SB --neg $n --out "$L/breeze-$n"; done
+while [ "${#PID2NAME[@]}" -gt 0 ]; do reap_one; done       # every child's status is collected, finished or not
+
+# ---- 4. unit tests (one simulator at a time)
+U="$ROOT/data/core/mg-$T"
+if [ "$DRY" = 1 ]; then echo "units (dry)"
+else
+    if make -C rtl/top test-fan test-mac UIMG="$U" UTSIMG="$U" > "$L/unit-core.log" 2>&1 && ! grep -q -E "FAIL|failures [1-9]" "$L/unit-core.log"
+    then echo "unit core ok: $(grep -c PASS "$L/unit-core.log") test-mac runs, $(grep -c '^fan:' "$L/unit-core.log") test-fan runs"
+    else fail "unit core ($L/unit-core.log)"; fi
+    if make -C rtl test BLOCKS="cfg ctl cap" > "$L/unit-island.log" 2>&1; then echo "unit island ok: $(tail -1 "$L/unit-island.log")"
+    else fail "unit island ($L/unit-island.log)"; fi
+fi
+if [ $FAILED = 0 ]; then echo "REGRESS PASS ($T)"; else echo "REGRESS FAILED ($T)"; fi
+exit $FAILED

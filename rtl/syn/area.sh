@@ -4,7 +4,7 @@
 # counted as SRAM or ROM at 28 nm densities in reports/p1-core.md). Run in WSL after rtl/tools/env.sh:
 #   bash rtl/syn/area.sh  -> $MARIGOLD_BUILD/syn/<top>.stat.txt, <top>.mem.txt
 set -e
-R=/mnt/d/marigold/rtl
+R=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 LIB=$HOME/.poinsetta/pdk/orfs/flow/platforms/nangate45/lib/NangateOpenCellLibrary_typical.lib
 O=$MARIGOLD_BUILD/syn; mkdir -p $O
 S="$R/src"; C="$R/core"; T="$R/top"; W="$R/wake"

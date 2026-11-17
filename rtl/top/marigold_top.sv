@@ -22,7 +22,7 @@ module marigold_top #(
     parameter [31:0] SEG_LISTEN = 32'd64000,
     parameter        MS = 3072,
     parameter        WAKE_STUB = 0,                     // 1: mg_wake_stub (wakes at tst_wake_at) instead of the spotter
-    parameter        WAKE_MEMDIR = "/mnt/d/marigold/rtl/wake/mem2/",   // wake spotter v2 (golden format 2)
+    parameter        WAKE_MEMDIR = "",                 // wake spotter v2 ROM dir (rtl/wake/mem2/; chip.mk passes it)
     parameter        WAKE_LANES = 16,
     parameter        WAKE_C = 240,
     parameter        WAKE_NOUT = 48,

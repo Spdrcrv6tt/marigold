@@ -26,6 +26,7 @@ ap.add_argument("--golden", required=True)
 ap.add_argument("--out", required=True)
 ap.add_argument("--neg", default="")
 ap.add_argument("--seed", type=int, default=7)
+ap.add_argument("--trace", type=int, default=1, help="the trace strap (+trace=); 0 = the product path")
 ap.add_argument("--blob", default="", help="config blob (default: a random valid one, D from the model)")
 ap.add_argument("--wakes", default="", help="'golden': wakes from the wake golden model (spotter build); a file of "
                 "samples; default: chosen samples for the stand-in spotter build")
@@ -116,7 +117,7 @@ open(out / "cfg.blob", "wb").write(blob)
 
 # ---- run the chip (the image path is a simulator parameter: the simulator reads it at start)
 cmd = [a.sim, "+pdm=%s" % (out / "mic.pdm"), "+blob=%s" % (out / "cfg.blob"), "+wakes=%s" % (out / "wakes.txt"),
-       "+out=%s" % (out / "chip.log"), "+pcmlog=%s" % (out / "fe.pcm"), "+rawlog=%s" % (out / "raw.txt"), "+tail=0.5",
+       "+out=%s" % (out / "chip.log"), "+pcmlog=%s" % (out / "fe.pcm"), "+rawlog=%s" % (out / "raw.txt"), "+tail=0.5", "+trace=%d" % a.trace,
        "+img=%s" % img]
 p = subprocess.run(cmd, capture_output=True, text=True, timeout=14400)
 log = open(out / "chip.log").read().split("\n")

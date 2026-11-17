@@ -14,11 +14,12 @@ CAPAW   ?= 16
 RATIO   ?= 16
 FWDEFS  ?=
 UARTDIV := $(shell expr $(RATIO) \* 3072000 / 115200)
-ROOT    := /mnt/d/marigold
+ROOT    := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
 IMG     := $(ROOT)/data/core/$(TAG)
-# unit tests (test-mac, test-fan) compile against layout.h of two Poinsetta images, copied as fixtures (rtl/PROVENANCE.md)
-UIMG    ?= $(ROOT)/rtl/core/tb/img/w8
-UTSIMG  ?= $(ROOT)/rtl/core/tb/img/ts-w4c8r
+# unit tests (test-mac, test-fan) compile against layout.h of the shipped model (v2), whose LUT tables are the
+# committed rtl/core/imh_rom.svh; another export: UIMG=UTSIMG=$(ROOT)/data/core/mg-<tag>
+UIMG    ?= $(ROOT)/rtl/core/tb/img/mg-v2
+UTSIMG  ?= $(ROOT)/rtl/core/tb/img/mg-v2
 B       := $(CORE_BUILD)
 FW      := $(ROOT)/rtl/core/fw
 CORE    := $(ROOT)/rtl/core

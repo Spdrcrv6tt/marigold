@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
-WROOT = "/mnt/d/marigold"
+WROOT = str(ROOT) if str(ROOT).startswith("/") else "/mnt/" + str(ROOT)[0].lower() + str(ROOT)[2:].replace("\\", "/")
 sys.path.insert(0, str(ROOT / "sw" / "golden")); sys.path.insert(0, str(ROOT / "sw" / "intent"))
 sys.path.insert(0, str(ROOT / "rtl" / "model")); sys.path.insert(0, str(ROOT / "sdk"))
 import intent_np as S  # noqa: E402
@@ -48,7 +48,7 @@ def set_dims(G, meta):
 def wsl(script, cwd_tmp):
     """Run a bash script file in WSL (wsl.exe mangles $ and quotes on its command line)."""
     p = cwd_tmp / f"run-{time.time_ns()}.sh"
-    p.write_text(". /mnt/d/marigold/rtl/core/tools/env.sh\n" + script + "\n", newline="\n")
+    p.write_text(". " + WROOT + "/rtl/core/tools/env.sh\n" + script + "\n", newline="\n")
     r = subprocess.run(["wsl.exe", "-d", "Ubuntu", "--", "bash", WROOT + "/" + p.relative_to(ROOT).as_posix()],
                        capture_output=True, text=True, timeout=1800)
     p.unlink()
