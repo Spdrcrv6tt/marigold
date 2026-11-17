@@ -11,10 +11,11 @@ import numpy as np
 import soundfile as sf
 
 ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT / "rtl" / "model")); sys.path.insert(0, str(ROOT / "rtl" / "tb"))
+sys.path.insert(0, str(ROOT / "rtl" / "model")); sys.path.insert(0, str(ROOT / "rtl" / "tb")); sys.path.insert(0, str(ROOT / "sdk"))
 import pdm_model, mg_model as M
 from vad_model import Vad
 from mg_util import rand_cfg
+import chip_models as CM
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--sim", required=True)
@@ -73,6 +74,7 @@ for st, en, tmo in seg.segs:
         segq.append((st, en, smoke_q(s, en - st), [(s & 0x3FF) - 512 + k for k in range(8)]))
 cfg = rand_cfg(rng, D=128, N=10, n_actions=4, n_slots=3, n_gpio=6)
 cfg.update(host=1, flags=0xF, conf_sh=9, i2c_addr=0x2A)
+cfg["model_id"], cfg["teacher_id"] = CM.rom_ids()      # K1: the chip's model, as chip.mk builds it
 blob = M.build_blob(cfg)
 _, pc = M.parse_blob(blob)
 sc = [max(range(pc["N"]), key=lambda i: sum(q[d] * pc["vec"][i][d] for d in range(128)) + pc["vt"][i][2]) for _, _, q, _ in segq]

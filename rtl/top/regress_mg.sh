@@ -11,8 +11,9 @@
 # Exit status 0 only if every step succeeded, every positive was identical and every negative failed.
 # The repo root comes from this file's location; builds go to $MARIGOLD_BUILD and $CORE_BUILD (rtl/core/tools/env.sh).
 # Inputs: the export from $GOLDEN_DIR (default weights/, then data/golden), LibriSpeech under data/librispeech, the
-# test blob rtl/top/tb/fan-i2c.mgc (data/sdk/fan.mgc with host = I2C and event flags 0xF; regenerate with
-# rtl/top/tb/mkblob_i2c.py).
+# test blob rtl/top/tb/fan-i2c.mgc (data/sdk/fan.mgc with host = I2C and event flags 0xF, blob version 1 stamped for
+# model v1, which it was built for; regenerate with rtl/top/tb/mkblob_i2c.py). The chip refuses a blob for another
+# model (K1), so mg_e2e.py stamps every blob with the chip's model and teacher ids; chip.mk takes those from the LUT ROM.
 # Test hooks: REGRESS_DRY=1 skips builds and replaces every check with `true`; REGRESS_FAKE_FAIL=<check> makes that
 # check fail (used to prove that a failing child fails the run).
 # (no set -u: bash treats an empty associative array as unbound under it)

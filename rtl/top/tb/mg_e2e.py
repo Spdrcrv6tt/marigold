@@ -3,21 +3,25 @@ over I2C by the harness) and the core's island writes (q and raw slot values per
 sw/golden/chip_golden.py run_stream on the chip's own input (the bit-exact front-end and VAD models of the bits).
 Wakes: the stand-in spotter at chosen samples (--stub, default) or the wake spotter itself (--wakes from a file the
 wake golden model wrote). Negative controls must fail: --neg rom (one weight bit flipped in the ROM image), mic (PDM
-bits flipped), crc (config CRC corrupted). Run in WSL after rtl/core/tools/env.sh:
+bits flipped), crc (config CRC corrupted), model (the blob stamped for another model: the chip must refuse it with
+STATUS cfg error 7; K1). Every blob is stamped with the model and teacher ids of the chip under test (--model-tag,
+default the tracked LUT ROM's model, as rtl/top/chip.mk builds it): these checks are about bit-exactness, and the test
+blob rtl/top/tb/fan-i2c.mgc is a model-v1 blob. Run in WSL after rtl/core/tools/env.sh:
 
     python3 rtl/top/tb/mg_e2e.py --sim <sim> --img <flash.hex> --golden data/golden/mg-<tag>.npz --out <dir> [--neg ...]
 """
-import argparse, glob, json, random, subprocess, sys
+import argparse, glob, json, random, struct, subprocess, sys, zlib
 from pathlib import Path
 import numpy as np
 import soundfile as sf
 
 ROOT = Path(__file__).resolve().parents[3]
-for p in ("rtl/model", "rtl/tb", "sw/golden", "sw/wake/golden", "sw/wake"):
+for p in ("rtl/model", "rtl/tb", "sw/golden", "sw/wake/golden", "sw/wake", "sdk"):
     sys.path.insert(0, str(ROOT / p))
 import pdm_model, mg_model as M
 from vad_model import Vad
 from mg_util import rand_cfg
+import chip_models as CM
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--sim", required=True)
@@ -30,6 +34,7 @@ ap.add_argument("--trace", type=int, default=1, help="the trace strap (+trace=);
 ap.add_argument("--wake2", type=int, default=-1, help="R2: an extra stand-in wake this many samples after the "
                 "first segment closes (the golden model is rerun with it)")
 ap.add_argument("--blob", default="", help="config blob (default: a random valid one, D from the model)")
+ap.add_argument("--model-tag", default="", help="the chip's model (sdk/chip_models.py; default the tracked LUT ROM's)")
 ap.add_argument("--wakes", default="", help="'golden': wakes from the wake golden model (spotter build); a file of "
                 "samples; default: chosen samples for the stand-in spotter build")
 ap.add_argument("--audio", default="", help="comma-separated audio (.txt int16 per line, or sound files) instead of the "
@@ -39,6 +44,16 @@ ap.add_argument("--silent", type=int, default=-1, help="with --audio: index of a
                 "copy (the first audio's first 1.2 s) and then silence, for a TIMEOUT case (-1: none)")
 a = ap.parse_args()
 out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
+MID, TID = CM.ids(a.model_tag) if a.model_tag else CM.rom_ids()
+
+
+def stamp(b, mid, tid):
+    """The blob with model and teacher ids mid, tid (bytes 0x1D, 0x1E) and its CRC recomputed."""
+    b = bytearray(b)
+    b[0x1D], b[0x1E] = mid, tid
+    b[-4:] = struct.pack("<I", zlib.crc32(bytes(b[:-4])) & 0xFFFFFFFF)
+    return bytes(b)
+
 rng = random.Random(a.seed); nrng = np.random.default_rng(a.seed)
 
 # ---- stimulus (as mg_smoke.py): noise, two utterances, a long gap with a wake and no speech (TIMEOUT), noise
@@ -101,9 +116,12 @@ G = dict(np.load(a.golden))
 D = int(G["proj.q"].shape[0])
 if a.blob:
     blob = open(a.blob, "rb").read()
+    if blob[0x1D:0x1F] != bytes([MID, TID]):
+        print("blob built for model id %d, teacher id %d: stamped for the chip under test (%d, %d)" % (blob[0x1D], blob[0x1E], MID, TID))
+        blob = stamp(blob, MID, TID)
 else:
     cfg = rand_cfg(rng, D=D, N=12, n_actions=4, n_slots=3, n_gpio=6)
-    cfg.update(host=1, flags=0xF, conf_sh=9, i2c_addr=0x2A, reject_thr=-(1 << 31), margin=0)
+    cfg.update(host=1, flags=0xF, conf_sh=9, i2c_addr=0x2A, reject_thr=-(1 << 31), margin=0, model_id=MID, teacher_id=TID)
     blob = M.build_blob(cfg)
 import chip_golden as CG
 ev = CG.run_stream(G, blob, ref, raw, wakes)
@@ -128,6 +146,8 @@ if a.neg == "mic":                       # 4,000 samples of mic bits flipped ins
     bits[i:i + 192 * 4000] ^= 1
 if a.neg == "crc":
     b = bytearray(blob); b[-1] ^= 0x5A; blob = bytes(b)
+if a.neg == "model":                     # K1: a blob for another model (the chip's id + 1) must be refused, error 7
+    blob = stamp(blob, MID % 255 + 1, TID)
 bits.tofile(out / "mic.pdm")
 open(out / "cfg.blob", "wb").write(blob)
 
@@ -207,6 +227,10 @@ if pcf is not None and pcf["host"] and (pcf["flags"] & 0xE) == 0xE:     # WAKE, 
     res["pairing_ok"] = pairing(got) and len(dec(got)) == len(seg_all) == len(isl(got))
 res["identical"] = (res["frames_identical"] and res["q_identical"] and res["values_identical"] and res["gpio_identical"]
                     and res["pairing_ok"] is not False)
+if a.neg == "model":                     # refused for the right reason: STATUS cfg error 7, not valid
+    st = [int(l.split()[1], 16) for l in log if l.startswith("S ")]
+    res["refused_model"] = bool(st) and st[0] >> 4 == 7 and not st[0] & 1
+    res["identical"] = res["identical"] or not res["refused_model"]
 json.dump(res, open(out / "result.json", "w"), indent=1)
 print(json.dumps({k: res.get(k) for k in ("neg", "segments", "events", "n_frames", "frames_identical", "q_identical",
                                           "values_identical", "gpio_identical", "pairing_ok", "frontend_identical", "status",
