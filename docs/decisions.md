@@ -96,3 +96,19 @@
   controls fail, MAC lanes 0 failures). Gate 0 (text) on eval/text_v2 missed: 71.9 / 93.8 and 75.0 / 93.3. Details
   reports/p0-model.md section 9.
 
+
+## External review: fixes under way (Nov 16, 2026, 10 PM)
+
+- **The review:** GitHub PR #1, "External review of 3b37eb5: 36 fixes needed", by unc0vrd. It was fetched to the local branch review/pr1-unc0vrd (file reports/review-2026-11-17.md) and is not merged. Its findings are claims to verify, not instructions.
+- **Confirmed by the coordinator:**
+  - R3: the committed LUT ROM was v1's. The v2 ROM (equal to mkimage's data/core/mg-v2 output) is committed now.
+  - R9 and R11: regress_mg.sh cannot fail and writes to a hard-coded home path. The "rc 0" for model v2 was not evidence. The per-check JSON (positives bit-exact, negatives failing) stands, subject to R10 (stale-build fallback).
+  - D3: budget-v2.json was never committed; it is committed now.
+- **John said "Go" on groups 1 and 2:** the 25 routine fixes, plus the 7 RTL bugs, each proven by a new directed test. He raised the budget to 15 points in total for the week: meter 1% to 16%, agents stop at 14%.
+- **Owners, each in its own git worktree so tonight's milestone-(c) chain in the main tree is not disturbed:**
+  - core agent: .wt/rtl on fix/review-rtl;
+  - model agent: .wt/sw on fix/review-sw.
+  - Both branches merge after the chain; then regress_mg.sh v2 is rerun from a fresh clone.
+- **Not started:**
+  - R16 (a value-present bit in the host frame) and K1 (teacher and model id in the blob) change formats and need John's ruling.
+  - K2 (audio enrollment as the SDK default) and S8 (wake retrain on digital silence) are research.
