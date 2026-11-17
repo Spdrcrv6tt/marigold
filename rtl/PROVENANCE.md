@@ -108,3 +108,14 @@ do not use. Replace them with Marigold's own once mkimage_ts.py is adapted.
   rebuild); synthesis unchanged.
 - marigold_top: the core domain's reset asserts asynchronously when core_on falls (found by the whole-chip run: with
   the clock stopped first, the core kept its state across a power-off and the sample handshake desynchronised).
+
+## Review fixes (Nov 17, 2026, branch fix/review-rtl)
+
+- Poinsetta reference sources moved, unchanged, to rtl/ref/poinsetta: imh_core.sv, imhotep_top.sv, imh_capture.sv,
+  stream.c, model.c, imh_rom_poinsetta.svh, mkimage.py, mkimage_ts.py, and the img/w8 and img/ts-w4c8r layout.h
+  fixtures. They are not built.
+- mg_capture.sv (review R1, R2, R5, R8): a WP0 test parameter, modular index arithmetic, an `en` input, power-off on
+  every request with the handshake restarted at power-up.
+- mg_cfg_load.sv (R4): a MODEL_D parameter and config error 6. mg_match.sv and mg_gpio.sv (R6): an abort input;
+  mg_match.sv (R14): the unused accept handshake removed.
+- Every script and Makefile takes the repo root from its own location (R11). The build roots are overridable.
