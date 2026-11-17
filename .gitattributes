@@ -13,3 +13,5 @@
 # rtl/ is renormalised by the core agent on its own branch (fix/review-rtl: 10 CRLF files under rtl/wake);
 # until then it is left exactly as committed.
 rtl/** -text
+# CMUdict, vendored as downloaded (docs/licenses.md): kept byte for byte.
+sw/wake/lex/** -text

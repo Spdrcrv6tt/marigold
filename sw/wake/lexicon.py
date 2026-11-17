@@ -7,7 +7,7 @@ from functools import lru_cache
 from pathlib import Path
 
 R = Path(__file__).resolve().parents[2]
-CMUDICT = R / "data/wake/lex/cmudict.dict"
+CMUDICT = R / "sw/wake/lex/cmudict.dict"          # in the repo since Nov 17, 2026 (was data/wake/lex, git-ignored)
 PHONES = ["AA", "AE", "AH", "AO", "AW", "AY", "B", "CH", "D", "DH", "EH", "ER", "EY", "F", "G", "HH", "IH", "IY",
           "JH", "K", "L", "M", "N", "NG", "OW", "OY", "P", "R", "S", "SH", "T", "TH", "UH", "UW", "V", "W", "Y", "Z", "ZH"]
 PID = {p: i + 1 for i, p in enumerate(PHONES)}

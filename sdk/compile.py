@@ -40,6 +40,7 @@ def wake_template(wake):
     """Config "wake" object -> (template bytes, wake_sens u16, report)."""
     return wake_tpl.build(wake.get("phrase", ""), float(wake.get("sensitivity", 0.5)), wake.get("phones"))
 MAGIC, VERSION, MAX_BLOB = b"MGC0", 0, 32768
+DEFAULT_EXPANSION = ROOT / "data/expand/expanded_qwen25.json"      # written by sdk/expand.py (DEFAULT_OUT)
 GOLDEN_D = 128          # docs/golden-format.md v1.0: the model's q has D = 128 (review K7: was a 256 default)
 HDR = struct.Struct("<4sHHHBBBBBBiiHHB3x")    # 32 bytes, docs/config-blob.md offsets 0x00-0x1F (0x1C conf_sh, 3 reserved)
 VEC = struct.Struct("<BBh")                   # action u8, flags u8, bias i16
@@ -412,7 +413,7 @@ def enroll_protos(b0, byact, qb=None, K_audio=32, K_text=0, K_bank=0, cal=False,
         act = va != 0
         bias[act] = np.clip(np.round(-(mu[act] - np.median(mu[act]))), -32767, 32767).astype(np.int32)
     if len(va) > max_n:
-        raise ValueError(f"enrollment blob needs {len(va)} vectors, the 32 KB budget holds {max_n}")
+        raise ValueError(f"enrollment does not fit the blob: it needs {len(va)} vectors, the 32 KB budget holds {max_n}")
     bb = dict(b0); bb.update(vectors=V, vec_action=va, vec_flags=np.zeros(len(va), int), bias=bias, N=len(va))
     return bb
 
@@ -542,7 +543,7 @@ def main():
     ap.add_argument("-o", "--out")
     ap.add_argument("--parse")
     ap.add_argument("--embedder", default=None, help="sentence-transformers dir, or 'stub' (tests); default newest data/gate0b/models/*")
-    ap.add_argument("--expansion", default=str(ROOT / "data/expand/expanded_qwen25.json"))
+    ap.add_argument("--expansion", default=str(DEFAULT_EXPANSION), help="sdk/expand.py output, or 'none'")
     ap.add_argument("--dim", type=int, default=None, help="D without a teacher projection (default: --model-tag's D, else 128)")
     ap.add_argument("--model-tag", default=None, help="take D from data/golden/mg-<tag>.json (the model export)")
     ap.add_argument("--projection", default="auto", help="auto = the teacher's marigold_proj.npz when present (golden-format 5), else random")
@@ -569,8 +570,11 @@ def main():
         sys.exit("no embedder: pass --embedder DIR or --embedder stub")
     emb = StubEmbedder() if a.embedder == "stub" else STEmbedder(emb_path)
     if a.expansion != "none" and not Path(a.expansion).exists():     # review K5: no silent fallback to typed examples only
-        sys.exit(f"expansion file {a.expansion} not found: run sdk/expand.py (it writes that file), or pass --expansion none")
+        sys.exit(f"expansion file not found: {a.expansion} (run sdk/expand.py, which writes it, or pass --expansion none)")
     exp = json.load(open(a.expansion, encoding="utf-8")) if a.expansion != "none" else None
+    if exp is None:     # say so rather than build from the typed examples silently (Mythos's check, Nov 17)
+        print("no expansion: the prototypes come from the typed examples only (run sdk/expand.py, or pass --expansion FILE)",
+              file=sys.stderr)
     if a.dim is None and a.model_tag:
         a.dim = int(json.load(open(ROOT / f"data/golden/mg-{a.model_tag}.json", encoding="utf-8"))["cfg"]["D"])
     proj = a.projection

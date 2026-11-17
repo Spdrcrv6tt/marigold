@@ -39,6 +39,8 @@ step() {   # name, command...: run it, log it, stop the run on failure
 # ---- 1. LUT ROM of this export, compared with (or installed as) the tracked file
 step rom python3 rtl/core/tools/mkimage_mg.py rom --tag "$T" --golden-dir "$GD" --out "$B/rom"
 if [ "$DRY" != 1 ]; then
+    # the tracked ROM is LF: a generator that wrote CRLF must neither fail the compare nor install CRs (Mythos's check)
+    tr -d '\r' < "$B/rom/imh_rom.svh" > "$B/rom/imh_rom.lf" && mv "$B/rom/imh_rom.lf" "$B/rom/imh_rom.svh"
     if ! cmp -s "$B/rom/imh_rom.svh" rtl/core/imh_rom.svh; then
         if [ $INSTALL = 1 ]; then cp "$B/rom/imh_rom.svh" rtl/core/imh_rom.svh; echo "installed mg-$T's LUT ROM as rtl/core/imh_rom.svh"
         else echo "REGRESS FAIL: rtl/core/imh_rom.svh is not mg-$T's LUT ROM (rerun with --install-rom, then commit it)"; exit 1; fi
