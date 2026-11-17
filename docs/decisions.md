@@ -85,3 +85,14 @@
   - Typed phrases enrolled as audio reach only 53 / 63%, while the student fits its training products at 96%. So the limit is the student mapping new voices to meaning, not the text teacher (text bound 72 to 95%).
 - model-v2 = QAT of f6. It ships only if the integer model beats v1 on dev.
 - Next (coordinator approved, ~1 to 1.5 usage points, 7 to 9 GPU-h): fine-tune the full 6-layer Moonshine encoder into teacher-v4's space as an audio teacher on the PC, then distil the unchanged 2-layer chip student from it on LibriSpeech 960 h plus TTS. Chip format and ROM size unchanged. The reject fix (dev2, reject prototypes, blind text_v3) runs alongside.
+- 2026-11-16, 7:05 PM, **model v2 ships** (model agent; coordinator ruling on the ship rule "better than v1 on dev"):
+  tag `model-v2`, export **mg-v2** (data/golden/mg-v2.npz, vectors-mg-v2-0..3.npz; golden format v1.0 unchanged, same
+  weights count and ROM size). Teacher-v4 (data/models/teacher-v4: Qwen3-Embedding-4B, Apache 2.0, + LoRA, trained in
+  the 128-d chip space on 120 training appliances) replaces teacher-v3 for the SDK; blobs for model v2 must be compiled
+  with it (sdk/compile.py default when present; model v1 keeps --embedder data/models/teacher-v3). Integer dev unseen
+  accuracy at the 95%-rejection point 47.0% against v1's 36.7%; test: fan 40.0% unseen / 95.1% rejection, microwave
+  39.7% / 96.9% (v1 32.5 / 89.5 and 30.4 / 97.3); blind eval/text_v2 fan 25.7% / 90.8%, microwave 25.3% / 94.2%
+  (synthetic speech, held-out voices). Whole-chip regression on v2 passed (rc 0, all positives bit-exact, negative
+  controls fail, MAC lanes 0 failures). Gate 0 (text) on eval/text_v2 missed: 71.9 / 93.8 and 75.0 / 93.3. Details
+  reports/p0-model.md section 9.
+

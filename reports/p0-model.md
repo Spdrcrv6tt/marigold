@@ -178,3 +178,56 @@ Iteration-2 levers, roughly in order of expected gain:
    normalisation with wider bias range, and a calibrated threshold per product chosen on the OEM's own phrases.
 7. Value head: a dedicated CTC tap from an earlier layer or a small hidden layer, and number-heavy TTS (prices,
    times, temperatures) for the CTC.
+
+## 9. Iteration 2: model v2 (Nov 16, 2026)
+
+**Model v2 ships** (tag `model-v2`, export `data/golden/mg-v2.npz`, vectors `vectors-mg-v2-0..3.npz`; same golden format
+v1.0, D = 128, same 4,586,560 weights and 18.82 Mbit ROM, so it swaps in as a ROM image). Ship rule: better than v1 on
+dev. Integer dev unseen accuracy at the 95%-rejection point, mean of the two products: **47.0% against v1's 36.7%**.
+Whole-chip regression `rtl/top/regress_mg.sh v2` (Nov 16, 18:59, rc 0): every positive bit-exact (q, values, GPIO,
+front end; 149 to 163 ms), the ROM, mic and CRC negative controls fail as required, MAC lane tests 0 failures.
+
+What changed (chip side unchanged):
+- **Teacher v4** (SDK only): Qwen3-Embedding-4B (Apache 2.0) + LoRA 16, trained in the 128-d chip space (a trained
+  head saved as marigold_proj.npz) with the gate-0b supervised contrastive loss, opposite-action hard negatives,
+  a margin and LibriSpeech spread, on 120 training appliances (72 + 48 written by qwen2.5:14b; no fans or
+  microwaves). Chosen on 10 held-out training products: chip-space 94.4% / 94.3% against v3's 92.3% / 94.9%
+  (Qwen3-0.6B 93.6 / 94.2, bge-large 92.5 / 92.6; Qwen3-8B did not fit under the 20 GB cap). sw/teacher4/.
+- **Encoder trained for the decision** (sw/intent/train.py --protos): a softmax over the product's action
+  prototypes (8 per training product-action, max over prototypes) plus a reject class (16 prototypes per product or
+  a learned threshold), margin 0.05, temperature 0.05; LibriSpeech is rejected against every product; Speech Commands
+  words get no decision loss; cosine and relational distillation to teacher-v4 and CTC kept. 150 min float (f6, from
+  v1.1's float model) on 22.4 h of new TTS (48 products) plus the old data, then 40 min QAT with the same losses.
+- **Audio enrollment in the SDK**: sdk/compile.py enroll_protos is now the one implementation the evaluation uses.
+
+Gate 0 (text only, teacher-v4, SDK blob, integer scores, eval/text dev thresholds; sw/teacher4/text_gate.py):
+eval/text test fan 91.7% / 93.8%, microwave 94.7% / 93.2% (teacher-v3 under the same protocol 50 / 93 and 56 / 93);
+the blind **eval/text_v2: fan 71.9% / 93.8%, microwave 75.0% / 93.3%: gate (90 / 95) missed**. Most v2 misses are
+rejected long, chatty commands; short fillers are accepted.
+
+v1 against v2, integer golden models, synthetic speech by held-out voices (eval/text test and its 10 dB copies;
+eval/text_v2 spoken by the same eval voices), threshold and margin for 95% rejection of the clean dev non-commands,
+matching variant chosen on dev (v1: fan text, microwave audio+bank+cal; v2: audio+bank+cal for both); rejections count
+as errors. SYNTHETIC ONLY. Raw: reports/p0/eval-golden-v1-v2.json, eval-golden-v2.json.
+
+| | Fan v1 | Fan v2 | Microwave v1 | Microwave v2 |
+|---|---|---|---|---|
+| Dev unseen (selection) | 33.6% | 47.2% | 39.8% | 46.8% |
+| T2 unseen, clean (rejection off) | 32.5% (53.3%) | **40.0%** (64.6%) | 30.4% (72.0%) | **39.7%** (75.5%) |
+| T4 rejection, clean (other-device) | 89.5% (67%) | **95.1%** (72%) | 97.3% (91%) | 96.9% (77%) |
+| T1 typed | 43.8% | 58.3% | 49.0% | 63.5% |
+| T3 values given the action | 64.7% | 64.1% | 38.9% | 41.0% |
+| Fan noise 10 dB, unseen | 28.0% | 34.3% | 23.2% | 30.1% |
+| Microwave noise 10 dB, unseen | 27.2% | 33.8% | 22.9% | 27.9% |
+| eval/text_v2 unseen (rejection off) / rejection | 24.1% (45.7%) / 92.4% | 25.7% (50.6%) / 90.8% | 24.7% (64.4%) / 94.9% | 25.3% (64.7%) / 94.2% |
+
+v1's clean and eval/text_v2 cells are the Nov 16 rerun (reports/p0/eval-golden-v1-v2.json; microwave differs from section 6 by
+under 3 points because its speech bank is drawn from the rebuilt training index); v1's noise rows are section 6's.
+
+Targets 1 to 4 are still far off; target 10 (noise within 5 points) is worse than v1 in points lost (fan config -5.7 /
+-6.2, microwave config -9.6 / -11.8). The float model before QAT (reports/p0/eval-f6.json) scored within about a point.
+The audio encoder, not the teacher, is the limit: text matching with the same teacher reaches 72 to 95%.
+
+Next (approved, running as milestone c): an audio teacher (all six Moonshine layers, PC only) distilled into the same
+2-layer chip student on LibriSpeech crops plus the TTS; and the reject fix (SDK reject bank, calibration on the new
+dev set eval/text_dev2, blind eval/text_v3 scored once).
