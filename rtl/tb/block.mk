@@ -56,8 +56,9 @@ VARS_ctl   := default
 
 TOP_cap    := mg_capture
 SRCS_cap   := ../top/mg_capture.sv clk_gate.sv
-VARS_cap   := small
+VARS_cap   := small wrap
 ARGS_cap_small := -GAW=12 -GBW=9
+ARGS_cap_wrap  := -GAW=12 -GBW=9 -GWP0=-30000
 
 VARIANT ?= default
 
@@ -69,7 +70,7 @@ run:
 
 .PHONY: one
 one:
-	@mkdir -p results
+	@mkdir -p results; rm -rf $(or $(MARIGOLD_BUILD),.)/sim_build/$(BLOCK)_$(VARIANT) results/$(BLOCK)_$(VARIANT).xml   # clean build: the WSL clock runs ahead of Windows file times
 	@$(MAKE) --no-print-directory -f block.mk BLOCK=$(BLOCK) VARIANT=$(VARIANT) sim \
 	  > results/$(BLOCK)_$(VARIANT).log 2>&1; \
 	  grep -E "TESTS=|PASS=|FAIL=|Error|%Error" results/$(BLOCK)_$(VARIANT).log | tail -3; true

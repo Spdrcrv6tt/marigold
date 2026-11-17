@@ -27,6 +27,8 @@ ap.add_argument("--out", required=True)
 ap.add_argument("--neg", default="")
 ap.add_argument("--seed", type=int, default=7)
 ap.add_argument("--trace", type=int, default=1, help="the trace strap (+trace=); 0 = the product path")
+ap.add_argument("--wake2", type=int, default=-1, help="R2: an extra stand-in wake this many samples after the "
+                "first segment closes (the golden model is rerun with it)")
 ap.add_argument("--blob", default="", help="config blob (default: a random valid one, D from the model)")
 ap.add_argument("--wakes", default="", help="'golden': wakes from the wake golden model (spotter build); a file of "
                 "samples; default: chosen samples for the stand-in spotter build")
@@ -82,6 +84,12 @@ elif a.wakes:
     wakes = [int(w) for w in open(a.wakes).read().split()]
 else:
     wakes = [marks[0] + 6400, marks[1] + 6400, gap]
+if a.wake2 >= 0:
+    _sg = M.Segmenter()
+    for _w in range(len(ref)):
+        _sg.step(_w, _w in wakes, int(raw[_w // 256 - 1]) if (_w > 0 and _w % 256 == 0) else 0)
+    wakes = sorted(set(wakes) | {_sg.segs[0][1] + a.wake2})
+    print("wake2 at", _sg.segs[0][1] + a.wake2, "after the first close at", _sg.segs[0][1])
 open(out / "wakes.txt", "w").write("\n".join(map(str, wakes)) + "\n")
 
 # ---- config and the golden run (on the clean input; the negative controls change only the chip's side)
@@ -136,8 +144,14 @@ for l in log:
             qs.append(cq[:D]); vs.append(cv[:])
 fe = np.fromfile(out / "fe.pcm", dtype="<i2").astype(np.int64)
 n = min(len(fe), len(ref))
+# Frames are compared per stream: island frames (WAKE, TIMEOUT: raised at a sample, as the golden model says) and
+# decision frames (COMMAND, NOMATCH: the golden model dates them at the segment end; the chip sends them after the
+# core's work, so a WAKE of the next segment may come first). Each stream must be identical, in order.
+isl = lambda fs: [f for f in fs if int(f[2:4], 16) in (1, 3)]
+dec = lambda fs: [f for f in fs if int(f[2:4], 16) in (0, 2)]
 res = dict(neg=a.neg, golden=a.golden, segments=[e["segment"] for e in segs], events=len(ev),
-           frames_identical=(got == want), q_identical=(qs == want_q), values_identical=(vs == want_v),
+           frames_identical=(isl(got) == isl(want) and dec(got) == dec(want) and len(got) == len(want)),
+           frame_order_identical=(got == want), q_identical=(qs == want_q), values_identical=(vs == want_v),
            n_frames=len(want), n_segments_run=len(segs),
            frontend_identical=bool(np.array_equal(fe[:n], ref[:n])) and n >= len(ref) - 2,
            status=[l for l in log if l.startswith("S ")], frames_expected=want, frames_chip=got,

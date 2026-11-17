@@ -20,7 +20,8 @@
 module mg_capture #(
     parameter AW = 15,           // ring of 2^AW samples (2^AW x 16 bit)
     parameter BW = 11,           // banks of 2^BW samples (4 KB)
-    parameter QD = 2             // queued segments (power of two)
+    parameter QD = 2,            // queued segments (power of two)
+    parameter [31:0] WP0 = 32'd0 // reset value of the sample index (tests start it near the 2^32 wrap)
 ) (
     input  wire               clk,
     input  wire               rst_n,
@@ -53,6 +54,7 @@ module mg_capture #(
     // ---- free-running: synchronisers and the core power control
     reg  [1:0] ack_s, dq_s;
     reg        dq_seen, slp;
+    reg  [2:0] offc;                                         // clocks the core must stay off
     wire       dq  = (dq_s[1] != dq_seen);
     reg        rd_act, outst, ack_seen;
     reg  [QB:0] qh, qt;
@@ -60,24 +62,27 @@ module mg_capture #(
     wire       ev = rd_act || !qempty || outst;
     always @(posedge clk or negedge rst_n)
         if (!rst_n) begin
-            ack_s <= 2'd0; dq_s <= 2'd0; dq_seen <= 1'b0; slp <= 1'b1; wk_t <= 1'b0; osc_en <= 1'b0;
+            ack_s <= 2'd0; dq_s <= 2'd0; dq_seen <= 1'b0; slp <= 1'b1; wk_t <= 1'b0; osc_en <= 1'b0; offc <= 3'd0;
         end else begin
             ack_s <= {ack_s[0], ack_t}; dq_s <= {dq_s[0], dq_t};
-            if (dq) begin
-                dq_seen <= dq_s[1];
-                if (ev) wk_t <= ~wk_t;                       // something to do already: wake at once
-                else begin osc_en <= 1'b0; slp <= 1'b1; end  // switch the core off
-            end else if (slp && ev) begin
+            if (!osc_en) begin                               // off: the core's toggles are at their reset value
+                dq_seen <= 1'b0;
+                if (offc != 3'd0) offc <= offc - 3'd1;
+            end
+            if (osc_en && dq) begin                          // power-off request: switch off, even with a segment
+                osc_en <= 1'b0; slp <= 1'b1; offc <= 3'd4;   // waiting (it boots again for it: review R2)
+            end else if (slp && ev && offc == 3'd0) begin
                 osc_en <= 1'b1; slp <= 1'b0; wk_t <= ~wk_t;
             end
         end
 
     // ---- everything else runs on a gated clock: once per sample while listening, every clock while delivering
-    wire ack = (ack_s[1] != ack_seen);
+    wire ack = osc_en && (ack_s[1] != ack_seen);             // no acks while the core is off (review R8)
 
     reg  [15:0] mem [0:(1 << AW) - 1];
     reg  [15:0] rq;
     reg  [31:0] wp, last_end, sstart, kw, rp, hwm;
+    reg         wfull, le_v;                                 // pre samples written since reset; last_end recent
     reg  [7:0]  h, sp;
     reg         on, oq, rpend, mark, ovr;
     reg  [31:0] qs [0:QD-1];
@@ -88,21 +93,27 @@ module mg_capture #(
     wire        qfull = ((qt - qh) == QDV);
 
     // segmenter, for the sample being written (index wp)
-    wire        fb     = (wp[7:0] == 8'd0) && (wp != 32'd0);
+    wire [31:0] ws     = wp - WP0;                                 // samples since the stream started
+    wire        fb     = (ws[7:0] == 8'd0) && (ws != 32'd0);
     wire [7:0]  h_n    = fb ? (in_raw ? 8'd0 : ((h == 8'hFF) ? h : h + 8'd1)) : h;
-    wire [31:0] kp     = (wp > pre) ? (wp - pre) : 32'd0;
-    wire [31:0] st0    = (kp > last_end) ? kp : last_end;
+    // start = max(wp - pre, end of the previous segment, stream start), with modular differences only (review R1):
+    // last_end counts only while it is within pre samples of wp (le_v drops once it is older)
+    wire        full_n = wfull || (ws >= pre);
+    wire [31:0] kp     = full_n ? (wp - pre) : WP0;
+    wire [31:0] st0    = (le_v && ((wp - last_end) < pre)) ? last_end : kp;
     wire        wopen  = !on && in_wake;
-    wire        spc    = fb && in_raw && (wp - 32'd256 >= kw);
+    wire [31:0] dk     = wp - 32'd256 - kw;                       // frame start minus the wake, while open
+    wire        spc    = fb && in_raw && !dk[31];
     wire [7:0]  sp_n   = (spc && sp != 8'hFF) ? sp + 8'd1 : sp;
     wire        c_tmo  = on && fb && (sp_n < onset) && (wp - kw >= listen);
     wire        c_sp   = on && fb && (sp_n >= onset) && (wp - sstart >= mn) && (h_n >= hang);
     wire        c_cap  = on && (cap != 32'd0) && ((wp - sstart) == cap);
     wire        wclose = c_tmo || c_sp || c_cap;
     // reader
-    wire        mk     = rd_act && !outst && !rpend && qc[hi] && (rp == qe[hi]);       // end marker due
-    wire        re     = rd_act && !outst && !rpend && !mk && (rp != wp) && !in_valid;  // read the next sample
-    wire        rwork  = rd_act && !outst && (rpend || (rp != wp) || (qc[hi] && (rp == qe[hi])));
+    wire        mk     = osc_en && rd_act && !outst && !rpend && qc[hi] && (rp == qe[hi]);       // end marker due
+    wire        re     = osc_en && rd_act && !outst && !rpend && !mk && (rp != wp) && !in_valid;  // read the next sample
+    wire        rwork  = osc_en && rd_act && !outst && (rpend || (rp != wp) || (qc[hi] && (rp == qe[hi])));
+    wire        rsync  = !osc_en && (q_tog || ack_seen || outst || rpend || mark);  // core off: restart the handshake
     // buffer use: unread samples of queued segments, counting the one being written
     wire        need   = rd_act || !qempty;
     wire [31:0] oldest = rd_act ? rp : qs[hi];
@@ -113,7 +124,7 @@ module mg_capture #(
     // ring bank power: the window [wp - pre, wp] is a run of banks
     localparam NBK = 1 << (AW - BW);
     wire             full = on || rd_act || !qempty || (pre >= R - (32'd1 << BW));
-    wire [31:0]      wlo  = (wp > pre) ? (wp - pre) : 32'd0;
+    wire [31:0]      wlo  = kp;
     wire [AW-BW-1:0] bhi  = wp[AW-1:BW], blo = wlo[AW-1:BW];
     wire [AW-BW-1:0] nbw  = bhi - blo;                          // banks in the window, minus one
     genvar gb;
@@ -122,7 +133,7 @@ module mg_capture #(
         assign bank_pe[gb] = full || (bd <= nbw);
     end endgenerate
 
-    wire gen = in_valid || ack || (!rd_act && !qempty) || rwork || ev_wake || ev_tmo;
+    wire gen = in_valid || ack || (!rd_act && !qempty) || rwork || ev_wake || ev_tmo || rsync;
     wire gclk;
     clk_gate u_cg (.clk(clk), .en(gen), .gclk(gclk));
 
@@ -134,7 +145,7 @@ module mg_capture #(
     integer i;
     always @(posedge gclk or negedge rst_n) begin
         if (!rst_n) begin
-            wp <= 32'd0; last_end <= 32'd0; sstart <= 32'd0; kw <= 32'd0; rp <= 32'd0; hwm <= 32'd0; h <= 8'd0;
+            wp <= WP0; wfull <= 1'b0; le_v <= 1'b0; last_end <= 32'd0; sstart <= 32'd0; kw <= 32'd0; rp <= 32'd0; hwm <= 32'd0; h <= 8'd0;
             sp <= 8'd0; on <= 1'b0; oq <= 1'b0; rpend <= 1'b0; mark <= 1'b0; ovr <= 1'b0; rd_act <= 1'b0;
             outst <= 1'b0; ack_seen <= 1'b0; qh <= 0; qt <= 0; qc <= 0; qto <= 0; ev_wake <= 1'b0; ev_tmo <= 1'b0;
             q_idx <= 32'd0; q_data <= 16'd0; q_seg <= 1'b0; q_tog <= 1'b0; q_bkl <= 32'd0;
@@ -142,7 +153,9 @@ module mg_capture #(
         end else begin
             ev_wake <= 1'b0; ev_tmo <= 1'b0;
             // the core is off with nothing in flight: its toggles are back at their reset value, so are ours
-            if (!osc_en && !rd_act && !outst) begin q_tog <= 1'b0; ack_seen <= 1'b0; end
+            // the core is off: its toggles are at their reset value, so are ours; a sample or end marker that was
+            // presented but not taken is presented again after power-up (rp and the queue are unchanged)
+            if (!osc_en) begin q_tog <= 1'b0; ack_seen <= 1'b0; outst <= 1'b0; rpend <= 1'b0; mark <= 1'b0; end
             // ---- write side
             if (in_valid) begin
 `ifdef SYNTHESIS
@@ -152,6 +165,8 @@ module mg_capture #(
 `endif
                 wp <= wp + 32'd1;
                 h <= h_n;
+                wfull <= full_n;
+                if (le_v && ((wp - last_end) >= pre)) le_v <= 1'b0;
                 if (need && (wp - oldest >= R)) ovr <= 1'b1;          // overwrote a sample still to be delivered
                 if (occ > hwm) hwm <= occ;
                 if (wopen) begin
@@ -162,7 +177,7 @@ module mg_capture #(
                     sp <= sp_n;
                     if (wclose) begin
                         if (oq) begin qe[tl] <= wp; qc[tl] <= 1'b1; qto[tl] <= c_tmo; end
-                        last_end <= wp; on <= 1'b0;
+                        last_end <= wp; le_v <= 1'b1; on <= 1'b0;
                         if (c_tmo) ev_tmo <= 1'b1;
                     end
                 end
@@ -186,7 +201,7 @@ module mg_capture #(
                     q_seg <= 1'b0; q_idx <= hwm; q_data <= {14'd0, qto[hi], ovr}; q_tog <= ~q_tog; outst <= 1'b1;
                     mark <= 1'b1; q_bkl <= 32'd0;
                 end else if (re) rpend <= 1'b1;
-                else if (rpend) begin
+                else if (rpend && osc_en) begin
                     q_seg <= 1'b1; q_idx <= rp; q_data <= rq; q_tog <= ~q_tog; outst <= 1'b1; rpend <= 1'b0;
                     q_bkl <= wp - rp;
                 end

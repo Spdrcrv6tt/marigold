@@ -5,7 +5,8 @@
 #   2. ROM image (mkimage_mg.py data + image-mg), whole-chip simulators (spotter and stand-in builds), each step checked.
 #   3. Checks (rtl/top/tb/mg_e2e.py, at most $JOBS simulators at a time; 1 while another regression runs):
 #      positives (must be bit-exact): LibriSpeech with stand-in wakes, "Hey Breeze..." x2 with the spotter, both
-#      also with the trace strap off (+trace=0, the product path); negatives (must differ): ROM bit, mic bits, CRC.
+#      also with the trace strap off (+trace=0, the product path), and a second wake 150 samples after a segment
+#      closes (review R2); negatives (must differ): ROM bit, mic bits, CRC.
 #   4. Unit tests: core (test-fan, test-mac on mg-<tag>'s tables) and the island blocks (cfg ctl cap).
 # Exit status 0 only if every step succeeded, every positive was identical and every negative failed.
 # The repo root comes from this file's location; builds go to $MARIGOLD_BUILD and $CORE_BUILD (rtl/core/tools/env.sh).
@@ -83,6 +84,7 @@ reap_one() {
 run_check libri-pos $SL --out "$L/libri-pos"
 run_check breeze-pos $SB --out "$L/breeze-pos"
 run_check libri-pos-t0 $SL --trace 0 --out "$L/libri-pos-t0"
+run_check libri-wake2 $SL --wake2 150 --out "$L/libri-wake2"       # review R2: a wake 9 ms after a close
 run_check breeze-pos-t0 $SB --trace 0 --out "$L/breeze-pos-t0"
 for n in rom mic crc; do run_check breeze-$n $SB --neg $n --out "$L/breeze-$n"; done
 while [ "${#PID2NAME[@]}" -gt 0 ]; do reap_one; done       # every child's status is collected, finished or not
