@@ -177,17 +177,16 @@
   - compile.py takes --model-tag (default v3) and uses that model's teacher by default. It refuses an --embedder from another teacher before loading it, and prints the model and teacher on every compile.
   - evaluate.py takes --model-tag too. Its --teacher default, teacher-v3 until now, is the model's teacher.
   - Teacher research (sw/teacher4/text_gate.py) compiles for no chip model (model id 0), which every chip refuses.
-- **Test blob:** rtl/top/tb/fan-i2c.mgc is re-packed as version 1 with identical vectors and tables; mkblob_i2c.py makes the same bytes.
-  - data/sdk/fan.mgc was compiled on Nov 15 with teacher-v3, so the blob honestly says model 1, teacher 3, and a v3 chip refuses it as it stands.
-  - mg_e2e.py stamps every blob with the chip's ids, because the whole-chip checks are about bit-exactness, not what the vectors mean.
-  - New `mg_e2e.py --neg model`: a blob for another model must be refused with error 7. It is not one of regress_mg.sh's 8 checks, because Mythos's test pins that count.
+- **Test blob (coordinator's follow-up):** rtl/top/tb/fan-i2c.mgc comes from data/sdk/fan-v3.mgc, a new file: sdk/configs/fan.json compiled with the shipping defaults (model v3, teacher-v4, the default expansion and the teacher's projection; the plain text variant).
+  - mkblob_i2c.py defaults to it and makes the same bytes. The old fixture came from data/sdk/fan.mgc, compiled on Nov 15 with teacher-v3: a model-v1 blob.
+  - mg_e2e.py loads a --blob as it is, so a blob made for another model is refused and the check fails. Only `--neg model` stamps another model's id; the harness's random config carries the chip's ids.
+  - regress_mg.sh runs `breeze-model` as a 9th check: the chip must refuse that blob with STATUS cfg error 7. test_regress_mg.py (ADAPTED) expects 9 runs and covers a failing neg-model.
 - **Evidence (branch fix/r16-k1):**
   - Directed tests failed on the old code and pass now. Golden: sdk/tests/test_r16_unsaid_values.py (4) and test_k1_blob_model.py (6). RTL: cfg value_not_said, cfg model_id_check (also in the new id34 variant) and ctl value_not_said_frame.
   - Before, the island sent the review's case as `a5 00 04 01 01 01000000 01 bf` (power_level, power = 1); now it sends `a5 00 04 00 01 b2`.
   - Windows pytest 62 of 62 (11 new, counting rtl/tests/test_lut_rom.py's model id check). WSL: test_run_resume.py and test_regress_mg.py 18 of 18. Island unit tests 20 of 20 (cfg, ctl, cap). Firmware value parse against values.py: 20,000 of 20,000 identical, 24,445 of the slots with no value.
-  - `regress_mg.sh v3` in the worktree: REGRESS PASS, exit 0, about 42 minutes. The 5 positives are bit-exact (the core wrote 0x80000000 for unsaid slots and the chip left them out of its frames, as the golden model did), the rom, mic and crc negatives are caught, and the core and island unit tests pass.
-  - `mg_e2e.py --neg model` on the same v3 chip: STATUS 0x70 (error 7, not valid), no frames.
+  - `regress_mg.sh v3` in the worktree (6a22056 content): REGRESS PASS, exit 0, about 42 minutes, 9 checks. The 5 positives are bit-exact on the v3 test blob, and the core wrote 0x80000000 for unsaid slots that the chip left out of its frames, as the golden model did. The rom, mic and crc negatives are caught; breeze-model gets STATUS 0x70 (error 7) and no frames. Core and island unit tests pass. WSL pytest 19 of 19.
 - **Open:**
-  - The untracked v0 blobs under data/sdk no longer load or parse; recompile them with sdk/compile.py. sw/golden/intent_vectors.py needs a v1 blob (its default is data/sdk/microwave.mgc).
+  - The other untracked v0 blobs under data/sdk no longer load or parse; recompile them with sdk/compile.py. sw/golden/intent_vectors.py now defaults to data/sdk/microwave-<tag>.mgc (data/sdk/microwave-v3.mgc is compiled) and refuses a blob for another model.
   - The release vectors (vectors-mg-v2-*) record 0 for "no value"; they are not regenerated (weights/ and releases untouched).
-  - Unchanged on purpose: an action whose slot mask names a slot the slot table does not have still sends that slot as 0. Only a malformed blob can do this; the SDK never makes one.
+  - Unchanged on purpose: an action whose slot mask names a slot the slot table does not have still sends that slot as 0. Only a malformed blob can do this; the SDK never makes one. Refusing it at load (field range) was not done: every random cocotb config (rtl/tb/mg_util.py rand_cfg) has such masks, so those tests would need new configs.
