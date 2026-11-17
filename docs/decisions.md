@@ -160,3 +160,31 @@
   - Python tests 51 of 51, GPU included; shell-script tests 18 of 18; sw/intent/test_resume.sh ok.
   - A fresh clone with no data/ passes 42 of 42.
   - `regress_mg.sh v3` from a fresh WSL clone: REGRESS PASS, exit 0, in 42 minutes. The 5 positives are bit-exact, the rom, mic and crc negatives are caught, and the core and island unit tests pass.
+
+## R16 and K1, John's rulings (Nov 17, 2026)
+
+- **R16 (John: yes): a value nobody said must not look like the slot's minimum.**
+  - Before: with no value heard the raw slot value was 0 and the island clamped it to the slot's minimum. "Power level five" with the number missed arrived as power_level with power = 1; "start" with no time as start, 1 s.
+  - Now: the value head (sw/intent/values.py) and the core firmware (rtl/core/fw/mg_values.h) write INT32_MIN (0x80000000) for "no value". The island (rtl/model/mg_model.py, rtl/top/mg_match.sv) never clamps it: the slot leaves the action's slot mask, so the COMMAND frame leaves it out.
+  - Frame layout unchanged (docs/config-blob.md). n_values counts only the values said; a slot of the action missing from the frame was not said. No sequence number (offered, not approved).
+  - No retraining: the parse already knew when it found nothing (it mapped that to 0 at the very end), and no said value can be INT32_MIN.
+  - GPIO: one rule type uses values, mode 3 (a slot in binary on pins; the fan's set_level). With no value said, its pins keep their state, as for an action that does not carry the slot. They used to show the minimum.
+- **K1 (John: yes): a blob records the model and teacher it was built for, and the chip refuses a blob made for another model.**
+  - Blob version 1: 0x1D model id (the tag number, 3 for mg-v3), 0x1E teacher id (4 for teacher-v4; 0 for the SDK's test stub), 0x1F reserved. A version 0 blob fails with error 2.
+  - STATUS cfg error 7, "built for another model": after the D check (error 6), both bytes must equal the chip's MODEL_ID and TEACHER_ID build parameters.
+  - Where the chip's ids come from: rtl/top/chip.mk reads them from the model the LUT ROM was generated from (sdk/chip_models.py --rom). marigold_top.sv defaults to 3 and 4, and rtl/tests/test_lut_rom.py fails if those differ from the tracked ROM's model.
+  - One model-to-teacher table, sdk/chip_models.py (v1: teacher-v3; v2 and v3: teacher-v4). It is read by sdk/compile.py, sw/intent/evaluate.py, chip.mk and the whole-chip checks.
+  - compile.py takes --model-tag (default v3) and uses that model's teacher by default. It refuses an --embedder from another teacher before loading it, and prints the model and teacher on every compile.
+  - evaluate.py takes --model-tag too. Its --teacher default, teacher-v3 until now, is the model's teacher.
+  - Teacher research (sw/teacher4/text_gate.py) compiles for no chip model (model id 0), which every chip refuses.
+- **Test blob:** rtl/top/tb/fan-i2c.mgc is re-packed as version 1 with identical vectors and tables; mkblob_i2c.py makes the same bytes.
+  - data/sdk/fan.mgc was compiled on Nov 15 with teacher-v3, so the blob honestly says model 1, teacher 3, and a v3 chip refuses it as it stands.
+  - mg_e2e.py stamps every blob with the chip's ids, because the whole-chip checks are about bit-exactness, not what the vectors mean.
+  - New `mg_e2e.py --neg model`: a blob for another model must be refused with error 7. It is not one of regress_mg.sh's 8 checks, because Mythos's test pins that count.
+- **Evidence (branch fix/r16-k1):**
+  - Directed tests failed on the old code and pass now. Golden: sdk/tests/test_r16_unsaid_values.py (4) and test_k1_blob_model.py (6). RTL: cfg value_not_said, cfg model_id_check (also in the new id34 variant) and ctl value_not_said_frame.
+  - Before, the island sent the review's case as `a5 00 04 01 01 01000000 01 bf` (power_level, power = 1); now it sends `a5 00 04 00 01 b2`.
+  - Windows pytest 62 of 62 (11 new, counting rtl/tests/test_lut_rom.py's model id check). WSL: test_run_resume.py and test_regress_mg.py 18 of 18. Island unit tests 20 of 20 (cfg, ctl, cap). Firmware value parse against values.py: 20,000 of 20,000 identical, 24,445 of the slots with no value.
+- **Open:**
+  - The untracked v0 blobs under data/sdk no longer load or parse; recompile them with sdk/compile.py. sw/golden/intent_vectors.py needs a v1 blob (its default is data/sdk/microwave.mgc).
+  - The release vectors (vectors-mg-v2-*) record 0 for "no value"; they are not regenerated (weights/ and releases untouched).

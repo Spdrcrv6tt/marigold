@@ -140,7 +140,8 @@ Vocabulary (id: token): 0 blank, 1-20 zero..nineteen, 21-28 twenty..ninety, 29 h
    - level slot: "level n", else the first level word as a code (-1 low, -2 medium, -3 high, -4 max, -5 min;
      "half" alone is medium), else the first bare number;
    - number slot: the first degree or percent number, else the first bare number, else "level n";
-   - nothing heard: 0.
+   - nothing heard: NO_VALUE = INT32_MIN (-2147483648; R16, John's ruling of Nov 17, 2026, was 0). No said value is
+     negative below the level codes, so the code is never a value; the island leaves that slot out of the frame.
 4. The island (architecture.md 8.7, ruling of Nov 15) maps codes -1..-5 with the slot entry's low/medium/high
    bytes (0 = default: low = min, medium = floor((min + max) / 2), high = max; max -> max, min -> min), then clamps
    to [min, max] (`island_value` in values.py; rtl/model/mg_model.py must do the same).
