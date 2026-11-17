@@ -185,6 +185,9 @@
   - Directed tests failed on the old code and pass now. Golden: sdk/tests/test_r16_unsaid_values.py (4) and test_k1_blob_model.py (6). RTL: cfg value_not_said, cfg model_id_check (also in the new id34 variant) and ctl value_not_said_frame.
   - Before, the island sent the review's case as `a5 00 04 01 01 01000000 01 bf` (power_level, power = 1); now it sends `a5 00 04 00 01 b2`.
   - Windows pytest 62 of 62 (11 new, counting rtl/tests/test_lut_rom.py's model id check). WSL: test_run_resume.py and test_regress_mg.py 18 of 18. Island unit tests 20 of 20 (cfg, ctl, cap). Firmware value parse against values.py: 20,000 of 20,000 identical, 24,445 of the slots with no value.
+  - `regress_mg.sh v3` in the worktree: REGRESS PASS, exit 0, about 42 minutes. The 5 positives are bit-exact (the core wrote 0x80000000 for unsaid slots and the chip left them out of its frames, as the golden model did), the rom, mic and crc negatives are caught, and the core and island unit tests pass.
+  - `mg_e2e.py --neg model` on the same v3 chip: STATUS 0x70 (error 7, not valid), no frames.
 - **Open:**
   - The untracked v0 blobs under data/sdk no longer load or parse; recompile them with sdk/compile.py. sw/golden/intent_vectors.py needs a v1 blob (its default is data/sdk/microwave.mgc).
   - The release vectors (vectors-mg-v2-*) record 0 for "no value"; they are not regenerated (weights/ and releases untouched).
+  - Unchanged on purpose: an action whose slot mask names a slot the slot table does not have still sends that slot as 0. Only a malformed blob can do this; the SDK never makes one.
