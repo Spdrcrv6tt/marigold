@@ -15,18 +15,13 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 os.environ.setdefault("HF_HOME", str(ROOT / "data" / "hf"))
 sys.path.insert(0, str(ROOT / "sw")); sys.path.insert(0, str(ROOT / "sdk"))
-from textfilter import EvalFilter, norm  # noqa: E402
+from textfilter import EvalFilter, norm  # noqa: E402,F401
 import compile as C  # noqa: E402
 
 
 def main():
     tp = ROOT / sys.argv[1]
-    flt = EvalFilter()
-    for d in ("eval/text_dev2", "eval/text_v3"):
-        for f in (ROOT / d).glob("*.txt"):
-            for line in open(f, encoding="utf8"):
-                if line.strip() and not line.startswith("#"):
-                    flt.ev.add(norm(line.partition(" | ")[0]))
+    flt = EvalFilter()             # covers eval/text and every eval/text_* set (review S4)
     tt = json.load(open(ROOT / "data/gate0b/train_text_v4.json", encoding="utf8"))
     rows = []
     for p, r in tt.items():
