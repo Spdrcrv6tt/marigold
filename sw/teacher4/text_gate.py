@@ -108,7 +108,8 @@ def main():
         Qdp, Qdn = Qi([r["text"] for r in dev_p]), Qi([r["text"] for r in caln])
         tried = []
         for k, t in grid:
-            blob, rep = C.compile_config(cfg, prod, emb, exp, proj="teacher", reject_bank=bank if k else None, bank_protos=k, bank_keep=t)
+            blob, rep = C.compile_config(cfg, prod, emb, exp, proj="teacher", reject_bank=bank if k else None, bank_protos=k, bank_keep=t,
+                                         model_tag=None)    # K1: candidate teachers, so a blob for no chip model (id 0)
             b = C.parse(blob)
             thr, mg, dacc = pick_thr_margin(b, Qdn, Qdp, yd)
             tried.append(dict(bank_protos=k, bank_keep=t, thr=int(thr), margin=int(mg), dev_acc=dacc, N=int(b["N"]),
