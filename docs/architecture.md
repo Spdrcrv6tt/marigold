@@ -55,8 +55,9 @@ keep their names (imh_*, rtl/PROVENANCE.md); new blocks are mg_*.
   margin). Enabled by the island only between a wake and the core's power-off request.
 - Domains: AON (island logic, 32 KB config SRAM, 8 GPIO pads), RING (16 capture banks of 4 KB, each with its own
   power enable), CORE (controller, PMEM, working SRAM, arrays, ROM; one switch, isolated outputs). The core loses
-  all state when off and boots again on every wake: its program is copied from the ROM (Poinsetta's boot FSM,
-  about 16 KB at 16 bytes per clock, under 15 us).
+  all state when off and boots again on every wake: its program is copied from the ROM (Poinsetta's boot FSM
+  copies one byte per clock: the 14.4 KB firmware takes about 14,400 clocks, about 147 us at 98.3 MHz. Derived
+  from mg_core.sv and the image size, not measured; review D2 corrected an earlier figure ten times too low).
 - In simulation, a powered-down memory (ring bank, PMEM, working SRAM) fills with random data, so a design that
   relies on lost state fails the bit-exact check (Poinsetta's method).
 - rst_n: asynchronous assert, synchronous release per domain. The core is held in reset whenever it is off.
@@ -73,7 +74,7 @@ keep their names (imh_*, rtl/PROVENANCE.md); new blocks are mg_*.
 | Config loader | top/mg_cfg_load.sv | Takes the blob as a byte stream from I2C (CFG_DATA), writes it to config SRAM, checks magic, version, field ranges, length and CRC-32. Only a blob that passes sets cfg_valid. Boot from SPI flash (spi_flash_reader.sv is in the tree) is cut from iteration 1 (coordinator scope ruling). |
 | Matcher | top/mg_match.sv | The exact rule of docs/config-blob.md, steps 2 to 5, one int8 MAC per clk_fe clock straight from config SRAM (N x D clocks: a full 32 KB blob takes at most 10.7 ms). Inputs q (D <= 256 int8) and one raw value per config slot (level codes included), written by the core over the bridge before MATCH_GO; table fields after the vectors are read a byte at a time (they need not be word aligned). |
 | Event and message formatter | top/mg_msg.sv | Events COMMAND, WAKE, NOMATCH, TIMEOUT (docs/config-blob.md, section 8.7). Builds 0xA5, type, action, n_values, {slot, i32 LE} per value, confidence, CRC-8 (section 8.4), at most 46 bytes, into a 2-frame FIFO; serves frames to I2C reads or sends them on the UART; drives irq_o. Event frames go to the host only when their flag bit is set. |
-| I2C target | top/mg_i2c.sv | 7-bit address, standard and fast mode (100 and 400 kHz), sampled on clk_fe through two-flop synchronisers. No clock stretching. Register map in section 6. |
+| I2C target | top/mg_i2c.sv | 7-bit address, **standard mode (100 kHz) only** in iteration 1, sampled on clk_fe through two-flop synchronisers; no clock stretching. Fast mode is not supported: SDA changes 651 to 977 ns after SCL falls, so with fast mode's 300 ns rise the target misses tVD;DAT (0.9 us); measured in test_ctl.py i2c_timing (review R7). Fast mode needs clock stretching or a faster sampling clock (iteration 2). Register map in section 6. |
 | UART | src/uart_tx.sv (reused) | 8N1, bit time 27 clk_fe clocks (113.8 kbaud, 1.2% from 115200). Used for messages when the host strap selects UART. |
 | GPIO rule engine | top/mg_gpio.sv | 8 push-pull outputs, reset low. Applies the rules of the accepted action, or of event entry 0xF0 / 0xF1 / 0xF2 on WAKE / NOMATCH / TIMEOUT, whatever the flags (section 8.5); one pulse timer per pin. |
 | Always-on control | top/marigold_top.sv | Straps, listen enable, core power and oscillator sequencing, isolation, the bridge's island side. |
@@ -165,7 +166,7 @@ returns bytes from the pointer. The pointer increments after each byte except on
 | Reg | Name | Access | Meaning |
 |---|---|---|---|
 | 0x00 | ID | r | 0x4D |
-| 0x01 | STATUS | r | [0] cfg_valid, [1] loading or checking, [2] message ready, [3] listening, [7:4] cfg error (0 none, 1 magic, 2 version, 3 field range, 4 length, 5 CRC) |
+| 0x01 | STATUS | r | [0] cfg_valid, [1] loading or checking, [2] message ready, [3] listening, [7:4] cfg error (0 none, 1 magic, 2 version, 3 field range, 4 length, 5 CRC, 6 D is not the model's) |
 | 0x02 | CTRL | w | [0] begin a config load (clears cfg_valid, stops listening), [1] commit (check, then listen if valid), [2] listen on, [3] drop the pending frames, [4] listen off |
 | 0x03 | CFG_DATA | w, stream | next blob byte |
 | 0x04 | MSG_LEN | r | bytes in the pending message (0 = none) |
@@ -210,6 +211,7 @@ w with w - start >= mn and h >= hang. In either state it also closes at the samp
 (cap != 0). The end is exclusive. Defaults: pre 4800 (0.3 s), onset 3 frames, listen 64000 (4 s), mn 8000,
 hang 8 frames (128 ms), cap 96000 (6 s). (Coordinator rulings of Nov 15: pre 4800, was 16000; mn 8000, was 32000.) raw is used rather than vad because vad_o has a 20-frame (320 ms)
 hangover, too long for target 7.
+When listening stops (CTRL listen off, or a config begin) with a segment open, the segment ends at that sample as a TIMEOUT (the core runs no model) and no event is raised (review R5).
 
 ### 8.2 Matching (docs/config-blob.md), two points made exact
 - The margin test with no vector of a different action (every vector belongs to action[b]) passes: the maximum
@@ -252,9 +254,11 @@ For an accepted action, rules gpio_first to gpio_first + gpio_count - 1 apply in
   COMMAND is always queued; WAKE, NOMATCH and TIMEOUT only when flags bits 1, 2, 3 are set. GPIO rules (the
   action's, or entry 0xF0 / 0xF1 / 0xF2 found by id in the action table; none if the entry is absent) apply for
   every event, whatever the flags.
+- Pairing (review R2 fix): every WAKE is followed by exactly one decision frame (COMMAND, NOMATCH or TIMEOUT) in segment order, but the next WAKE may come before the previous decision (the core boots again for a segment that opened while it finished); hosts pair them first-in, first-out.
 
 ### 8.6 Config checks
 magic "MGC0", version 0, 1 <= n_actions <= 64, n_slots <= 8, n_gpio <= 32, host <= 2, D <= 256, total length
 (0x20 + 4N + N D + 4 n_actions + 12 n_slots + 8 n_gpio + wake_len + 4) <= 32768 and equal to the bytes received,
 then CRC-32 (IEEE: reflected polynomial 0xEDB88320, initial 0xFFFFFFFF, final XOR 0xFFFFFFFF, as zlib.crc32) over
 every byte before the last four, compared with them.
+Then (review R4) D must equal the chip model's output size (MODEL_D, 128 for the shipped ROM), else error 6: a blob made for another model never loads.

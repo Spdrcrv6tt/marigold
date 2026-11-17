@@ -1,10 +1,9 @@
-# Imhotep core + chip: firmware, image, simulations.
-# Run in WSL:  bash rtl/core/tools/wsl.sh 'make -C rtl/top <target>'
-#   make host           PC build of the firmware (MAC array as a C function)        -> $(B)/fw_host
-#   make image          RV32IM firmware + ROM/flash image                           -> $(IMG)/flash.bin, flash.hex
-#   make sim-rom        Verilator: whole chip, weights in on-die ROM, PDM in        -> $(B)/rom/sim
-#   make sim-flash      Verilator: whole chip, weights in external quad SPI flash   -> $(B)/flash/sim
-#   make sim-cov        sim-rom with toggle coverage (switching activity for power)  -> $(B)/cov/sim
+# Marigold core: unit tests of the MAC arrays and the per-element unit, firmware and ROM image.
+# Run in WSL:  bash rtl/core/tools/wsl.sh 'make -C rtl/top <target>'   (the whole chip: rtl/top/chip.mk)
+#   make test-mac / test-fan    MAC array + per-element unit / fan-out array against their C references
+#   make TAG=<tag> image-mg     RV32IM firmware + ROM image of a model export   (section below)
+# Poinsetta's whole-chip and streaming-decoder targets were removed (review R15); their sources are in
+# rtl/ref/poinsetta and their history in Poinsetta commit 1719528 (rtl/PROVENANCE.md).
 TAG     ?= w8
 LANES   ?= 16
 USE_VEC ?= 1
@@ -13,7 +12,6 @@ THREADS ?= 1
 CAPAW   ?= 16
 RATIO   ?= 16
 FWDEFS  ?=
-UARTDIV := $(shell expr $(RATIO) \* 3072000 / 115200)
 ROOT    := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
 IMG     := $(ROOT)/data/core/$(TAG)
 # unit tests (test-mac, test-fan) compile against layout.h of the shipped model (v2), whose LUT tables are the
@@ -27,35 +25,8 @@ SRC     := $(ROOT)/rtl/src
 TB      := $(ROOT)/rtl/top/tb
 RVFLAGS := --target=riscv32-unknown-elf -march=rv32im -mabi=ilp32 -O2 -ffreestanding -fno-builtin -nostdlib \
            -mno-relax -msmall-data-limit=0 -DLANES=$(LANES) -DUSE_VEC=$(USE_VEC) $(FWDEFS) -I$(IMG) -Wall -Wno-unused
-RTL     := $(CORE)/imh_cpu.sv $(CORE)/imh_mem.sv $(CORE)/imh_mac.sv $(CORE)/imh_vec.sv $(CORE)/imh_fan.sv $(CORE)/imh_core.sv $(SRC)/mac_lane.sv \
-           $(SRC)/uart_tx.sv $(SRC)/spi_flash_reader.sv
-CHIP    := $(RTL) $(ROOT)/rtl/top/imh_capture.sv $(ROOT)/rtl/top/imhotep_top.sv $(SRC)/pdm_frontend.sv $(SRC)/pdm_clkgen.sv \
-           $(SRC)/cic_decim.sv $(SRC)/fir_decim2.sv $(SRC)/dc_block.sv $(SRC)/vad.sv $(TB)/imh_flash_model.sv
-VFLAGS  := --cc --exe --build -j 8 -O3 --x-assign fast --x-initial fast -Wno-fatal -Wno-WIDTH -Wno-UNUSED -Wno-PINMISSING \
-           -Wno-TIMESCALEMOD -I$(SRC) -I$(CORE) --top-module tb_chip -CFLAGS -O3 -MAKEFLAGS OPT_FAST=-O3 -GLANES=$(LANES) -GRAM_BYTES=$(RAM) \
-           -GIMAGE=\"$(B)/flash.hex\" -GIMG_BYTES=$(IMGB) -GCAP_AW=$(CAPAW) -GUART_DIV=$(UARTDIV) $(if $(filter-out 1,$(THREADS)),--threads $(THREADS))
 
-.PHONY: host image sim-rom sim-flash sim-cov test-mac
-host:
-	gcc -O2 -DHOST -DLANES=$(LANES) -DUSE_VEC=$(USE_VEC) -Wall -Wno-unused -I$(IMG) -o $(B)/fw_host $(FW)/model.c $(FW)/hal_host.c
-
-image:
-	$(LLVM)/clang $(RVFLAGS) -fuse-ld=lld -Wl,-T,$(FW)/link.ld -o $(B)/fw.elf $(FW)/start.S $(FW)/hal_rv.c $(FW)/model.c
-	$(LLVM)/llvm-objcopy -O binary $(B)/fw.elf $(B)/fw.bin
-	$(LLVM)/llvm-objdump -d $(B)/fw.elf > $(B)/fw.lst
-	$(LLVM)/llvm-size $(B)/fw.elf
-	python3 $(ROOT)/rtl/core/tools/catimage.py $(B)/fw.bin $(IMG)/data.bin $(B)/flash.bin
-	od -An -v -tx1 -w1 $(B)/flash.bin > $(B)/flash.hex
-	cp $(B)/fw.bin $(B)/flash.bin $(B)/flash.hex $(IMG)/
-
-sim-rom:
-	verilator $(VFLAGS) -GWSRC_ROM=1 --Mdir $(B)/rom -o sim $(TB)/tb_chip.sv $(CHIP) $(TB)/sim_main.cpp
-# toggle-coverage build of the ROM chip for the power estimate (rtl/core/syn/power_core.py)
-sim-cov:
-	verilator $(VFLAGS) --coverage-toggle -GWSRC_ROM=1 --Mdir $(B)/cov -o sim $(TB)/tb_chip.sv $(CHIP) $(TB)/sim_main.cpp
-sim-flash:
-	verilator $(VFLAGS) -GWSRC_ROM=0 --Mdir $(B)/flash -o sim $(TB)/tb_chip.sv $(CHIP) $(TB)/sim_main.cpp
-
+.PHONY: test-mac test-fan
 # unit test of the MAC array and the per-element unit against their C references (fw/hal_host.c)
 test-mac:
 	for L in 16 8 4; do \
@@ -81,18 +52,6 @@ test-fan:
 	$(B)/fan/test_fan 400 7
 	$(B)/fan/test_fan 60 11 full
 	$(B)/fan/test_fan 7 3 shapes
-
-# ---- Poinsetta streaming firmware (rtl/core/fw/stream.c) with the format-3 image (mkimage_ts.py data)
-TSIMG := $(ROOT)/data/core/ts-$(TAG)
-IMGB  ?= 33554432
-host-ts:
-	gcc -O2 -DHOST -DLANES=$(LANES) $(FWDEFS) -Wall -Wno-unused -I$(TSIMG) -I$(FW) -o $(B)/fw_host_ts $(FW)/stream.c $(FW)/hal_host.c
-image-ts:
-	$(LLVM)/clang -I$(TSIMG) $(RVFLAGS) -fuse-ld=lld -Wl,-T,$(FW)/link.ld -o $(B)/fw_ts.elf $(FW)/start.S $(FW)/hal_rv.c $(FW)/stream.c
-	$(LLVM)/llvm-objcopy -O binary $(B)/fw_ts.elf $(B)/fw.bin
-	$(LLVM)/llvm-size $(B)/fw_ts.elf
-	python3 $(ROOT)/rtl/core/tools/catimage.py $(B)/fw.bin $(TSIMG)/data.bin $(B)/flash.bin
-	od -An -v -tx1 -w1 $(B)/flash.bin > $(B)/flash.hex
 
 # ---- Marigold intent firmware (rtl/core/fw/marigold.c) with the mg image (rtl/core/tools/mkimage_mg.py data)
 #   make TAG=randtest host-mg   PC build (fan-out array, MAC array, per-element unit as C functions)  -> $(B)/fw_host_mg
