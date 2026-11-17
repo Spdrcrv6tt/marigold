@@ -7,6 +7,7 @@ Every dataset, model and voice Marigold touches, with its license and what we ma
 | Name | Source | License | Use | On disk | Checked |
 |---|---|---|---|---|---|
 | LibriSpeech (all splits, incl. train-other-500) | openslr.org/12 | CC BY 4.0 | Training and eval | data/librispeech, data/librispeech-extra (junctions to Imhotep and Poinsetta copies) | 2026-11-15 |
+| LibriSpeech train-clean-360 | openslr.org/12 (www mirror; no account) | CC BY 4.0 | Training (audio-teacher distillation crops, iteration 2) | data/librispeech-360 (downloading Nov 16; slow link) | 2026-11-16 |
 | Speech Commands v0.02 | download.tensorflow.org/data/speech_commands_v0.02.tar.gz (Warden 2018) | CC BY 4.0 | Training and eval | data/speech_commands | 2026-11-15 |
 | SLURP audio (slurp_real) | zenodo.org/records/4274930 | CC BY-NC 4.0 | **Evaluation only** | data/slurp | 2026-11-15 |
 | SLURP text annotations | github.com/pswietojanski/slurp (dataset/slurp/*.jsonl; README: text CC BY 4.0, audio CC BY-NC 4.0) | CC BY 4.0 | Evaluation labels (they describe eval-only audio) | data/slurp/{train,devel,test,train_synthetic}.jsonl | 2026-11-15 |
