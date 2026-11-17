@@ -139,3 +139,24 @@
   - D4 (duplicated loaders) is deferred.
   - The v2 QAT microwave loss is unexplained.
 - **Model-v3 ships** (4ad57cc): dev2 37.1% against v2's 32.9%. Most of the remaining loss is rejection: pure rejection-off reaches 73 to 83% clean.
+
+## Mythos's parallel fixes, cross-checked (Nov 17, 2026, 11 AM)
+
+- **What came in:** Mythos copied the repo to deoxylabs/marigold (private) at 3:35 AM, five minutes before d24e7a4 reached GitHub, and opened PR 1 there.
+  - It fixes 16 of the 36 items, built on 3b37eb5. The fixes match ours in substance; ours also carries the LR schedule on a resume, as S2 asked.
+  - Not merged: it conflicts in 12 files and would put the v2 ROM back.
+- **Its tests against master** (John asked whether its fixes deserve more trust than ours; run on his word, in worktree .wt/mythos):
+  - As written, 9 pass. The others call Mythos's own names or its --device option, match its exact wording, or expect the v2 ROM.
+  - Adapted to master's names (same checks): 43 of 46 pass and 1 does not apply.
+  - Its GPU training test: 4 of 4 on CUDA with the real Moonshine weights.
+  - Its Linux wake runner: 12 of 12 bit-exact and 4 of 4 negative controls caught, the same as on its server.
+- **Fixed from it (John, "Yes"):**
+  - CMUdict is in the repo (sw/wake/lex). A fresh clone failed 12 of 17 SDK tests without it.
+  - The SDK says so when it builds with no expansion.
+  - The reject threshold is clamped when it is created as well.
+  - regress_mg.sh normalises the generated LUT ROM to LF. Our generator already writes LF, so this only guards against one that does not.
+  - Its tests are in sdk/tests, sw/tests, rtl/tests and rtl/wake/tb/run_native.sh; ADAPTED marks the changed lines.
+- **Evidence (cf3b775):**
+  - Python tests 51 of 51, GPU included; shell-script tests 18 of 18; sw/intent/test_resume.sh ok.
+  - A fresh clone with no data/ passes 42 of 42.
+  - `regress_mg.sh v3` from a fresh WSL clone: REGRESS PASS, exit 0, in 42 minutes. The 5 positives are bit-exact, the rom, mic and crc negatives are caught, and the core and island unit tests pass.
