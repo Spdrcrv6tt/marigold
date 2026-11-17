@@ -1,20 +1,21 @@
 """Test blob for the whole-chip regression: an SDK blob with host = I2C at 0x2A and event flags 0xF (irq, WAKE,
 NOMATCH, TIMEOUT frames), in blob version 1 with the model and teacher it was built for (K1, John's ruling of Nov 17,
 2026), CRC recomputed, so every event reaches the harness as a frame. Vectors and tables are copied unchanged.
-    python3 rtl/top/tb/mkblob_i2c.py data/sdk/fan.mgc rtl/top/tb/fan-i2c.mgc [--model-tag TAG]     (OUT - : stdout)
-A version-0 source records no model: --model-tag names it, else the teacher in the source's report (SRC.json,
-"embedder") gives the one model paired with that teacher (sdk/chip_models.py). data/sdk/fan.mgc was compiled on
-Nov 15 with teacher-v3, so fan-i2c.mgc is a model-v1 blob; rtl/top/tb/mg_e2e.py stamps it for the chip under test,
-since its checks are about bit-exactness, not about what the vectors mean."""
+    python3 rtl/top/tb/mkblob_i2c.py [SRC [OUT]] [--model-tag TAG]                                  (OUT - : stdout)
+SRC defaults to data/sdk/fan-v3.mgc: sdk/configs/fan.json compiled with the shipping defaults (model v3, teacher-v4,
+the default expansion and the teacher's projection; the plain text variant), and OUT to rtl/top/tb/fan-i2c.mgc. A
+version-0 source records no model: --model-tag names it, else the teacher in the source's report (SRC.json,
+"embedder") gives the one model paired with that teacher (sdk/chip_models.py)."""
 import argparse, json, struct, sys, zlib
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "sdk"))
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "sdk"))
 import chip_models as CM  # noqa: E402
 
 ap = argparse.ArgumentParser()
-ap.add_argument("src")
-ap.add_argument("out")
+ap.add_argument("src", nargs="?", default=str(ROOT / "data/sdk/fan-v3.mgc"))
+ap.add_argument("out", nargs="?", default=str(ROOT / "rtl/top/tb/fan-i2c.mgc"))
 ap.add_argument("--model-tag", default=None)
 a = ap.parse_args()
 b = bytearray(open(a.src, "rb").read())

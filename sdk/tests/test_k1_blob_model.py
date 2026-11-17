@@ -99,13 +99,14 @@ def test_one_model_teacher_table():
     assert E.default_teacher("v3") == "data/models/teacher-v4" and E.default_teacher("v1") == "data/models/teacher-v3"
 
 
-def test_committed_test_blob_is_v1_and_says_what_it_was_built_for():
-    """rtl/top/tb/fan-i2c.mgc comes from data/sdk/fan.mgc, compiled on Nov 15 with teacher-v3 for model v1."""
+def test_committed_test_blob_is_a_v3_blob():
+    """rtl/top/tb/fan-i2c.mgc comes from data/sdk/fan-v3.mgc: sdk/configs/fan.json compiled for model v3 with
+    teacher-v4 (the shipping defaults). The shipping chip loads it as it is."""
     b = (ROOT / "rtl/top/tb/fan-i2c.mgc").read_bytes()
-    err, cfg = M.parse_blob(b)
-    assert err == 0 and (cfg["model_id"], cfg["teacher_id"]) == (1, 3)
+    err, cfg = M.parse_blob(b, model_d=128, model_id=3, teacher_id=4)
+    assert err == 0 and (cfg["model_id"], cfg["teacher_id"]) == (3, 4)
     assert b[14] == 1 and b[15] == 0x2A and struct.unpack_from("<H", b, 26)[0] == 0xF
-    src = ROOT / "data/sdk/fan.mgc"                      # data/ is not in git: checked where it exists
+    src = ROOT / "data/sdk/fan-v3.mgc"                   # data/ is not in git: checked where it exists
     if src.exists():
         s = src.read_bytes()
         assert len(s) == len(b) and s[0x20:-4] == b[0x20:-4]           # vectors and tables identical

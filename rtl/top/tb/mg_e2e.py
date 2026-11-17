@@ -4,9 +4,9 @@ sw/golden/chip_golden.py run_stream on the chip's own input (the bit-exact front
 Wakes: the stand-in spotter at chosen samples (--stub, default) or the wake spotter itself (--wakes from a file the
 wake golden model wrote). Negative controls must fail: --neg rom (one weight bit flipped in the ROM image), mic (PDM
 bits flipped), crc (config CRC corrupted), model (the blob stamped for another model: the chip must refuse it with
-STATUS cfg error 7; K1). Every blob is stamped with the model and teacher ids of the chip under test (--model-tag,
-default the tracked LUT ROM's model, as rtl/top/chip.mk builds it): these checks are about bit-exactness, and the test
-blob rtl/top/tb/fan-i2c.mgc is a model-v1 blob. Run in WSL after rtl/core/tools/env.sh:
+STATUS cfg error 7; K1). The random config (no --blob) carries the chip's model and teacher ids (--model-tag, default
+the tracked LUT ROM's model, as rtl/top/chip.mk builds it); a --blob is loaded as it is, so one made for another
+model is refused and the check fails. Run in WSL after rtl/core/tools/env.sh:
 
     python3 rtl/top/tb/mg_e2e.py --sim <sim> --img <flash.hex> --golden data/golden/mg-<tag>.npz --out <dir> [--neg ...]
 """
@@ -116,9 +116,8 @@ G = dict(np.load(a.golden))
 D = int(G["proj.q"].shape[0])
 if a.blob:
     blob = open(a.blob, "rb").read()
-    if blob[0x1D:0x1F] != bytes([MID, TID]):
-        print("blob built for model id %d, teacher id %d: stamped for the chip under test (%d, %d)" % (blob[0x1D], blob[0x1E], MID, TID))
-        blob = stamp(blob, MID, TID)
+    if blob[0x1D:0x1F] != bytes([MID, TID]):          # K1: the chip refuses it (error 7) and the check fails
+        print("blob built for model id %d, teacher id %d; the chip is (%d, %d): it will refuse it" % (blob[0x1D], blob[0x1E], MID, TID))
 else:
     cfg = rand_cfg(rng, D=D, N=12, n_actions=4, n_slots=3, n_gpio=6)
     cfg.update(host=1, flags=0xF, conf_sh=9, i2c_addr=0x2A, reject_thr=-(1 << 31), margin=0, model_id=MID, teacher_id=TID)
