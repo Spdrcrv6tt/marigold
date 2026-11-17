@@ -1,5 +1,6 @@
 """Wake-gated capture ring (mg_capture) against the segment rule model (rtl/model/mg_model.py Segmenter): segment
 bounds, delivered samples, TIMEOUT flags, WAKE/TIMEOUT events, and core power (osc_en) around each segment."""
+import os
 import random
 import cocotb
 from cocotb.clock import Clock
@@ -8,6 +9,7 @@ import mg_model as M
 
 P = dict(pre=300, mn=1500, cap=6000, hang=3, onset=2, listen=2500)
 PER = 24                                    # clocks per sample
+OFF = 4294967296 - 30000 if os.environ.get("VARIANT") == "wrap" else 0   # the RTL's index of model sample 0 (WP0)
 
 
 def sample(i):
@@ -36,7 +38,7 @@ class Core:
             if t == last:
                 continue
             last = t
-            idx, data, seg = int(dut.q_idx.value), dut.q_data.value.to_signed(), int(dut.q_seg.value)
+            idx, data, seg = (int(dut.q_idx.value) - OFF) % 4294967296, dut.q_data.value.to_signed(), int(dut.q_seg.value)
             if not int(dut.osc_en.value):
                 self.err.append("delivery while the core is off at %d" % idx)
             if seg:
@@ -50,7 +52,7 @@ class Core:
             for _ in range(2):
                 await RisingEdge(dut.clk)
             dut.ack_t.value = 1 - int(dut.ack_t.value)
-            if not seg:                              # done with the segment: ask to be switched off
+            if not seg and not getattr(self, 'dq_hold', False):   # done with the segment: ask to be switched off
                 for _ in range(20):
                     await RisingEdge(dut.clk)
                 dut.dq_t.value = 1 - int(dut.dq_t.value)
@@ -81,8 +83,11 @@ async def segments_random(dut):
     cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
     for s in ("in_valid", "in_data", "in_raw", "in_wake", "ack_t", "dq_t"):
         getattr(dut, s).value = 0
+    dut.en.value = 1
     dut.pre.value, dut.mn.value, dut.cap.value = P["pre"], P["mn"], P["cap"]
     dut.hang.value, dut.onset.value, dut.listen.value = P["hang"], P["onset"], P["listen"]
+    dut.rst_n.value = 1                       # a real falling edge: Verilator starts rst_n at 0, so 1 -> 0 -> 1
+    await Timer(10, unit="ns")
     dut.rst_n.value = 0
     await Timer(50, unit="ns")
     dut.rst_n.value = 1
@@ -112,6 +117,8 @@ async def segments_random(dut):
         await RisingEdge(dut.clk)
     want = [(a, b, t) for a, b, t in seg.segs]
     got = [(a, b, t) for a, b, t, _ in core.segs]
+    if core.err:
+        dut._log.error("segments rtl %s model %s", [(x, y, t) for x, y, t, _ in core.segs], seg.segs)
     assert not core.err, core.err[:5]
     assert not any(o for *_, o in core.segs), "overrun"
     assert got == want, "segments differ:\nrtl   %s\nmodel %s" % (got, want)
@@ -122,3 +129,119 @@ async def segments_random(dut):
         int(dut.osc_en.value), "open" if seg.on else "closed")
     dut._log.info("%d segments (%d TIMEOUT) and %d WAKE events identical, %d samples checked", len(got),
                   sum(t for *_, t in want), nw, sum(b - a for a, b, _ in want))
+
+
+async def setup_cap(dut):
+    cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
+    for s in ("in_valid", "in_data", "in_raw", "in_wake", "ack_t", "dq_t"):
+        getattr(dut, s).value = 0
+    if hasattr(dut, "en"):
+        dut.en.value = 1
+    dut.pre.value, dut.mn.value, dut.cap.value = P["pre"], P["mn"], P["cap"]
+    dut.hang.value, dut.onset.value, dut.listen.value = P["hang"], P["onset"], P["listen"]
+    dut.rst_n.value = 1                       # a real falling edge: Verilator starts rst_n at 0, so 1 -> 0 -> 1
+    await Timer(10, unit="ns")
+    dut.rst_n.value = 0
+    await Timer(50, unit="ns")
+    dut.rst_n.value = 1
+    for _ in range(5):
+        await RisingEdge(dut.clk)
+
+
+@cocotb.test()
+async def listen_off(dut):
+    """Review R5: listening stops (no more samples, en low) inside an open segment: the segment closes at once as a
+    TIMEOUT (the core runs no model) and the core can be switched off."""
+    await setup_cap(dut)
+    core = Core(dut)
+    cocotb.start_soon(core.run())
+    for w in range(1400):                     # a wake at 400, speech-free; mute at 1400 (inside the listen window)
+        dut.in_valid.value = 1; dut.in_data.value = sample(w) & 0xFFFF; dut.in_raw.value = 0
+        dut.in_wake.value = 1 if w == 400 else 0
+        await RisingEdge(dut.clk)
+        dut.in_valid.value = 0; dut.in_wake.value = 0
+        for _ in range(PER - 1):
+            await RisingEdge(dut.clk)
+    if hasattr(dut, "en"):
+        dut.en.value = 0
+    for _ in range(3000):
+        await RisingEdge(dut.clk)
+        if core.segs:
+            break
+    assert core.segs, "the open segment never closed after listening stopped (review R5)"
+    st, en_, tmo, _ = core.segs[0]
+    assert (st, en_, tmo) == (100, 1400, True), core.segs[0]
+    for _ in range(200):
+        await RisingEdge(dut.clk)
+    assert int(dut.osc_en.value) == 0, "core still powered after the aborted segment"
+    dut._log.info("listen-off closed the segment [100, 1400) as a TIMEOUT; core switched off")
+
+
+@cocotb.test()
+async def dq_race(dut):
+    """Review R2 / R8: the core asks to be switched off (dq) around the clock of a new wake's sample, after acking an
+    odd or an even number of times: the queued segment is delivered whole, from its start, after the core boots
+    again."""
+    cases = 0
+    for w1 in (400, 401):
+        for d in (-3, -2, -1, 0, 1, 2):
+            await setup_cap(dut)
+            core = Core(dut)
+            core.dq_hold = True                   # the test toggles dq itself
+            cocotb.start_soon(core.run())
+            seg = M.Segmenter(**P)
+            raw = [1 if 4 <= f <= 6 or 10 <= f <= 12 else 0 for f in range(40)]
+            w2, n = 2700, 7000
+            for w in range(n):
+                dut.in_valid.value = 1; dut.in_data.value = sample(w) & 0xFFFF
+                rp = raw[w // 256 - 1] if (w > 0 and w % 256 == 0) else 0
+                dut.in_raw.value = rp
+                wk = w in (w1, w2)
+                dut.in_wake.value = 1 if wk else 0
+                seg.step(w, wk, rp)
+                for c in range(PER):
+                    if c == 1:
+                        dut.in_valid.value = 0; dut.in_wake.value = 0
+                    if (w == w2 and c == d) or (w == w2 - 1 and c == PER + d):
+                        assert core.segs, "segment 1 not delivered before the second wake"
+                        dut.dq_t.value = 1 - int(dut.dq_t.value)
+                    await RisingEdge(dut.clk)
+            for _ in range(20000):
+                await RisingEdge(dut.clk)
+            want = [(a, b, t) for a, b, t in seg.segs]
+            got = [(a, b, t) for a, b, t, _ in core.segs]
+            assert not core.err, core.err[:3]
+            assert got == want, "w1 %d dq at %+d: rtl %s model %s" % (w1, d, got, want)
+            cases += 1
+    dut._log.info("%d dq/wake edge cases: queued segments delivered whole", cases)
+
+
+@cocotb.test()
+async def wrap_directed(dut):
+    """Review R1, directed (meaningful in the wrap variant, where model sample 30000 is the RTL's index 0):
+    (1) a segment ends before the wrap and the next wake comes 100 samples after it (start = k - pre, not the stale
+    end); (2) a segment opens 200 samples before the wrap and its speech starts after it (no false TIMEOUT)."""
+    scen = [dict(wakes=(10000, 30100), speech=[(40, 50), (118, 130)], n=36000),
+            dict(wakes=(29800,), speech=[(118, 125)], n=36000)]
+    for i, sc in enumerate(scen):
+        await setup_cap(dut)
+        core = Core(dut)
+        cocotb.start_soon(core.run())
+        seg = M.Segmenter(**P)
+        raw = [1 if any(a <= f <= b for a, b in sc["speech"]) else 0 for f in range(sc["n"] // 256 + 2)]
+        for w in range(sc["n"]):
+            dut.in_valid.value = 1; dut.in_data.value = sample(w) & 0xFFFF
+            rp = raw[w // 256 - 1] if (w > 0 and w % 256 == 0) else 0
+            dut.in_raw.value = rp
+            dut.in_wake.value = 1 if w in sc["wakes"] else 0
+            seg.step(w, w in sc["wakes"], rp)
+            await RisingEdge(dut.clk)
+            dut.in_valid.value = 0; dut.in_wake.value = 0
+            for _ in range(PER - 1):
+                await RisingEdge(dut.clk)
+        for _ in range(20000):
+            await RisingEdge(dut.clk)
+        got = [(a, b, t) for a, b, t, _ in core.segs]
+        assert got == [tuple(x) for x in seg.segs] and not core.err, "scenario %d: rtl %s model %s %s" % (
+            i, got, seg.segs, core.err[:2])
+    dut._log.info("wrap scenarios identical to the model (OFF %d)", OFF)

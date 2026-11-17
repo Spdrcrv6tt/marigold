@@ -4,7 +4,8 @@ import random
 import struct
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, FallingEdge, Timer, ReadOnly
+from cocotb.triggers import RisingEdge, FallingEdge, Edge, Timer, ReadOnly
+from cocotb.utils import get_sim_time
 import mg_model as M
 from mg_util import rand_cfg, tune_thresholds
 
@@ -12,26 +13,49 @@ CLK_NS = 326
 
 
 class I2C:
-    def __init__(self, dut, t_low=1300, t_high=600):
-        self.dut, self.tl, self.th = dut, t_low, t_high
+    """Bit-banged I2C master on an open-drain bus with a pull-up: a released SDA rises `rise` ns after the release
+    (both sides let go), a pull-down is immediate; resolution half a clk_fe period. For every bit the master leaves
+    released (the target's data and ACK bits) it records the data-valid time (SCL fall to the line settled) and the
+    setup time before SCL rises (review R7)."""
+
+    def __init__(self, dut, t_low=1300, t_high=600, rise=0):
+        self.dut, self.tl, self.th, self.rise = dut, t_low, t_high, rise
         self.msda = 1
+        self.line = 1
+        self.t_change = self.t_fall = 0
+        self.tvd_max, self.tsu_min = 0, 10 ** 9
         dut.scl_i.value = 1
         dut.sda_i.value = 1
         cocotb.start_soon(self._wire())
 
-    async def _wire(self):                       # open drain: the line is low if either side pulls it
+    async def _wire(self):
+        rel = None
         while True:
-            await FallingEdge(self.dut.clk)
-            self.dut.sda_i.value = 1 if (self.msda and not int(self.dut.sda_oe.value)) else 0
+            await Edge(self.dut.clk)
+            now = get_sim_time("ns")
+            if self.msda and not int(self.dut.sda_oe.value):
+                rel = now if rel is None else rel
+                v = 1 if now - rel >= self.rise else 0
+            else:
+                rel, v = None, 0
+            if v != self.line:
+                self.line, self.t_change = v, now
+            self.dut.sda_i.value = v
 
     async def _bit(self, b):
         self.msda = b
         await Timer(self.tl, unit="ns")
+        if b:                                     # the target owns this bit: data valid and setup
+            now = get_sim_time("ns")
+            if self.t_change > self.t_fall:
+                self.tvd_max = max(self.tvd_max, self.t_change - self.t_fall)
+            self.tsu_min = min(self.tsu_min, now - max(self.t_change, self.t_fall))
         self.dut.scl_i.value = 1
         await Timer(self.th // 2, unit="ns")
         v = int(self.dut.sda_i.value)
         await Timer(self.th - self.th // 2, unit="ns")
         self.dut.scl_i.value = 0
+        self.t_fall = get_sim_time("ns")
         return v
 
     async def start(self):
@@ -266,3 +290,41 @@ async def events_and_gpio(dut):
             if cfg["host"] == 0:
                 assert (await i2c.read(dev, 0x04, 1))[0] == 0
     dut._log.info("%d events, %d frames identical, GPIO equal", nev, nframes)
+
+
+@cocotb.test()
+async def i2c_timing(dut):
+    """Review R7: data-valid and setup times of the target's bits on a bus with rise time. Standard mode (100 kHz:
+    tLOW 4.7 us, tHIGH 4.0 us, rise 1000 ns, the spec's worst case) must meet tVD;DAT <= 3.45 us and tSU;DAT >= 250 ns.
+    Fast mode (400 kHz: tLOW 1.3 us, tHIGH 0.6 us, rise 300 ns) is measured and reported, not required: the target
+    changes SDA 2 to 3 clk_fe periods after SCL falls, so with a 300 ns rise its bits miss tVD;DAT (0.9 us) and
+    setup; iteration 1 supports standard mode only (docs/architecture.md section 6)."""
+    i2c = await setup(dut)
+    rng = random.Random(9)
+    res = {}
+    for mode, tl, th, rise, tvd, tsu in (("standard", 4700, 4000, 1000, 3450, 250), ("fast", 1300, 600, 300, 900, 100)):
+        i2c.tl, i2c.th, i2c.rise = tl, th, rise
+        i2c.tvd_max, i2c.tsu_min = 0, 10 ** 9
+        try:
+            assert (await i2c.read(0x2A, 0x00, 1))[0] == 0x4D
+            cfg = rand_cfg(rng, D=4, N=2, n_gpio=2)
+            blob = M.build_blob(cfg)
+            st = await load(i2c, blob, 0x2A, cfg["i2c_addr"])
+            assert st & 1, hex(st)
+            await i2c.write(cfg["i2c_addr"], 0x02, b"\x01")       # back to the default address
+            ok = True
+        except AssertionError:
+            if mode == "standard":
+                raise
+            ok = False
+            dut._log.info("fast mode, rise %d ns: the transfer FAILED (a target bit or ACK not valid in time)", rise)
+            i2c.msda = 1
+            await i2c.stop()
+            dut.rst_n.value = 0
+            await Timer(2, unit="us")
+            dut.rst_n.value = 1
+            await Timer(2, unit="us")
+        res[mode] = (i2c.tvd_max, i2c.tsu_min, ok)
+        dut._log.info("%s mode, rise %d ns: data valid max %d ns (limit %d), setup min %d ns (limit %d)",
+                      mode, rise, i2c.tvd_max, tvd, i2c.tsu_min, tsu)
+    assert res["standard"][0] <= 3450 and res["standard"][1] >= 250, res

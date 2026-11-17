@@ -14,6 +14,7 @@ module mg_gpio #(
     input  wire         clk,
     input  wire         rst_n,
     input  wire         go,
+    input  wire         abort,            // CTRL begin: stop reading rules (review R6)
     input  wire [7:0]   id,
     input  wire [7:0]   slot_mask,
     input  wire [255:0] vals,
@@ -64,7 +65,7 @@ module mg_gpio #(
     reg  [11:0] pre;
     wire        tick = (pre == MS - 1);
 
-    wire gen = go || busy || (|pact);
+    wire gen = go || busy || (|pact) || abort;
     wire gclk;
     clk_gate u_cg (.clk(clk), .en(gen), .gclk(gclk));
 
@@ -94,7 +95,8 @@ module mg_gpio #(
                     else begin req <= 1'b1; addr <= addr + 15'd1; end
                 end
             end
-            case (st)
+            if (abort) begin st <= G_IDLE; req <= 1'b0; fbusy <= 1'b0; end
+            else case (st)
                 G_IDLE: if (go) begin st <= G_FIND; e_id <= id; e_mask <= slot_mask; j <= 8'd0; end
                 G_FIND: begin
                     if (!fbusy && !fdone) begin

@@ -1,6 +1,7 @@
-// I2C target (docs/architecture.md section 6), 7-bit address, standard and fast mode, oversampled on clk_fe
-// (3.072 MHz) through two-flop synchronisers; no clock stretching. SDA is driven low with sda_oe, after the
-// synchronised SCL falls (about 1 us), which leaves the fast-mode data setup time in the 1.3 us low phase.
+// I2C target (docs/architecture.md section 6), 7-bit address, standard mode (100 kHz), oversampled on clk_fe
+// (3.072 MHz) through two-flop synchronisers; no clock stretching. SDA changes 2 to 3 clk_fe periods (651 to 977
+// ns) after SCL falls: inside standard mode's tVD;DAT (3.45 us) with a 1 us rise, but not fast mode's 0.9 us once
+// the bus rise time is counted (review R7; test_ctl.py i2c_timing measures both).
 // Register protocol: the first byte written after the address sets the pointer; further written bytes go to the
 // pointer (wr_stb); reads return the pointer's register (rd_data, combinational from ptr; rd_stb when a byte is
 // taken). The pointer increments after each byte except on the stream registers S0 and S1.

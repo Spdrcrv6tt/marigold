@@ -1,8 +1,10 @@
 // Config loader (docs/architecture.md sections 3 and 8.6): takes the blob as a byte stream, writes it to config
 // SRAM, keeps the 32-byte header, and on commit checks magic, version, field ranges, length and CRC-32 (IEEE,
-// zlib.crc32) in that order. The CRC runs on the fly four bytes behind the stream, so at commit it covers every
+// zlib.crc32) in that order, then (review R4) that D is the ROM model's output size (MODEL_D). The CRC runs on the fly four bytes behind the stream, so at commit it covers every
 // byte but the last four, which are still in the delay line and are the stored CRC. cfg_valid only after a pass.
-module mg_cfg_load (
+module mg_cfg_load #(
+    parameter [15:0] MODEL_D = 16'd0     // the ROM model's output size; a blob with another D is refused (0 = no check)
+) (
     input  wire        clk,
     input  wire        rst_n,
     input  wire        begin_i,           // one clock: forget the config, expect a new blob from byte 0
@@ -13,7 +15,7 @@ module mg_cfg_load (
     output wire [14:0] waddr,
     output wire [7:0]  wdata,
     output reg         valid,
-    output reg  [3:0]  err,               // 0 none, 1 magic, 2 version, 3 field range, 4 length, 5 CRC
+    output reg  [3:0]  err,               // 0 none, 1 magic, 2 version, 3 field range, 4 length, 5 CRC, 6 D is not the model's
     output reg  [15:0] cnt,               // bytes received (saturates at 0xFFFF)
     // header fields and table bases, stable while valid
     output wire [15:0] D,
@@ -79,7 +81,7 @@ module mg_cfg_load (
     wire        range = (n_actions >= 8'd1) && (n_actions <= 8'd64) && (n_slots <= 8'd8) && (n_gpio <= 8'd32) &&
                         (host <= 8'd2) && (D >= 16'd1) && (D <= 16'd256) && (N >= 16'd1);
     wire [3:0]  chk   = !magic ? 4'd1 : (ver != 16'd0) ? 4'd2 : !range ? 4'd3 :
-                        ((len > 32'd32768) || (len != {16'd0, cnt})) ? 4'd4 : ((~crc) != dl) ? 4'd5 : 4'd0;
+                        ((len > 32'd32768) || (len != {16'd0, cnt})) ? 4'd4 : ((~crc) != dl) ? 4'd5 : ((MODEL_D != 16'd0) && (D != MODEL_D)) ? 4'd6 : 4'd0;
 
     wire gen = begin_i | commit_i | in_valid;
     wire gclk;

@@ -26,6 +26,9 @@ ap.add_argument("--golden", required=True)
 ap.add_argument("--out", required=True)
 ap.add_argument("--neg", default="")
 ap.add_argument("--seed", type=int, default=7)
+ap.add_argument("--trace", type=int, default=1, help="the trace strap (+trace=); 0 = the product path")
+ap.add_argument("--wake2", type=int, default=-1, help="R2: an extra stand-in wake this many samples after the "
+                "first segment closes (the golden model is rerun with it)")
 ap.add_argument("--blob", default="", help="config blob (default: a random valid one, D from the model)")
 ap.add_argument("--wakes", default="", help="'golden': wakes from the wake golden model (spotter build); a file of "
                 "samples; default: chosen samples for the stand-in spotter build")
@@ -63,13 +66,17 @@ for seg in plan:
     else:
         parts.append(nrng.standard_normal(int(seg * 16000)) * 0.004); pos += int(seg * 16000)
 gap = marks[1] + len(parts[3]) + 16000 if len(marks) > 1 else 0
-cache = out.parent / ("stim-%d.npz" % a.seed)
+import hashlib, os                       # the cache file names its stimulus: checks of different stimuli share a dir
+key = hashlib.sha1(("%s|%s|%d" % (a.audio, a.gaps if a.audio else "libri", a.seed)).encode()).hexdigest()[:12]
+cache = out.parent / ("stim-%s.npz" % key)
 if cache.exists():
     z = np.load(cache); bits, ref = z["bits"].copy(), z["ref"]
 else:
     bits = pdm_model.sdm(np.clip(pdm_model.upsample_to_pdm(np.concatenate(parts), 192), -0.9, 0.9)).astype(np.uint8)
     ref = np.array(pdm_model.pdm_decimate(bits), dtype=np.int64)
-    np.savez(cache, bits=bits, ref=ref)
+    tmp = out / "stim-tmp.npz"
+    np.savez(tmp, bits=bits, ref=ref)
+    os.replace(tmp, cache)                 # atomic: a parallel check never reads a half-written file
 raw = np.asarray(Vad().run(ref)["raw"])
 if a.wakes == "golden":
     import golden as WG                    # sw/wake/golden (frozen format 1)
@@ -81,6 +88,12 @@ elif a.wakes:
     wakes = [int(w) for w in open(a.wakes).read().split()]
 else:
     wakes = [marks[0] + 6400, marks[1] + 6400, gap]
+if a.wake2 >= 0:
+    _sg = M.Segmenter()
+    for _w in range(len(ref)):
+        _sg.step(_w, _w in wakes, int(raw[_w // 256 - 1]) if (_w > 0 and _w % 256 == 0) else 0)
+    wakes = sorted(set(wakes) | {_sg.segs[0][1] + a.wake2})
+    print("wake2 at", _sg.segs[0][1] + a.wake2, "after the first close at", _sg.segs[0][1])
 open(out / "wakes.txt", "w").write("\n".join(map(str, wakes)) + "\n")
 
 # ---- config and the golden run (on the clean input; the negative controls change only the chip's side)
@@ -96,6 +109,7 @@ import chip_golden as CG
 ev = CG.run_stream(G, blob, ref, raw, wakes)
 want = [e["frame"].hex() for e in ev if e["to_host"]]
 segs = [e for e in ev if "q" in e]
+seg_all = [e for e in ev if e["ev"] == M.EV_WAKE]                    # every segment opens with a WAKE
 want_q = [[int(v) for v in e["q"]] for e in segs]
 want_v = [[int(v) for v in e["raw_values"]] for e in segs]
 
@@ -105,6 +119,9 @@ if a.neg == "rom":                        # one weight bit flipped: byte 0x9000 
     i = 0x9000
     lines[i] = "%02x" % (int(lines[i], 16) ^ 0x10)
     img = str(out / "flash_neg.hex"); open(img, "w").write("\n".join(lines))
+if not segs:                             # nothing for the core to run: the check would pass vacuously
+    print(json.dumps({"neg": a.neg, "error": "the golden model found no segment in this stimulus"}))
+    sys.exit(1)
 if a.neg == "mic":                       # 4,000 samples of mic bits flipped inside the first segment the core runs
     s0, e0 = segs[0]["segment"]
     i = (s0 + (e0 - s0) // 3) * 192
@@ -116,7 +133,7 @@ open(out / "cfg.blob", "wb").write(blob)
 
 # ---- run the chip (the image path is a simulator parameter: the simulator reads it at start)
 cmd = [a.sim, "+pdm=%s" % (out / "mic.pdm"), "+blob=%s" % (out / "cfg.blob"), "+wakes=%s" % (out / "wakes.txt"),
-       "+out=%s" % (out / "chip.log"), "+pcmlog=%s" % (out / "fe.pcm"), "+rawlog=%s" % (out / "raw.txt"), "+tail=0.5",
+       "+out=%s" % (out / "chip.log"), "+pcmlog=%s" % (out / "fe.pcm"), "+rawlog=%s" % (out / "raw.txt"), "+tail=0.5", "+trace=%d" % a.trace,
        "+img=%s" % img]
 p = subprocess.run(cmd, capture_output=True, text=True, timeout=14400)
 log = open(out / "chip.log").read().split("\n")
@@ -135,8 +152,25 @@ for l in log:
             qs.append(cq[:D]); vs.append(cv[:])
 fe = np.fromfile(out / "fe.pcm", dtype="<i2").astype(np.int64)
 n = min(len(fe), len(ref))
+# Frames are compared as two streams (docs/config-blob.md, pairing rule): WAKE frames, and decision frames
+# (COMMAND, NOMATCH, TIMEOUT: one per WAKE, in segment order). The golden model dates a decision at its segment's
+# end; the chip sends COMMAND / NOMATCH after the core's work, so the next segment's WAKE may come first. Each stream
+# must be identical, in order, and pairing first-in first-out must hold: never more decisions than WAKEs so far,
+# none outstanding at the end, as many decisions as segments (checked when every event goes to the host).
+isl = lambda fs: [f for f in fs if int(f[2:4], 16) == 1]
+dec = lambda fs: [f for f in fs if int(f[2:4], 16) in (0, 2, 3)]
+
+
+def pairing(fs):
+    out = 0
+    for f in fs:
+        out += 1 if int(f[2:4], 16) == 1 else -1
+        if out < 0:
+            return False
+    return out == 0
 res = dict(neg=a.neg, golden=a.golden, segments=[e["segment"] for e in segs], events=len(ev),
-           frames_identical=(got == want), q_identical=(qs == want_q), values_identical=(vs == want_v),
+           frames_identical=(isl(got) == isl(want) and dec(got) == dec(want) and len(got) == len(want)),
+           frame_order_identical=(got == want), pairing_ok=None, q_identical=(qs == want_q), values_identical=(vs == want_v),
            n_frames=len(want), n_segments_run=len(segs),
            frontend_identical=bool(np.array_equal(fe[:n], ref[:n])) and n >= len(ref) - 2,
            status=[l for l in log if l.startswith("S ")], frames_expected=want, frames_chip=got,
@@ -168,9 +202,13 @@ for e in segs:
     if fr and later:
         lat.append(round((later[0] - 256 * (fr[-1] + 1)) / 16.0, 1))
 res["latency_ms"] = lat
-res["identical"] = res["frames_identical"] and res["q_identical"] and res["values_identical"] and res["gpio_identical"]
+_, pcf = M.parse_blob(open(out / "cfg.blob", "rb").read())
+if pcf is not None and pcf["host"] and (pcf["flags"] & 0xE) == 0xE:     # WAKE, NOMATCH, TIMEOUT all reach the host
+    res["pairing_ok"] = pairing(got) and len(dec(got)) == len(seg_all) == len(isl(got))
+res["identical"] = (res["frames_identical"] and res["q_identical"] and res["values_identical"] and res["gpio_identical"]
+                    and res["pairing_ok"] is not False)
 json.dump(res, open(out / "result.json", "w"), indent=1)
 print(json.dumps({k: res.get(k) for k in ("neg", "segments", "events", "n_frames", "frames_identical", "q_identical",
-                                          "values_identical", "gpio_identical", "frontend_identical", "status",
+                                          "values_identical", "gpio_identical", "pairing_ok", "frontend_identical", "status",
                                           "irq_samples", "segment_ends", "latency_ms")}))
 sys.exit(0 if res["identical"] == (a.neg == "") else 1)

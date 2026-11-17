@@ -53,4 +53,8 @@ The chip reports what happened after every wake, so a product can show it: a lig
 
 Frame: `0xA5, type u8, action id u8 (0 for non-command events), n_values u8, then for each value: slot u8 + i32 LE, confidence u8 (0 to 255; for NOMATCH the best rejected score, scaled), crc8`. COMMAND is always sent. WAKE, NOMATCH and TIMEOUT go to the host only if their flag bits are set. The IRQ pin rises when a frame is ready and falls when the host reads it. In GPIO-only products, the event entries' rules (ids 0xF0 to 0xF2) drive the pins, e.g. pulse a buzzer on NOMATCH.
 
+Pairing (review fixes, Nov 17): every WAKE frame is followed by exactly one decision frame (COMMAND, NOMATCH or TIMEOUT), and decisions come in segment order. The next segment's WAKE may arrive before the previous segment's decision (the chip boots its core again for a segment that opened while it finished the previous one), so a host pairs WAKEs and decisions first-in, first-out. With WAKE, NOMATCH or TIMEOUT frames switched off by the flags, only the frames that are on are sent, in the same order.
+
+Config errors (STATUS bits 7:4 after a commit): 1 magic, 2 version, 3 field range, 4 length, 5 CRC, 6 D is not the chip model's output size (review R4: a blob made for another model is refused at load).
+
 Safety: the host always makes the final call (door interlocks and the like). A COMMAND event is a report of what was heard, not a power switch.

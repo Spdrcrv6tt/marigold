@@ -1,10 +1,11 @@
 #!/bin/bash
-# From Git Bash on Windows: bash rtl/wake/tb/run.sh [variant ...]  (default: plain stall). Logs in rtl/wake/tb/results/.
+# From Git Bash on Windows: bash rtl/wake/tb/run.sh [variant ...]  (default: v2plain v2stall, the spotter
+# marigold_top instantiates; plain stall = format 1). Logs in rtl/wake/tb/results/.
 cd "$(dirname "$0")"
 mkdir -p results
-cat > results/_run_wsl.sh <<'EOS'
-. /mnt/d/marigold/rtl/tools/env.sh
-cd /mnt/d/marigold/rtl/wake/tb
+W=$(cd ../../.. && pwd -W); M="/mnt/$(echo "${W:0:1}" | tr 'A-Z' 'a-z')${W:2}"
+printf '%s\n' ". $M/rtl/tools/env.sh" "cd $M/rtl/wake/tb" > results/_run_wsl.sh
+cat >> results/_run_wsl.sh <<'EOS'
 # a flipped weight bit (one ROM word) for the ROM negative control
 for m in mem mem2; do
   [ -d ../$m ] || continue
@@ -34,4 +35,4 @@ if [ "$WAKE_NEG" = "1" ]; then
   done
 fi
 EOS
-MSYS_NO_PATHCONV=1 WSLENV=WAKE_VARIANTS:WAKE_NEG WAKE_NEG="${WAKE_NEG:-1}" WAKE_VARIANTS="${*:-plain stall}" wsl.exe -d Ubuntu -- bash /mnt/d/marigold/rtl/wake/tb/results/_run_wsl.sh
+MSYS_NO_PATHCONV=1 WSLENV=WAKE_VARIANTS:WAKE_NEG WAKE_NEG="${WAKE_NEG:-1}" WAKE_VARIANTS="${*:-v2plain v2stall}" wsl.exe -d Ubuntu -- bash "$M/rtl/wake/tb/results/_run_wsl.sh"

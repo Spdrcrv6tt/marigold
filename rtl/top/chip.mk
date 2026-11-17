@@ -1,6 +1,6 @@
 # Whole-chip Verilator build of marigold_top with the harness rtl/top/tb/mg_main.cpp (run in WSL with
 # rtl/core/tools/env.sh). make -f rtl/top/chip.mk sim IMG=<flash.hex> [BSUF=x]; make -f rtl/top/chip.mk smoke
-ROOT  := /mnt/d/marigold
+ROOT  := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
 B     := $(MARIGOLD_BUILD)/chip$(BSUF)
 SRC   := $(ROOT)/rtl/src
 CORE  := $(ROOT)/rtl/core
@@ -14,15 +14,17 @@ RTL   := $(TOP)/marigold_top.sv $(TOP)/mg_ctl.sv $(TOP)/mg_capture.sv $(TOP)/mg_
          $(SRC)/pdm_frontend.sv $(SRC)/pdm_clkgen.sv $(SRC)/cic_decim.sv $(SRC)/fir_decim2.sv $(SRC)/dc_block.sv \
          $(SRC)/vad.sv $(SRC)/clk_gate.sv $(SRC)/latch_ram.sv $(SRC)/mac_lane.sv $(SRC)/uart_tx.sv          $(ROOT)/rtl/wake/mg_wake.sv $(ROOT)/rtl/wake/wk_fe.sv $(ROOT)/rtl/wake/wk_nn.sv $(ROOT)/rtl/wake/wk_dp.sv          $(ROOT)/rtl/wake/wk_mem.sv
 STUB  ?= 0
+MODEL_D ?= 128
 VFLAGS := --cc --exe --build -j 8 -O3 --x-assign fast --x-initial fast -Wno-fatal -Wno-WIDTH -Wno-UNUSED -Wno-PINMISSING \
           -Wno-TIMESCALEMOD -I$(SRC) -I$(CORE) --top-module marigold_top -CFLAGS -O3 -MAKEFLAGS OPT_FAST=-O3 \
-          -GROM_BYTES=$(ROMB) -GWAKE_STUB=$(STUB)
+          -GROM_BYTES=$(ROMB) -GWAKE_STUB=$(STUB) -GMODEL_D=$(MODEL_D) -GWAKE_MEMDIR=\"$(ROOT)/rtl/wake/mem2/\"
 RVFLAGS := --target=riscv32-unknown-elf -march=rv32im -mabi=ilp32 -O2 -ffreestanding -fno-builtin -nostdlib -mno-relax \
            -msmall-data-limit=0 -Wall
 
 .PHONY: sim smoke
 sim:
 	mkdir -p $(B)
+	rm -rf $(B)/obj
 	verilator $(VFLAGS) -GROM_INIT=\"$(IMG)\" --Mdir $(B)/obj -o sim $(RTL) $(TOP)/tb/mg_main.cpp > $(B)/build.log 2>&1 || \
 	  { grep -E "rror" -A4 $(B)/build.log | head -40; exit 1; }
 

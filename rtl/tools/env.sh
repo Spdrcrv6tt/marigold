@@ -1,6 +1,8 @@
-# Source inside WSL: . /mnt/d/marigold/rtl/tools/env.sh
-export MARIGOLD=/mnt/d/marigold
+# Source inside WSL: . <repo>/rtl/tools/env.sh   (the repo root is taken from this file's own location, so a worktree
+# or a fresh clone builds from itself). Build scratch: $MARIGOLD_BUILD (default ~/.marigold/build; set it first to
+# keep a tree's builds apart).
+export MARIGOLD=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 export IMHOTEP_TOOLS=$HOME/.imhotep               # Imhotep WSL toolchain: read-only reuse
 export PATH=$IMHOTEP_TOOLS/conda/bin:$PATH
 export PYTHONDONTWRITEBYTECODE=1
-export MARIGOLD_BUILD=$HOME/.marigold/build     # Verilator / synthesis scratch, off the Windows drive
+export MARIGOLD_BUILD=${MARIGOLD_BUILD:-$HOME/.marigold/build}
