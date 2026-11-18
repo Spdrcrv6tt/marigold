@@ -2,8 +2,9 @@
 NOMATCH, TIMEOUT frames), in blob version 1 with the model and teacher it was built for (K1, John's ruling of Nov 17,
 2026), CRC recomputed, so every event reaches the harness as a frame. Vectors and tables are copied unchanged.
     python3 rtl/top/tb/mkblob_i2c.py [SRC [OUT]] [--model-tag TAG]                                  (OUT - : stdout)
-SRC defaults to data/sdk/fan-v3.mgc: sdk/configs/fan.json compiled with the shipping defaults (model v3, teacher-v4,
-the default expansion and the teacher's projection; the plain text variant), and OUT to rtl/top/tb/fan-i2c.mgc. A
+SRC defaults to data/sdk/fan-v3.mgc: sdk/configs/fan.json compiled for model v3 with teacher-v4, the default expansion
+and the teacher's projection, as text prototypes (--enroll text; the SDK default became audio on Nov 17, review K2,
+and this stays the regression's test blob), and OUT to rtl/top/tb/fan-i2c.mgc. A
 version-0 source records no model: --model-tag names it, else the teacher in the source's report (SRC.json,
 "embedder") gives the one model paired with that teacher (sdk/chip_models.py)."""
 import argparse, json, struct, sys, zlib

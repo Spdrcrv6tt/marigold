@@ -101,7 +101,7 @@ def test_one_model_teacher_table():
 
 def test_committed_test_blob_is_a_v3_blob():
     """rtl/top/tb/fan-i2c.mgc comes from data/sdk/fan-v3.mgc: sdk/configs/fan.json compiled for model v3 with
-    teacher-v4 (the shipping defaults). The shipping chip loads it as it is."""
+    teacher-v4 (text prototypes, --enroll text, the default before review K2). The shipping chip loads it as it is."""
     b = (ROOT / "rtl/top/tb/fan-i2c.mgc").read_bytes()
     err, cfg = M.parse_blob(b, model_d=128, model_id=3, teacher_id=4)
     assert err == 0 and (cfg["model_id"], cfg["teacher_id"]) == (3, 4)

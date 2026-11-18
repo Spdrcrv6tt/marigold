@@ -3,8 +3,18 @@
 
   python sdk/compile.py CONFIG.json [-o OUT.mgc] [--model-tag TAG] [--embedder DIR|stub] [--expansion FILE|none] [--dim D]
                         [--projection random|none|FILE.npy] [--protos 0=auto] [--reject-protos 16]
-                        [--q-scale S] [--reject-rate 0.90] [--margin 0.0]
+                        [--q-scale S] [--reject-rate R] [--margin 0.0]
+                        [--enroll audio|text] [--enroll-clips MANIFEST] [--golden MODEL.npz]
   python sdk/compile.py --parse BLOB.mgc
+
+Enrollment (review K2, Nov 17, 2026): the default, --enroll audio, takes the prototypes and the reject threshold from
+speech: TTS recordings of the config's phrases by the SDK's own training voices (data/tts/jobs_enroll.jsonl, from
+sw/intent/enroll_jobs.py and the TTS build), run through the chip model's integer export (weights/mg-<tag>.npz). The
+threshold and margin are calibrated on those audio scores with one voice held out at a time (enroll_audio). Text
+prototypes with a text-calibrated threshold, --enroll text, rejected 13 of 13 spoken commands on a real voice (John's
+first recording, Nov 17) and nearly all from new synthetic voices (the review); they remain for tests and research.
+The audio default rejects 95% of the non-commands (--reject-rate 0.95, plan target 4; default_reject_rate).
+Everything below describes the text step, which still builds the blob's tables and wake template in both modes.
 
 What the compiler does: validate the config (SDK rules), gather each action's phrases (the typed
 examples plus the SDK expansion of that config, sdk/expand.py), embed them with the teacher of the
@@ -441,6 +451,220 @@ def enroll_protos(b0, byact, qb=None, K_audio=32, K_text=0, K_bank=0, cal=False,
     return bb
 
 
+# ------------------------------------------------------------------ matching scores (one implementation: the SDK and sw/intent/evaluate.py)
+def scores(b, Q):
+    """Best score, its action, and the best score of a different action (minus infinity if none), per row."""
+    S = Q.astype(np.int64) @ b["vectors"].astype(np.int64).T + b["bias"][None].astype(np.int64)
+    va = np.asarray(b["vec_action"])
+    bi = S.argmax(1); best = S[np.arange(len(S)), bi]; act = va[bi]
+    other = np.full(len(S), np.iinfo(np.int64).min // 4)
+    for x in np.unique(va):
+        rows_ = act == x
+        if rows_.any() and (va != x).any():
+            other[rows_] = S[rows_][:, va != x].max(1)
+    return best, act, other
+
+
+def pure_action(b, Q):
+    """Review S7: the best ACTION prototype, reject (action-0) prototypes masked: pure action confusion."""
+    S = Q.astype(np.int64) @ b["vectors"].astype(np.int64).T + b["bias"][None].astype(np.int64)
+    va = np.asarray(b["vec_action"])
+    S[:, va == 0] = np.iinfo(np.int64).min // 4
+    return va[S.argmax(1)]
+
+
+def decide(b, Q, thr, margin=None):
+    """Matching rule (config-blob.md, arch 8.2): returns (action or 0, best score)."""
+    m = b["margin"] if margin is None else margin
+    best, act, other = scores(b, Q)
+    out = np.where((act == 0) | (best < thr) | (best - other < m), 0, act)
+    return out, best
+
+
+def pick_thr_margin(b, Qn, Qp, yp, rate=0.95):
+    """For each margin in a grid, the lowest threshold rejecting >= rate of the non-commands Qn; keep the
+    (threshold, margin) pair with the best command accuracy on Qp (labels yp). Returns (threshold, margin, accuracy)."""
+    bn, an, on = scores(b, Qn); bp, ap_, op = scores(b, Qp)
+    allowed = len(Qn) - int(np.ceil(rate * len(Qn)))
+    best_cfg = None
+    for m in [0, 1000, 2000, 3000, 4000, 6000, 8000, 10000, 13000, 16000, 20000, 25000]:
+        passing = np.sort(bn[(an != 0) & (bn - on >= m)])[::-1]
+        thr = int(passing[allowed]) + 1 if len(passing) > allowed else -10 ** 9
+        acc = float(((ap_ == yp) & (bp >= thr) & (bp - op >= m)).mean())
+        if best_cfg is None or acc > best_cfg[2]:
+            best_cfg = (thr, m, acc)
+    return best_cfg
+
+
+def thr_for_rate(b, Qn, m, rate):
+    """The lowest threshold that rejects >= rate of the rows Qn at margin m (pick_thr_margin's rule, one margin)."""
+    bn, an, on = scores(b, Qn)
+    allowed = len(Qn) - int(np.ceil(rate * len(Qn)))
+    passing = np.sort(bn[(an != 0) & (bn - on >= m)])[::-1]
+    return int(passing[allowed]) + 1 if len(passing) > allowed else -10 ** 9
+
+
+# ------------------------------------------------------------------ audio enrollment, the default (review K2, Nov 17, 2026)
+DEFAULT_ENROLL = ROOT / "data/tts/jobs_enroll.jsonl"     # sw/intent/enroll_jobs.py, then the TTS build (train voices only)
+SPEECH_BANK = ROOT / "sw/intent/speech_bank.txt"           # 1,500 frozen LibriSpeech training utterances (review S6)
+
+
+def golden_path(tag):
+    """The chip model's integer export: weights/ (tracked), else data/golden/."""
+    return next((p for p in (ROOT / f"weights/mg-{tag}.npz", ROOT / f"data/golden/mg-{tag}.npz") if p.exists()), None)
+
+
+def _q_worker(args):
+    gpath, paths = args
+    sys.path.insert(0, str(ROOT / "sw/golden"))
+    import soundfile as sf
+    import intent_np as S
+    I = S.IntIntent(dict(np.load(gpath)))
+    return [np.asarray(I.run(sf.read(str(p), dtype="int16")[0].astype(np.int64))[0], np.int8) for p in paths]
+
+
+def cache_load(cache):
+    """{path: q} from a chip_q cache file, read fully and CLOSED (Windows cannot replace a file that is still open)."""
+    if not Path(cache).exists():
+        return {}
+    with np.load(cache) as z:
+        return dict(zip(z["paths"].tolist(), np.array(z["q"])))
+
+
+def cache_save(cache, have):
+    """Write {path: q} atomically: a temporary file, then a replace."""
+    cache = Path(cache)
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    tmp = cache.with_name(cache.stem + ".tmp.npz")
+    np.savez(tmp, paths=np.array(list(have)), q=np.stack(list(have.values())))
+    tmp.replace(cache)
+
+
+def chip_q(gpath, paths, procs=12):
+    """int8 q of each audio file through the chip model's integer golden (sw/golden/intent_np.py): what the chip computes.
+    Results are cached per export in data/sdk/cache/ (keyed by a hash of the export and the file path), saved after
+    every chunk of 600 clips so an interrupted run keeps its work."""
+    import hashlib
+    from multiprocessing import Pool
+    h = hashlib.sha1(Path(gpath).read_bytes()).hexdigest()[:12]
+    cache = ROOT / "data/sdk/cache" / f"q-{h}.npz"
+    have = cache_load(cache)
+    todo = [p for p in dict.fromkeys(str(p) for p in paths) if p not in have]
+    if todo:
+        print(f"chip model on {len(todo)} clips ({len(have)} cached)", file=sys.stderr, flush=True)
+        with Pool(procs) as pool:
+            for s in range(0, len(todo), 600):
+                part = todo[s:s + 600]
+                chunks = [c for c in (part[i::procs] for i in range(procs)) if c]
+                for c, r in zip(chunks, pool.map(_q_worker, [(str(gpath), c) for c in chunks])):
+                    have.update(zip(c, r))
+                cache_save(cache, have)
+                print(f"  {min(s + 600, len(todo))} of {len(todo)}", file=sys.stderr, flush=True)
+    return np.stack([have[str(p)] for p in paths])
+
+
+def enroll_audio(b0, c, clips, Q, qb, reject_rate, K_audio=32):
+    """Review K2: action prototypes from TTS recordings of the config's phrases through the chip model ("audio", the
+    variant sw/intent/evaluate.py chose on dev for model v3), and a reject threshold and margin calibrated on AUDIO
+    scores. clips: enrollment rows of this product (action name, or None for a non-command; voice); Q: their int8 q;
+    qb: q of the generic speech bank. Calibration leaves one voice out: prototypes from the other voices, the held-out
+    voice's non-commands and the speech bank as negatives, reject_rate of EACH set rejected (the non-commands pick the
+    threshold and margin, the bank can only raise the threshold), its commands as positives (pick_thr_margin).
+    The blob gets prototypes from every voice and the median threshold and margin.
+    Returns (parsed-blob dict, report)."""
+    name2id = {a["name"]: a["id"] for a in c["actions"]}
+    unknown = sorted({r["action"] for r in clips if r["action"] and r["action"] not in name2id})
+    if unknown:
+        raise ValueError(f"enrollment clips name actions the config does not have: {unknown}")
+    y = np.array([name2id[r["action"]] if r["action"] else 0 for r in clips])
+    voices = sorted({r["voice"] for r in clips})
+    if len(voices) < 2:
+        raise ValueError(f"audio calibration needs clips from 2 or more voices, found {voices}")
+
+    def protos(ix):
+        byact = {}
+        for i in ix:
+            byact.setdefault(int(y[i]), []).append(Q[i])
+        return enroll_protos(b0, byact, qb, K_audio, 0)
+
+    held = []
+    for v in voices:
+        tr = [i for i, r in enumerate(clips) if r["voice"] != v]
+        ho = np.array([i for i, r in enumerate(clips) if r["voice"] == v])
+        bv = protos(tr)
+        neg, pos = ho[y[ho] == 0], ho[y[ho] != 0]
+        # each negative set on its own (John's first recording, Nov 17: pooled with the 1,500-line bank, the product's
+        # own near-miss non-commands set almost nothing and real chatter passed): the product's non-commands pick the
+        # threshold and margin, then the bank may only raise the threshold
+        thr, m, _ = pick_thr_margin(bv, Q[neg] if len(neg) else qb, Q[pos], y[pos], reject_rate)
+        if len(neg) and len(qb):
+            thr = max(thr, thr_for_rate(bv, qb, m, reject_rate))
+        held.append(dict(voice=v, reject_thr=int(thr), margin=int(m),
+                         commands=int(len(pos)), commands_right=float((decide(bv, Q[pos], thr, m)[0] == y[pos]).mean()),
+                         commands_right_rejection_off=float((pure_action(bv, Q[pos]) == y[pos]).mean()),
+                         noncommands=int(len(neg)),
+                         noncommands_rejected=float((decide(bv, Q[neg], thr, m)[0] == 0).mean()) if len(neg) else None,
+                         bank_rejected=float((decide(bv, qb, thr, m)[0] == 0).mean()) if len(qb) else None))
+    b = protos(range(len(clips)))
+    b["reject_thr"] = int(np.median([h["reject_thr"] for h in held]))
+    b["margin"] = int(np.median([h["margin"] for h in held]))
+    rep = dict(enroll="audio", clips=len(clips), voices=voices, reject_rate=reject_rate, speech_bank=int(len(qb)),
+               source=f"audio: leave one voice out; {reject_rate:.0%} of the held-out voice's non-commands rejected, and "
+                      f"{reject_rate:.0%} of the speech bank, each set on its own; median over voices", held_out=held,
+               note="held_out figures are on the SDK's own synthetic TTS voices, not a test; rejection_off = closest action "
+                    "prototype (review S7)")
+    return b, rep
+
+
+def default_reject_rate(enroll):
+    """--reject-rate when none is given. audio 0.95: the SDK's own TTS voices are easier to reject than real talk, and
+    0.95 is the lowest of 0.80/0.85/0.90/0.95/0.98 whose eval DEV rejection meets plan target 4 (95%) for both reference
+    configs (fan 95.5%, microwave 96.3%; at 0.90: 93.9% and 89.8%). text 0.90, chosen on the eval DEV split (Nov 15)."""
+    return 0.95 if enroll == "audio" else 0.90
+
+
+HDR_KEYS = ("D", "reject_thr", "margin", "wake_sens", "flags", "host", "i2c_addr", "conf_sh", "model_id", "teacher_id")
+
+
+def repack(b):
+    """A parsed (and edited) blob dict -> blob bytes, checked by the chip's own rules."""
+    blob = pack({k: b[k] for k in HDR_KEYS}, b["vec_action"], b["vec_flags"], b["bias"], b["vectors"], b["actions"],
+                b["slots"], b["gpio"], b["wake"])
+    parse(blob)                     # 32 KB budget, sizes, CRC
+    return blob
+
+
+def audio_inputs(key, model_tag, manifest, golden):
+    """What audio enrollment needs, checked before any model loads: (export path, clip rows, speech bank paths)."""
+    gpath = Path(golden) if golden else golden_path(model_tag)
+    if gpath is None or not gpath.exists():
+        raise ValueError(f"no chip model export for {model_tag} (weights/mg-{model_tag}.npz or data/golden/mg-{model_tag}.npz); "
+                         f"pass --golden FILE, or --enroll text")
+    if not Path(manifest).exists():
+        raise ValueError(f"enrollment manifest not found: {manifest} (sw/intent/enroll_jobs.py and the TTS build write it); "
+                         f"or pass --enroll text")
+    base = Path(manifest).parent
+    rows = [json.loads(l) for l in open(manifest, encoding="utf-8")]
+    clips = [dict(r, path=str(base / r["out"])) for r in rows if r.get("product") == key and (base / r["out"]).exists()]
+    if not clips:
+        raise ValueError(f"no enrollment clips for {key!r} in {manifest}: synthesize them (sw/intent/enroll_jobs.py, then the "
+                         f"TTS build), or pass --enroll text")
+    bank = [str(ROOT / l.strip()) for l in open(SPEECH_BANK, encoding="utf-8") if l.strip() and not l.startswith("#")]
+    bank = [p for p in bank if Path(p).exists()]           # LibriSpeech under data/librispeech; without it, non-commands only
+    if not bank:
+        print("speech bank: no LibriSpeech files found (data/librispeech); calibrating on the enrolled non-commands only",
+              file=sys.stderr)
+    return gpath, clips, bank
+
+
+def enroll_audio_blob(blob0, c, gpath, clips, bank, reject_rate, manifest=None):
+    """The compile's text blob -> the audio-enrolled blob (review K2). Returns (blob, report)."""
+    Q = chip_q(gpath, [r["path"] for r in clips] + bank).astype(np.int64)
+    b, rep = enroll_audio(parse(blob0), c, clips, Q[:len(clips)], Q[len(clips):], reject_rate)
+    rep.update(golden=str(gpath), manifest=str(manifest))
+    return repack(b), rep
+
+
 def compile_config(c, key, embedder, expansion=None, D=None, proj="random", protos=0, reject_protos=16,
                    q_scale=None, reject_rate=0.90, margin=0.0, reject_thr=None, reject_bank=None, bank_protos=0, bank_keep=0.8,
                    model_tag=CM.SHIPPING):
@@ -580,12 +804,21 @@ def main():
     ap.add_argument("--protos", type=int, default=0, help="prototypes per action; 0 = fill the 32 KB budget (max 32)")
     ap.add_argument("--reject-protos", type=int, default=16)
     ap.add_argument("--q-scale", type=float, default=None)
-    ap.add_argument("--reject-rate", type=float, default=0.90, help="share of the expansion non-commands to reject (0.90 chosen on the eval DEV split)")
+    ap.add_argument("--reject-rate", type=float, default=None,
+                    help="share of the non-commands to reject; default 0.95 for --enroll audio (the lowest rate that meets plan "
+                         "target 4, 95%% rejected, on the eval DEV split for both configs; review K2) and 0.90 for --enroll text")
     ap.add_argument("--margin", type=float, default=0.0)
     ap.add_argument("--reject-bank", default=None, help="iteration 2: generic reject bank npz (sw/teacher4/make_reject_bank.py)")
     ap.add_argument("--bank-protos", type=int, default=0, help="action-0 prototypes taken from the reject bank")
     ap.add_argument("--bank-keep", type=float, default=0.8, help="bank lines closer than this to the product's own phrases are dropped")
+    ap.add_argument("--enroll", default="audio", choices=("audio", "text"),
+                    help="audio (default, review K2): prototypes and the reject threshold from TTS recordings of the config's "
+                         "phrases through the chip model; text: from the teacher's text vectors (rejects most spoken commands)")
+    ap.add_argument("--enroll-clips", default=str(DEFAULT_ENROLL), help="enrollment manifest (sw/intent/enroll_jobs.py + TTS build)")
+    ap.add_argument("--golden", default=None, help="the chip model's integer export (default weights/mg-<tag>.npz, else data/golden/)")
     a = ap.parse_args()
+    if a.reject_rate is None:
+        a.reject_rate = default_reject_rate("text" if a.embedder == "stub" else a.enroll)   # the stub compiles text only
     if a.parse:
         b = parse(Path(a.parse).read_bytes())
         print(json.dumps({k: (v.tolist() if isinstance(v, np.ndarray) and v.ndim == 1 else
@@ -604,6 +837,12 @@ def main():
     if emb_path is not None and emb_path.name != teacher:
         sys.exit(f"--embedder {emb_path} is not model {tag}'s teacher {teacher} (sdk/chip_models.py): a blob built with another "
                  f"teacher matches garbage on that chip; pass --model-tag for the model it belongs to")
+    ain = None
+    if a.enroll == "audio" and emb_path is not None:     # review K2: checked before the teacher loads
+        try:
+            ain = audio_inputs(cfg.stem, tag, a.enroll_clips, a.golden)
+        except ValueError as e:
+            sys.exit(f"audio enrollment: {e}")
     print(f"compiling for model {tag} (id {CM.model_id(tag)}) with " + (f"{teacher} (teacher id {CM.teacher_id(teacher)})"
           if emb_path else "the stub embedder (teacher id 0: tests only, no chip loads this blob)"), file=sys.stderr)
     emb = StubEmbedder() if a.embedder == "stub" else STEmbedder(emb_path)
@@ -622,6 +861,32 @@ def main():
     blob, rep = compile_config(c, cfg.stem, emb, exp, a.dim, proj, a.protos, a.reject_protos, a.q_scale, a.reject_rate, a.margin, a.reject_thr,
                                np.load(a.reject_bank) if a.reject_bank else None, a.bank_protos, a.bank_keep, model_tag=tag)
     rep.update(config=str(cfg), embedder=str(emb_path) if emb_path else "stub", expansion=a.expansion if exp else None)
+    if a.enroll == "audio" and emb_path is None:
+        print("stub embedder: text prototypes (tests only; no chip loads this blob)", file=sys.stderr)
+        rep["enroll"] = "text (stub)"
+    elif a.enroll == "audio":
+        try:
+            blob, arep = enroll_audio_blob(blob, c, *ain, a.reject_rate, manifest=a.enroll_clips)
+        except ValueError as e:
+            sys.exit(f"audio enrollment: {e}")
+        b = parse(blob)
+        if a.reject_thr is not None:            # an explicit threshold still wins
+            b["reject_thr"] = int(a.reject_thr)
+            blob = repack(b)
+            arep["source"] = "--reject-thr (integer score units); prototypes from audio"
+            b = parse(blob)
+        rep.update(enroll="audio", text_calibration=rep["calibration"], calibration=arep, N=int(b["N"]), size_bytes=len(blob),
+                   reject_thr=int(b["reject_thr"]), margin=int(b["margin"]), reject_protos=int(np.sum(b["vec_action"] == 0)),
+                   crc32=f"{b['crc32']:08x}")
+        for h_ in arep["held_out"]:
+            pc = lambda x: "-" if x is None else format(x, ".0%")
+            print(f"held-out voice {h_['voice']}: commands right {pc(h_['commands_right'])} (rejection off "
+                  f"{pc(h_['commands_right_rejection_off'])}), non-commands rejected {pc(h_['noncommands_rejected'])}, "
+                  f"speech bank rejected {pc(h_['bank_rejected'])}", file=sys.stderr)
+    else:
+        print("text enrollment: prototypes and threshold from text; on speech from a new voice most commands are rejected "
+              "(review K2). A chip should use the default, --enroll audio", file=sys.stderr)
+        rep["enroll"] = "text"
     out = Path(a.out) if a.out else ROOT / "data/sdk" / f"{cfg.stem}.mgc"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_bytes(blob)
