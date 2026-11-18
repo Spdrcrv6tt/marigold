@@ -26,6 +26,7 @@ for p in ("rtl/model", "sw/golden", "sw/intent", "sdk", "sw/wake", "sw/wake/gold
     sys.path.insert(0, str(ROOT / p))
 os.environ.setdefault("HF_HOME", str(ROOT / "data/hf")); os.environ.setdefault("HF_HUB_OFFLINE", "1")
 import mg_model as M  # noqa: E402
+_SEG0 = M.Segmenter    # run() always subclasses the chip's own segmenter (it patches M.Segmenter per call)
 from vad_model import Vad  # noqa: E402
 import golden as WG  # noqa: E402
 import compile as C  # noqa: E402
@@ -47,7 +48,7 @@ def run(wav, lines, blobs, hang=8):
     if x.ndim != 1:
         raise SystemExit("WAV must be mono")
 
-    class Seg(M.Segmenter):
+    class Seg(_SEG0):
         def __init__(self):
             super().__init__(hang=hang)
     import chip_golden as CG
