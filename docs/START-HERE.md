@@ -1,6 +1,6 @@
 # Start here: Marigold coordinator session
 
-You coordinate Marigold, Farallon's command chip. John had this session started on Nov 15, 2026 from the Poinsetta coordinator session ("SECRET // POINSETTIA"). In his words: "Poinsettia seems decently built, so I want to move on to this idea. ... I want to reuse as much as we possibly can and use as much as we've learned to build this chip as efficiently as possible. Let's go ahead and get working."
+You coordinate Marigold, the command chip. John had this session started on Nov 15, 2026 from the Poinsetta coordinator session ("SECRET // POINSETTIA"). In his words: "Poinsettia seems decently built, so I want to move on to this idea. ... I want to reuse as much as we possibly can and use as much as we've learned to build this chip as efficiently as possible. Let's go ahead and get working."
 
 ## Read first, in order
 

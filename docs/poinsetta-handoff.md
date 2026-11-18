@@ -1,6 +1,6 @@
 # What Marigold takes from Poinsetta
 
-Poinsetta, Farallon's streaming speech-to-text chip, lives at D:\poinsetta (read-only for Marigold). Its final commit is 1719528, and its hardware is unchanged since b2fe8ba. Iteration 1 closed on Nov 15, 2026 with all nine items met: bit-exact whole-chip RTL, an independent rebuild, and 5.05% word error. Start with D:\poinsetta\reports\validation-iteration1.md and D:\poinsetta\docs\spec-sheet.md; every decision and its reason is in D:\poinsetta\docs\decisions.md.
+Poinsetta, the streaming speech-to-text chip, lives at D:\poinsetta (read-only for Marigold). Its final commit is 1719528, and its hardware is unchanged since b2fe8ba. Iteration 1 closed on Nov 15, 2026 with all nine items met: bit-exact whole-chip RTL, an independent rebuild, and 5.05% word error. Start with D:\poinsetta\reports\validation-iteration1.md and D:\poinsetta\docs\spec-sheet.md; every decision and its reason is in D:\poinsetta\docs\decisions.md.
 
 ## Reuse map
 

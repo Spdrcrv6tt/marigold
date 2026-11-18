@@ -1,6 +1,6 @@
-# Marigold (Farallon command chip)
+# Marigold (command chip)
 
-Marigold is Farallon's command chip: an always-listening voice-control chip that OEMs drop into products. It hears a wake word, works out what the person wants in their own words (speech to intent, no transcription), and tells the product what to do over I2C, UART or GPIO. It is Poinsettia's smaller sibling: Poinsettia's always-on island plus a much smaller core, a few mm² at 28 nm. PLAN.md is John's plan; docs/decisions.md overrides it where they differ; docs/iteration-1.md defines done (the 12 targets in PLAN.md). docs/poinsetta-handoff.md lists what to reuse from Poinsetta and what it taught us; read it before building anything.
+Marigold is a command chip: an always-listening voice-control chip that OEMs drop into products. It hears a wake word, works out what the person wants in their own words (speech to intent, no transcription), and tells the product what to do over I2C, UART or GPIO. It is Poinsettia's smaller sibling: Poinsettia's always-on island plus a much smaller core, a few mm² at 28 nm. PLAN.md is John's plan; docs/decisions.md overrides it where they differ; docs/iteration-1.md defines done (the 12 targets in PLAN.md). docs/poinsetta-handoff.md lists what to reuse from Poinsetta and what it taught us; read it before building anything.
 
 ## Rules
 - Spend no money. No sign-ups, no API-token services. Local tools only (package managers like uv, conda-forge and apt are fine; open models and datasets downloaded without an account are fine). An AMD account, board purchases and anything with John's name on it are John's to do.
