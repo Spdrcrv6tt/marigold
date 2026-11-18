@@ -230,3 +230,20 @@ against the line local Whisper base.en matches it to. Nothing was tuned on these
 - **Found on the way:** the q cache's second write failed on Windows (np.load held the file open, so the replace was denied). cache_load now closes it (tested), and the cache is saved every 600 clips.
 - **Tests:** sdk/tests/test_k2_audio_enroll.py (7). Windows pytest sdk, sw and rtl: 63 pass, 13 skip; the 5 bash-driven run_resume tests fail on Windows as before and pass under WSL (19 of 19 with test_regress_mg).
 - **Open for John:** plan target 4. Keeping 95% follows the plan; 90% lets about 8 to 17 more points of commands through on synthetic voices and 5 more of his 22 typed phrases, for 1 to 5 points more chatter accepted.
+
+
+## Freeform path shelved; Raptor takes over (John, Nov 17-18, 2026, around midnight)
+
+- **What happened:** John tested the chip pipeline live on his voice (sw/demo/live.py, Logitech G535 headset, model v3, exact-chip check agreeing on every decision).
+  - At the 10,000-threshold demo setting, the fan was right 11 of 18 and the microwave 31 of 41.
+  - The mistakes were opposite actions ("turn the fan off" heard as slower).
+- **Real voices at scale (SLURP smart-light, sw/intent/slurp_eval.py):** 38% close-talk and 37% far-field, against 66% for the same sentences in synthetic voices.
+- **Channel study (iteration 3, M1):** real-room echo alone takes the fan from 72% to 37%. The old training text taught "long means reject".
+- **John's ruling:**
+  - Accuracy first: never the opposite action.
+  - Power efficiency dropped, latency relaxed.
+  - The binding constraint is cost per silicon run, one or two runs at most.
+  - Module first, on an off-the-shelf MCU with an NPU and the model in external flash; our own chip later.
+- **The new project is Raptor** (D:\raptor, local git). Marigold becomes its read-only reference: SDK, wake word, matcher, evaluation tools, live demo, the iteration-3 data and channel module, and the verified RTL for the later chip.
+- **f8 stopped:** the small-model run (iteration 3, M2) was stopped unscored. The GPU went to Raptor experiment 1: the 6-layer model on the new data, float, with rooms and the device channel.
+- **Target 4:** the open question on plan target 4 (95% or 90%) is moot for Marigold. Raptor's plan sets its own targets.
