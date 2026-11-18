@@ -190,3 +190,43 @@
   - The other untracked v0 blobs under data/sdk no longer load or parse; recompile them with sdk/compile.py. sw/golden/intent_vectors.py now defaults to data/sdk/microwave-<tag>.mgc (data/sdk/microwave-v3.mgc is compiled) and refuses a blob for another model.
   - The release vectors (vectors-mg-v2-*) record 0 for "no value"; they are not regenerated (weights/ and releases untouched).
   - Unchanged on purpose: an action whose slot mask names a slot the slot table does not have still sends that slot as 0. Only a malformed blob can do this; the SDK never makes one. Refusing it at load (field range) was not done: every random cocotb config (rtl/tb/mg_util.py rand_cfg) has such masks, so those tests would need new configs.
+
+
+## K2 and S8, and the first real recordings (Nov 17, 2026, evening)
+
+John: "Take on K2 and S8", then "You're alotted infinite usage" (the 15-point cap is gone; CLAUDE.md updated). He also
+recorded two phone tests (data/real/john, git-ignored, evaluation only): fan reading set 1 (2.6 min, 38 lines read back
+to back) and the fan's own phrases (eval/real/typed_fan_v1.jsonl, 24 lines, 2 s apart). sw/intent/real_eval.py runs a
+recording through the whole-chip golden chain (VAD, wake v2, segmenter, IntIntent v3, matcher) and scores each segment
+against the line local Whisper base.en matches it to. Nothing was tuned on these recordings.
+
+- **S8 (the wake network misses on digital silence): not reproduced; no retrain.**
+  - The review saw 2 of 3 macOS voices miss "hey kitchen" with exact zeros around it and fire with a 60 LSB floor.
+  - sw/wake/silence_check.py: the 168 held-out-voice wake clips, the eval set's clean recipe, floors of 0, 1, 3, 10, 30 and 60 LSB RMS, peaks -6, -10.5, -20 and -30 dBFS, exact VAD and wake v2 at wake_sens 13. Exact zeros wake as often as any floor at every level ("hey kitchen" at -10.5 dBFS: 83.3% with zeros, 81.0% at 3 LSB, 84.5% at 60 LSB; "hey breeze" 76.2, 75.0, 75.0%).
+  - The 24 clips with the most silence between words (11% of their frames all zero): 18 of 24 wake with zeros, 17 at 3 LSB, 16 at 60 LSB.
+  - John's recordings have a natural floor (about 114 LSB RMS in the quietest tenth; 0.05% all-zero frames). The review's macOS voices stay unexplained; revisit if a digital input (the KV260 demo playing files) misses wakes.
+- **K2 (the shipped config rejects almost every spoken command): confirmed on a real voice and fixed in the SDK.**
+  - Before: the text blob (data/sdk/fan-v3.mgc, threshold 103,708) acted on 0 of 13 heard commands in recording 1 and 4 of 22 in recording 2 (18 rejected). With the reject rule off, the closest action was right for 5 of 13 and 19 of 22. On the held-out synthetic eval voices (test split) the text blobs got fan 9.0% unseen and 12.5% typed, microwave 13.3% and 22.9%.
+  - Now `sdk/compile.py --enroll audio` is the default. The prototypes are 32 k-means centroids per action of the config's phrases, spoken by the SDK's three Kokoro training voices (data/tts/jobs_enroll.jsonl: 3,528 fan and 2,376 microwave clips) and run through the chip's integer model (weights/mg-v3.npz; q cached in data/sdk/cache/). 16 reject centroids come from the enrolled non-commands.
+  - The threshold and margin are calibrated on audio scores, one voice held out at a time. The held-out voice's non-commands pick them at --reject-rate; the 1,500-line LibriSpeech speech bank must also be rejected at that rate and can only raise the threshold. The median over the voices goes in the blob. Every compile prints, per held-out voice, the commands right with the reject rule on and off.
+  - First try, pooled negatives: the bank (1,500 lines against 177 non-commands) set a threshold of 30,164. Only 42% of the eval voices' non-commands were rejected, and 1 of 11 of John's. Calibrating each set on its own fixed it.
+  - `--enroll text` stays for tests and research, with a warning. The stub embedder compiles text.
+- **The rejection target (K2's research half): --reject-rate defaults to 0.95 for audio, 0.90 for text.** 0.95 is the lowest of 0.80, 0.85, 0.90, 0.95 and 0.98 whose eval DEV rejection meets plan target 4 (95% of non-commands after a wake) for both configs: fan 95.5%, microwave 96.3% (at 0.90: 93.9% and 89.8%). Eval TEST split, unseen / typed / non-commands rejected:
+
+| Rate | Fan | Microwave |
+|---|---|---|
+| 0.80 | 51.9 / 77.1 / 88.5% | 61.7 / 74.0 / 86.8% |
+| 0.85 | 45.8 / 74.3 / 93.6% | 55.3 / 71.9 / 89.3% |
+| 0.90 | 39.6 / 65.3 / 97.3% | 51.3 / 69.8 / 93.4% |
+| **0.95 (default)** | **31.1 / 50.0 / 98.1%** | **33.8 / 52.1 / 98.1%** |
+| 0.98 | 22.5 / 44.4 / 99.4% | 24.5 / 41.7 / 99.2% |
+| text blob, before | 9.0 / 12.5 / 100% | 13.3 / 22.9 / 99.8% |
+
+  - With the reject rule off: fan 72.2% unseen, microwave 82.9%. Other-device commands rejected at 0.95: fan 88.5%, microwave 83.3% (text: 98.7, 94.9%).
+  - John's recordings at the default: recording 2, 8 of 22 right, none wrong, 14 rejected; recording 1, 1 of 13 right, 3 wrong, 9 rejected, and 11 of 11 non-commands rejected. At 0.90: 13 of 22 right, none wrong; recording 1, 1 right, 4 wrong; 11 of 11 non-commands rejected.
+  - What the real voice says: on the fan's own phrases the model is right (19 of 22 with the rule off), but real speech scores lower than the synthetic voices every threshold is set on, so real commands are rejected more often. On set 1's hard paraphrases the model itself is weak (4 to 5 of 13 with the rule off). Both point at iteration 3: real speech in training.
+  - Wake on John's voice: 24 of 38 lines in recording 1, 22 of 24 in recording 2. Read back to back, lines merged, and the 128 ms hangover cut "I'm going out, | no need for the fan anymore". A what-if 256 or 384 ms hangover recovered one command and changed no decision.
+- **Files:** data/sdk/fan.mgc and microwave.mgc are the default compiles (audio, thresholds 87,560 and 84,030). data/sdk/fan-v3.mgc stays the text variant and the source of the regression's test blob (rtl/top/tb/fan-i2c.mgc); the RTL is unchanged. sw/intent/evaluate.py now uses the SDK's scores, decide and pick_thr_margin (one copy).
+- **Found on the way:** the q cache's second write failed on Windows (np.load held the file open, so the replace was denied). cache_load now closes it (tested), and the cache is saved every 600 clips.
+- **Tests:** sdk/tests/test_k2_audio_enroll.py (7). Windows pytest sdk, sw and rtl: 63 pass, 13 skip; the 5 bash-driven run_resume tests fail on Windows as before and pass under WSL (19 of 19 with test_regress_mg).
+- **Open for John:** plan target 4. Keeping 95% follows the plan; 90% lets about 8 to 17 more points of commands through on synthetic voices and 5 more of his 22 typed phrases, for 1 to 5 points more chatter accepted.

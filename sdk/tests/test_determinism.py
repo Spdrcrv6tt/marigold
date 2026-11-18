@@ -19,7 +19,8 @@ def test_blob_bytes_identical_across_processes_and_batch_sizes():
         blobs = []
         for bs in ("1000", "7"):
             out = Path(d) / f"fan-{bs}.mgc"
-            r = subprocess.run([sys.executable, str(ROOT / "sdk/compile.py"), str(ROOT / "sdk/configs/fan.json"), "--embedder", str(emb), "-o", str(out)],
+            r = subprocess.run([sys.executable, str(ROOT / "sdk/compile.py"), str(ROOT / "sdk/configs/fan.json"), "--embedder", str(emb), "-o", str(out),
+                                "--enroll", "text"],   # the text path is what this guards (bf16 drift); audio: K2 tests
                                capture_output=True, text=True, encoding="utf-8", errors="replace",
                                env=dict(os.environ, MARIGOLD_EMBED_BATCH=bs, PYTHONIOENCODING="utf-8"))
             assert r.returncode == 0, r.stderr[-2000:]

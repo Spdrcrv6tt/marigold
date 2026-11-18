@@ -80,48 +80,8 @@ def run_golden(gpath, paths, procs=12):
     return np.stack(q), t
 
 
-def scores(b, Q):
-    """Best score, its action, and the best score of a different action (minus infinity if none), per row."""
-    S = Q.astype(np.int64) @ b["vectors"].astype(np.int64).T + b["bias"][None].astype(np.int64)
-    va = np.asarray(b["vec_action"])
-    bi = S.argmax(1); best = S[np.arange(len(S)), bi]; act = va[bi]
-    other = np.full(len(S), np.iinfo(np.int64).min // 4)
-    for x in np.unique(va):
-        rows_ = act == x
-        if rows_.any() and (va != x).any():
-            other[rows_] = S[rows_][:, va != x].max(1)
-    return best, act, other
-
-
-def pure_action(b, Q):
-    """Review S7: the best ACTION prototype, reject (action-0) prototypes masked: pure action confusion."""
-    S = Q.astype(np.int64) @ b["vectors"].astype(np.int64).T + b["bias"][None].astype(np.int64)
-    va = np.asarray(b["vec_action"])
-    S[:, va == 0] = np.iinfo(np.int64).min // 4
-    return va[S.argmax(1)]
-
-
-def decide(b, Q, thr, margin=None):
-    """Matching rule (config-blob.md, arch 8.2): returns (action or 0, best score)."""
-    m = b["margin"] if margin is None else margin
-    best, act, other = scores(b, Q)
-    out = np.where((act == 0) | (best < thr) | (best - other < m), 0, act)
-    return out, best
-
-
-def pick_thr_margin(b, Qn, Qp, yp, rate=0.95):
-    """On DEV only: for each margin in a grid, the lowest threshold rejecting >= rate of the dev non-commands; keep
-    the (threshold, margin) pair with the best dev command accuracy."""
-    bn, an, on = scores(b, Qn); bp, ap_, op = scores(b, Qp)
-    allowed = len(Qn) - int(np.ceil(rate * len(Qn)))
-    best_cfg = None
-    for m in [0, 1000, 2000, 3000, 4000, 6000, 8000, 10000, 13000, 16000, 20000, 25000]:
-        passing = np.sort(bn[(an != 0) & (bn - on >= m)])[::-1]
-        thr = int(passing[allowed]) + 1 if len(passing) > allowed else -10 ** 9
-        acc = float(((ap_ == yp) & (bp >= thr) & (bp - op >= m)).mean())
-        if best_cfg is None or acc > best_cfg[2]:
-            best_cfg = (thr, m, acc)
-    return best_cfg
+# the matching scores and the threshold rule live in sdk/compile.py, one implementation for the SDK and this file
+scores, pure_action, decide, pick_thr_margin = C.scores, C.pure_action, C.decide, C.pick_thr_margin
 
 
 def default_teacher(tag):

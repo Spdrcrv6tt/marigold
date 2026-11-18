@@ -1,0 +1,24 @@
+{"set": "typed_fan_v1", "line": 1, "spoken": "hey breeze, turn the fan on", "product": "fan", "action": "on", "values": "", "text": "turn the fan on", "category": "command"}
+{"set": "typed_fan_v1", "line": 2, "spoken": "hey breeze, fan off", "product": "fan", "action": "off", "values": "", "text": "fan off", "category": "command"}
+{"set": "typed_fan_v1", "line": 3, "spoken": "hey breeze, faster", "product": "fan", "action": "faster", "values": "", "text": "faster", "category": "command"}
+{"set": "typed_fan_v1", "line": 4, "spoken": "hey breeze, slower", "product": "fan", "action": "slower", "values": "", "text": "slower", "category": "command"}
+{"set": "typed_fan_v1", "line": 5, "spoken": "hey breeze, set the speed to three", "product": "fan", "action": "set_level", "values": "speed=3", "text": "set the speed to three", "category": "command"}
+{"set": "typed_fan_v1", "line": 6, "spoken": "hey breeze, oscillate", "product": "fan", "action": "oscillate", "values": "", "text": "oscillate", "category": "command"}
+{"set": "typed_fan_v1", "line": 7, "spoken": "hey breeze, start the fan", "product": "fan", "action": "on", "values": "", "text": "start the fan", "category": "command"}
+{"set": "typed_fan_v1", "line": 8, "spoken": "hey breeze, turn it off", "product": "fan", "action": "off", "values": "", "text": "turn it off", "category": "command"}
+{"set": "typed_fan_v1", "line": 9, "spoken": "hey breeze, speed up", "product": "fan", "action": "faster", "values": "", "text": "speed up", "category": "command"}
+{"set": "typed_fan_v1", "line": 10, "spoken": "hey breeze, slow down", "product": "fan", "action": "slower", "values": "", "text": "slow down", "category": "command"}
+{"set": "typed_fan_v1", "line": 11, "spoken": "hey breeze, put it on high", "product": "fan", "action": "set_level", "values": "speed=high", "text": "put it on high", "category": "command"}
+{"set": "typed_fan_v1", "line": 12, "spoken": "hey breeze, stop oscillating", "product": "fan", "action": "oscillate", "values": "", "text": "stop oscillating", "category": "command"}
+{"set": "typed_fan_v1", "line": 13, "spoken": "hey breeze, can you turn on the fan", "product": "fan", "action": "on", "values": "", "text": "can you turn on the fan", "category": "command"}
+{"set": "typed_fan_v1", "line": 14, "spoken": "hey breeze, stop the fan", "product": "fan", "action": "off", "values": "", "text": "stop the fan", "category": "command"}
+{"set": "typed_fan_v1", "line": 15, "spoken": "hey breeze, turn the fan up", "product": "fan", "action": "faster", "values": "", "text": "turn the fan up", "category": "command"}
+{"set": "typed_fan_v1", "line": 16, "spoken": "hey breeze, turn the fan down", "product": "fan", "action": "slower", "values": "", "text": "turn the fan down", "category": "command"}
+{"set": "typed_fan_v1", "line": 17, "spoken": "hey breeze, set it to level four", "product": "fan", "action": "set_level", "values": "speed=4", "text": "set it to level four", "category": "command"}
+{"set": "typed_fan_v1", "line": 18, "spoken": "hey breeze, rotate the fan", "product": "fan", "action": "oscillate", "values": "", "text": "rotate the fan", "category": "command"}
+{"set": "typed_fan_v1", "line": 19, "spoken": "hey breeze, power on", "product": "fan", "action": "on", "values": "", "text": "power on", "category": "command"}
+{"set": "typed_fan_v1", "line": 20, "spoken": "hey breeze, shut off the fan", "product": "fan", "action": "off", "values": "", "text": "shut off the fan", "category": "command"}
+{"set": "typed_fan_v1", "line": 21, "spoken": "hey breeze, more air", "product": "fan", "action": "faster", "values": "", "text": "more air", "category": "command"}
+{"set": "typed_fan_v1", "line": 22, "spoken": "hey breeze, less air", "product": "fan", "action": "slower", "values": "", "text": "less air", "category": "command"}
+{"set": "typed_fan_v1", "line": 23, "spoken": "hey breeze, go to speed five", "product": "fan", "action": "set_level", "values": "speed=5", "text": "go to speed five", "category": "command"}
+{"set": "typed_fan_v1", "line": 24, "spoken": "hey breeze, turn on oscillation", "product": "fan", "action": "oscillate", "values": "", "text": "turn on oscillation", "category": "command"}
