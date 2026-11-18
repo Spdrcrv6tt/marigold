@@ -45,6 +45,8 @@ def set_state(**kw):
 class Chip:
     def __init__(self, a):
         self.blob = Path(a.blob).read_bytes()
+        if a.thr is not None:                    # demo override of the blob's reject threshold (score units)
+            b = C.parse(self.blob); b["reject_thr"] = int(a.thr); self.blob = C.repack(b)
         err, self.cfg = MG.parse_blob(self.blob)
         if err:
             raise SystemExit(f"blob refused by the chip's loader, error {err}")
@@ -164,9 +166,12 @@ def apply(device, key, action, values):
 
 
 # ------------------------------------------------------------------ capture: level gate -> utterances
-def utterances(blocks, rate, pre=0.6, post=0.9, max_s=10.0):
-    """blocks: iterator of int16 arrays at `rate`. Yields int16 utterances at `rate`."""
+def utterances(blocks, rate, pre=0.6, post=0.9, max_s=10.0, peek=0.16):
+    """blocks: iterator of int16 arrays at `rate`. Yields ("partial", audio so far) once per pause of `peek` seconds
+    (the chip's segmenter closes a command 128 ms after speech ends, so the decision can come right then) and
+    ("final", whole utterance) when the utterance closes."""
     fl = int(0.02 * rate)
+    peek_n = max(1, int(round(peek / 0.02)))
     ring, ring_n = [], int(pre * rate)
     cur, quiet, speech_n, hist = None, 0, 0, []
     buf = np.zeros(0, np.int16)
@@ -194,9 +199,11 @@ def utterances(blocks, rate, pre=0.6, post=0.9, max_s=10.0):
                 n = sum(len(c) for c in cur)
                 if quiet * fl >= post * rate or n >= max_s * rate:
                     if speech_n * fl >= 0.25 * rate:
-                        yield np.concatenate(cur)
+                        yield "final", np.concatenate(cur)
                     cur = None
                     set_state(status="listening")
+                elif quiet in (peek_n, 2 * peek_n) and speech_n * fl >= 0.25 * rate:
+                    yield "partial", np.concatenate(cur)
 
 
 def to16k(x, rate):
@@ -255,7 +262,7 @@ async function tick(){try{const s=await (await fetch('/state')).json();
  document.getElementById('detail').textContent=d&&d.wake&&!d.timeout?('closest: '+d.closest+'  ·  score '+d.best+' / '+d.thr+'  ·  confidence '+d.conf+(d.exact?'  ·  exact chip: '+d.exact:'')):'';
  document.getElementById('dev').textContent=Object.entries(s.device).map(([k,v])=>k+': '+v).join('    ')||'device: idle';
  document.getElementById('hist').innerHTML=s.history.slice().reverse().map(h=>'<tr><td>'+h.time+'</td><td>'+(h.wake?'wake':'-')+'</td><td class="'+(h.action?'ok':'no')+'">'+fmt(h)+'</td><td>'+(h.best!==undefined?h.best+' / '+h.thr:'')+'</td><td>'+(h.exact||'')+'</td><td>'+h.ms+'</td></tr>').join('');
-}catch(e){} setTimeout(tick,300)} tick();
+}catch(e){} setTimeout(tick,100)} tick();
 </script></body></html>"""
 
 
@@ -281,6 +288,7 @@ def main():
     ap.add_argument("--mic", default=None); ap.add_argument("--wav", default=None); ap.add_argument("--speed", type=float, default=1.0)
     ap.add_argument("--exact", action="store_true"); ap.add_argument("--port", type=int, default=8899)
     ap.add_argument("--list", action="store_true"); ap.add_argument("--no-save", action="store_true")
+    ap.add_argument("--thr", type=int, default=None, help="override the blob's reject threshold (demo only)")
     a = ap.parse_args()
     if a.list:
         import sounddevice as sd
@@ -304,10 +312,18 @@ def main():
         rate = int(sd.query_devices(dev, "input")["default_samplerate"]); blocks = mic_blocks(dev, rate)
     save = ROOT / "data/real/live"; save.mkdir(parents=True, exist_ok=True)
     device, pending, agree = {}, [], (0, 0)
-    for utt in utterances(blocks, rate):
-        set_state(status="thinking")
+    done = set()                                  # segment starts already reported for the current utterance
+    for kind, utt in utterances(blocks, rate):
         x = to16k(utt, rate)
-        for d in chip.run(x):
+        res = chip.run(x)
+        if kind == "partial":                     # decide as soon as the chip's segmenter has closed the command
+            res = [d for d in res if d.get("segment") and d["segment"][0] not in done]
+        else:
+            new = [d for d in res if not d.get("segment") or d["segment"][0] not in done]
+            res = new if (new and any(d.get("segment") for d in new)) or not done else []
+        for d in res:
+            if d.get("segment"):
+                done.add(d["segment"][0])
             fut = d.pop("_future", None)
             d["time"] = datetime.now().strftime("%H:%M:%S")
             if d.get("action"):
@@ -318,14 +334,21 @@ def main():
                 STATE["history"].append(d); STATE["history"] = STATE["history"][-40:]
                 STATE["last"], STATE["device"] = d, dict(device)
             print(f"{d['time']} {('no wake' if not d['wake'] else 'wake, nothing' if d.get('timeout') else (d.get('action') or 'rejected'))}"
-                  f" {d.get('values', '')} best {d.get('best', '')} thr {d.get('thr', '')} closest {d.get('closest', '')} {d['ms']} ms", flush=True)
-            if not a.no_save:
+                  f" {d.get('values', '')} best {d.get('best', '')} thr {d.get('thr', '')} closest {d.get('closest', '')} {d['ms']} ms"
+                  f" ({kind})", flush=True)
+            d["_wav_pending"] = True
+        if kind == "final":
+            if not a.no_save:                     # one audio file per utterance, with every decision made in it
                 stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")[:-3]
                 sf.write(str(save / f"{stamp}.wav"), x, SR, subtype="PCM_16")
+                with LOCK:
+                    hist = [h for h in STATE["history"] if h.pop("_wav_pending", False)]
                 with open(save / "log.jsonl", "a", encoding="utf-8") as f:
-                    f.write(json.dumps(dict(d, wav=f"{stamp}.wav", model=a.model, blob=a.blob), default=str) + "\n")
+                    for h in hist:
+                        f.write(json.dumps(dict(h, wav=f"{stamp}.wav", model=a.model, blob=a.blob, thr_override=a.thr), default=str) + "\n")
+            done = set()
+            set_state(status="listening")
         agree = resolve(chip, pending, agree, block=False)    # exact chip check: integer golden in the background
-        set_state(status="listening")
     agree = resolve(chip, pending, agree, block=True)
     if a.exact and sum(agree):
         print(f"exact chip check: {agree[0]} of {sum(agree)} decisions identical", flush=True)
