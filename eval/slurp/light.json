@@ -1,0 +1,27 @@
+{
+ "format": "marigold-config/0",
+ "product": "Smart light (SLURP real-voice benchmark; examples written before reading any SLURP sentence)",
+ "wake": {"phrase": "hey lumen", "sensitivity": 0.5},
+ "match": {"reject_threshold": null},
+ "output": {"host": "none", "irq_pin": false},
+ "values": {},
+ "events": {"nomatch": {"host": false, "gpio": {"pins": [4], "mode": "pulse", "pulse_ms": 150}}},
+ "actions": [
+  {"id": 1, "name": "on", "description": "Turn the light on",
+   "examples": ["turn the light on", "lights on", "switch on the light", "turn on the lamp", "light on",
+                "can you turn the lights on", "power on the lights", "turn it on"],
+   "values": [], "gpio": {"pins": [0], "mode": "latch", "level": 1}},
+  {"id": 2, "name": "off", "description": "Turn the light off",
+   "examples": ["turn the light off", "lights off", "switch off the light", "turn off the lamp", "light off",
+                "can you turn the lights off", "kill the lights", "turn it off"],
+   "values": [], "gpio": {"pins": [0], "mode": "latch", "level": 0}},
+  {"id": 3, "name": "dim", "description": "Make the light dimmer",
+   "examples": ["dim the lights", "make it darker", "lower the brightness", "turn the lights down", "less light",
+                "dim it a bit", "decrease the brightness", "it's too bright"],
+   "values": [], "gpio": {"pins": [1], "mode": "pulse", "pulse_ms": 100}},
+  {"id": 4, "name": "brighten", "description": "Make the light brighter",
+   "examples": ["brighten the lights", "make it brighter", "raise the brightness", "turn the lights up", "more light",
+                "increase the brightness", "brighter please", "it's too dark"],
+   "values": [], "gpio": {"pins": [2], "mode": "pulse", "pulse_ms": 100}}
+ ]
+}
